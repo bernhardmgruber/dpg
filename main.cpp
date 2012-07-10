@@ -19,7 +19,7 @@ int main (int argc, char** argv)
     utils::Image image;
     renderer.SetSourceNoiseMap (heightMap);
     renderer.SetDestImage (image);
-    renderer.ClearGradient ();
+    /*renderer.ClearGradient ();
     renderer.AddGradientPoint (-1.0000, utils::Color (  0,   0, 128, 255)); // deeps
     renderer.AddGradientPoint (-0.2500, utils::Color (  0,   0, 255, 255)); // shallow
     renderer.AddGradientPoint ( 0.0000, utils::Color (  0, 128, 255, 255)); // shore
@@ -27,7 +27,7 @@ int main (int argc, char** argv)
     renderer.AddGradientPoint ( 0.1250, utils::Color ( 32, 160,   0, 255)); // grass
     renderer.AddGradientPoint ( 0.3750, utils::Color (224, 224,   0, 255)); // dirt
     renderer.AddGradientPoint ( 0.7500, utils::Color (128, 128, 128, 255)); // rock
-    renderer.AddGradientPoint ( 1.0000, utils::Color (255, 255, 255, 255)); // snow
+    renderer.AddGradientPoint ( 1.0000, utils::Color (255, 255, 255, 255)); // snow*/
     renderer.Render ();
 
     utils::WriterBMP writer;

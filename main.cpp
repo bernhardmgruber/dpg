@@ -2,6 +2,7 @@
 #include <SDL/SDL_opengl.h>
 #include <noise/noise.h>
 #include <iostream>
+#include "marchingcubes.h"
 
 #undef main
 
@@ -18,6 +19,7 @@ bool g_keys[SDLK_LAST] = {false};
 bool g_fullscreen = false;
 
 bool g_coords = false;
+bool g_polygonmode = false;
 
 
 
@@ -98,8 +100,8 @@ void ResizeGLScene(int width, int height)
     glLoadIdentity();
 }
 
-const int CUBE_SIZE = 64;
-float cube[CUBE_SIZE][CUBE_SIZE][CUBE_SIZE];
+float cube[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+vector<Triangle> triangles;
 
 void InitGL()
 {
@@ -112,23 +114,20 @@ void InitGL()
 
     glEnable(GL_MULTISAMPLE);
 
-    glEnable(GL_LIGHT0);
-
     module::Perlin perlin;
 
     // gen noise cube
     cout << "Generating noise cube ... ";
-    for(int x = 0; x < CUBE_SIZE; x++)
-        for(int y = 0; y < CUBE_SIZE; y++)
-            for(int z = 0; z < CUBE_SIZE; z++)
+    for(int x = 0; x < CHUNK_SIZE; x++)
+        for(int y = 0; y < CHUNK_SIZE; y++)
+            for(int z = 0; z < CHUNK_SIZE; z++)
                 cube[x][y][z] = perlin.GetValue(x / 16.0, y / 16.0, z / 16.0);
 
     cout << "DONE" << endl;
 
     // create geometry using marching cubes
     cout << "Generating geometry ... ";
-
-
+    triangles = MarchBlock(cube);
     cout << "DONE";
 }
 
@@ -141,12 +140,15 @@ int DrawGLScene()
 
     SetViewByMouse();
 
-    glEnable(GL_LIGHTING);
+    glBegin(GL_TRIANGLES);
+    for(auto t : triangles)
+    {
+        glVertex3fv((float*)&t.vertices[0]);
+        glVertex3fv((float*)&t.vertices[1]);
+        glVertex3fv((float*)&t.vertices[2]);
 
-
-
-
-    glDisable(GL_LIGHTING);
+    }
+    glEnd();
 
     if(g_coords)
     {
@@ -224,6 +226,12 @@ void ProcessEvent(SDL_Event event)
             return;
         default:
             return;
+        case SDLK_p:
+            g_polygonmode = !g_polygonmode;
+            if(g_polygonmode)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            else
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     case SDL_KEYUP:
         g_keys[event.key.keysym.sym] = false;

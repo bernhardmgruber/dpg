@@ -5,22 +5,8 @@
 
 #include <vector>
 
-struct Vertex
-{
-    float x, y, z;
+#include "mathlib.h"
 
-    Vertex() {};
-
-    Vertex(float x, float y, float z)
-        : x(x), y(y), z(z)
-    {};
-};
-
-struct Triangle
-{
-    Vertex vertices[3];
-};
-
-std::vector<Triangle> MarchBlock(float block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]);
+std::vector<Triangle> MarchBlock(float* cube, int size);
 
 #endif

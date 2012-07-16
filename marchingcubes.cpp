@@ -1,20 +1,22 @@
-#include "marchingcubes.h"
 #include <iostream>
 #include <cstring>
 #include <cmath>
+
+#include "Chunk.h"
+#include "marchingcubes.h"
 
 using namespace std;
 
 #include "tables.inc"
 
-Vertex position(int x, int y, int z)
+Vector3D position(int x, int y, int z)
 {
-    return Vertex(x / 16.0, y / 16.0, z / 16.0);
+    return Vector3D(x / 16.0, y / 16.0, z / 16.0);
 }
 
-Vertex interpolate(float da, float db, Vertex va, Vertex vb)
+Vector3D interpolate(float da, float db, Vector3D va, Vector3D vb)
 {
-    Vertex result;
+    Vector3D result;
 
     float part = fabs(da) / (fabs(da) + fabs(db));
 
@@ -25,16 +27,19 @@ Vertex interpolate(float da, float db, Vertex va, Vertex vb)
     return result;
 }
 
-vector<Triangle> MarchBlock(float block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE])
+#define BLOCK_AT(x, y, z) (*(block + x * size * size + y * size + z))
+
+vector<Triangle> MarchBlock(float* block, int size)
 {
     vector<Triangle> triangles;
 
-    for(int x = 0; x < CHUNK_SIZE - 1; x++)
+    for(int x = 0; x < size; x++)
     {
-        for(int y = 0; y < CHUNK_SIZE - 1; y++)
+        for(int y = 0; y < size; y++)
         {
-            for(int z = 0; z < CHUNK_SIZE - 1; z++)
+            for(int z = 0; z < size; z++)
             {
+                /*
                 float v0 = block[x][y][z];
                 float v1 = block[x][y][z+1];
                 float v2 = block[x+1][y][z+1];
@@ -43,6 +48,16 @@ vector<Triangle> MarchBlock(float block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE])
                 float v5 = block[x][y+1][z+1];
                 float v6 = block[x+1][y+1][z+1];
                 float v7 = block[x+1][y+1][z];
+                */
+
+                float v0 = BLOCK_AT(x    , y    , z    );
+                float v1 = BLOCK_AT(x    , y    , z + 1);
+                float v2 = BLOCK_AT(x + 1, y    , z + 1);
+                float v3 = BLOCK_AT(x + 1, y    , z    );
+                float v4 = BLOCK_AT(x    , y + 1, z    );
+                float v5 = BLOCK_AT(x    , y + 1, z + 1);
+                float v6 = BLOCK_AT(x + 1, y + 1, z + 1);
+                float v7 = BLOCK_AT(x + 1, y + 1, z    );
 
                 int caseIndex = 0;
 
@@ -64,7 +79,7 @@ vector<Triangle> MarchBlock(float block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE])
 
                 for(int t = 0; t < numTriangles; t++)
                 {
-                    vector<Vertex> vertices;
+                    vector<Vector3D> vertices;
 
                     // for each edge
                     for(int e = 0; e < 3; e++)
@@ -118,7 +133,7 @@ vector<Triangle> MarchBlock(float block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE])
                     }
 
                     Triangle tri;
-                    memcpy(tri.vertices, vertices.data(), sizeof(Vertex) * 3);
+                    memcpy(tri.vertices, vertices.data(), sizeof(Vector3D) * 3);
                     triangles.push_back(tri);
                 }
             }

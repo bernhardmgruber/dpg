@@ -14,12 +14,31 @@
 struct Vector2D
 {
     float x, y;
+
+    Vector2D()
+    {};
+
+    Vector2D(float x, float y)
+        : x(x), y(y)
+    {};
 };
 
 // structure for a float triple
 struct Vector3D
 {
     float x, y, z;
+
+    Vector3D()
+    {};
+
+    Vector3D(float x, float y, float z)
+        : x(x), y(y), z(z)
+    {};
+};
+
+struct Triangle
+{
+    Vector3D vertices[3];
 };
 
 std::ostream& operator<<(std::ostream& os, Vector3D v);

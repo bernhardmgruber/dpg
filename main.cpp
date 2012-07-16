@@ -1,11 +1,10 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
-#include <noise/noise.h>
 #include <iostream>
 
 #include "Camera.h"
 #include "Timer.h"
-#include "marchingcubes.h"
+#include "World.h"
 
 #undef main
 
@@ -13,7 +12,6 @@
 #define WINDOW_WIDTH 768
 #define WINDOW_CAPTION "noise"
 
-using namespace noise;
 using namespace std;
 
 bool g_active = true;
@@ -25,6 +23,7 @@ bool g_coords = false;
 bool g_polygonmode = false;
 
 Camera camera;
+World world;
 
 void ResizeGLScene(int width, int height)
 {
@@ -42,9 +41,6 @@ void ResizeGLScene(int width, int height)
     glLoadIdentity();
 }
 
-float cube[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-vector<Triangle> triangles;
-
 void InitGL()
 {
     glShadeModel(GL_SMOOTH);
@@ -55,27 +51,12 @@ void InitGL()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     glEnable(GL_MULTISAMPLE);
-
-    module::Perlin perlin;
-
-    // gen noise cube
-    cout << "Generating noise cube ... ";
-    for(int x = 0; x < CHUNK_SIZE; x++)
-        for(int y = 0; y < CHUNK_SIZE; y++)
-            for(int z = 0; z < CHUNK_SIZE; z++)
-                cube[x][y][z] = perlin.GetValue(x / 16.0, y / 16.0, z / 16.0);
-
-    cout << "DONE" << endl;
-
-    // create geometry using marching cubes
-    cout << "Generating geometry ... ";
-    triangles = MarchBlock(cube);
-    cout << "DONE";
 }
 
 void Update(double interval)
 {
     camera.Update(interval);
+    world.Update();
 }
 
 void Render()
@@ -84,17 +65,7 @@ void Render()
     glLoadIdentity();
 
     camera.Look();
-
-    glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_TRIANGLES);
-    for(auto t : triangles)
-    {
-        glVertex3fv((float*)&t.vertices[0]);
-        glVertex3fv((float*)&t.vertices[1]);
-        glVertex3fv((float*)&t.vertices[2]);
-
-    }
-    glEnd();
+    world.Render();
 
     if(g_coords)
     {

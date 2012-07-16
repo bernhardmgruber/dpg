@@ -6,13 +6,16 @@
 #define CAMERA_MOVE_SENS 5
 #define CAMERA_LOOK_SENS 0.15
 
+/**
+ * Camera singleton.
+ */
 class Camera
 {
 public:
     /**
-     * Constructor.
+     * Gets the instance of the singleton.
      */
-    Camera();
+    static Camera& GetInstance();
 
     /**
      * Returns the current position of the camera.
@@ -77,6 +80,14 @@ public:
     void Look();
 
 private:
+    /**
+     * Private constructor.
+     */
+    Camera();
+
+    Camera(Camera const&); // No implementation, prevent copying singleton
+    void operator=(Camera const&); // No implementation, prevent copying singleton
+
     /** The current position */
     Vector3D position;
 

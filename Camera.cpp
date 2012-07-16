@@ -22,6 +22,13 @@ Camera::Camera()
     lookSens = CAMERA_LOOK_SENS;
 }
 
+Camera& Camera::GetInstance()
+{
+    static Camera camera;
+
+    return camera;
+}
+
 Vector3D Camera::GetPosition()
 {
     return position;

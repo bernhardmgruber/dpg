@@ -22,7 +22,6 @@ bool g_fullscreen = false;
 bool g_coords = false;
 bool g_polygonmode = false;
 
-Camera camera;
 World world;
 
 void ResizeGLScene(int width, int height)
@@ -55,7 +54,7 @@ void InitGL()
 
 void Update(double interval)
 {
-    camera.Update(interval);
+    Camera::GetInstance().Update(interval);
     world.Update();
 }
 
@@ -64,7 +63,7 @@ void Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    camera.Look();
+    Camera::GetInstance().Look();
     world.Render();
 
     if(g_coords)
@@ -157,7 +156,7 @@ void ProcessEvent(SDL_Event event)
             switch(event.button.button)
             {
                 case SDL_BUTTON_RIGHT:
-                    camera.SetCaptureMouse(true);
+                    Camera::GetInstance().SetCaptureMouse(true);
                     SDL_ShowCursor(SDL_DISABLE);
                     return;
                 default:
@@ -167,7 +166,7 @@ void ProcessEvent(SDL_Event event)
             switch(event.button.button)
             {
                 case SDL_BUTTON_RIGHT:
-                    camera.SetCaptureMouse(false);
+                    Camera::GetInstance().SetCaptureMouse(false);
                     SDL_ShowCursor(SDL_ENABLE);
                     return;
                 default:

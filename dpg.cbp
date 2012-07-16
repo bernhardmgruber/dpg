@@ -29,10 +29,24 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++0x" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="..\..\..\SDKs\SDL-1.2.14\include" />
 		</Compiler>
+		<Linker>
+			<Add library="noise" />
+			<Add library="SDL" />
+			<Add library="opengl32" />
+			<Add library="glu32" />
+			<Add directory="..\..\..\SDKs\SDL-1.2.14\lib" />
+		</Linker>
 		<Unit filename="main.cpp" />
+		<Unit filename="marchingcubes.cpp" />
+		<Unit filename="marchingcubes.h" />
+		<Unit filename="noiseutils.cpp" />
+		<Unit filename="noiseutils.h" />
+		<Unit filename="tables.inc" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -41,9 +41,13 @@
 			<Add library="glu32" />
 			<Add directory="..\..\..\SDKs\SDL-1.2.14\lib" />
 		</Linker>
+		<Unit filename="Camera.cpp" />
+		<Unit filename="Camera.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="marchingcubes.cpp" />
 		<Unit filename="marchingcubes.h" />
+		<Unit filename="mathlib.cpp" />
+		<Unit filename="mathlib.h" />
 		<Unit filename="noiseutils.cpp" />
 		<Unit filename="noiseutils.h" />
 		<Unit filename="tables.inc" />
@@ -51,6 +55,15 @@
 			<code_completion />
 			<envvars />
 			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

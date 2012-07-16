@@ -2,6 +2,9 @@
 #include <SDL/SDL_opengl.h>
 #include <noise/noise.h>
 #include <iostream>
+
+#include "Camera.h"
+#include "Timer.h"
 #include "marchingcubes.h"
 
 #undef main
@@ -21,80 +24,19 @@ bool g_fullscreen = false;
 bool g_coords = false;
 bool g_polygonmode = false;
 
-
-
-// Camera
-#define LOOK_SENS 1.0f
-
-float fXAngle = 0.0f;
-float fYAngle = 0.0f;
-float g_fZoom = -10.0f;
-bool g_captureMouse = false;
-int g_mouseOriginX;
-int g_mouseOriginY;
-
-
-void CaptureMouse(bool bCapture)
-{
-    g_captureMouse = bCapture;
-
-    if(bCapture)
-    {
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        g_mouseOriginX = x;
-        g_mouseOriginY = y;
-    }
-}
-
-void SetViewByMouse()
-{
-    if(g_captureMouse)
-    {
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-
-        // Update rotation based on mouse input
-        fYAngle += LOOK_SENS * (float)(int)(g_mouseOriginX - x);
-
-        // Correct z angle to interval [0;360]
-        if(fYAngle >= 360.0f)
-            fYAngle -= 360.0f;
-
-        if(fYAngle < 0.0f)
-            fYAngle += 360.0f;
-
-        // Update up down view
-        fXAngle += LOOK_SENS * (float)(int)(g_mouseOriginY - y);
-
-        // Correct x angle to interval [0;360]
-        if(fXAngle >= 360.0f)
-            fXAngle -= 360.0f;
-
-        if(fXAngle < 0.0f)
-            fXAngle += 360.0f;
-
-        // Reset cursor
-        SDL_WarpMouse(g_mouseOriginX, g_mouseOriginY);
-    }
-
-    glRotatef(-fXAngle, 1.0f, 0.0f, 0.0f);
-    glRotatef(-fYAngle, 0.0f, 1.0f, 0.0f);
-}
+Camera camera;
 
 void ResizeGLScene(int width, int height)
 {
-    if (!height)
-    {
+    if (height <= 0)
         height = 1;
-    }
 
     glViewport(0, 0, width, height);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(45.0f, (float)width/(float)height, 0.1f, 100.0f);
+    gluPerspective(45.0f, (float)width/(float)height, 0.1f, 1000.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -131,15 +73,19 @@ void InitGL()
     cout << "DONE";
 }
 
-int DrawGLScene()
+void Update(double interval)
+{
+    camera.Update(interval);
+}
+
+void Render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    glTranslatef(0.0f, 0.0f, g_fZoom);
+    camera.Look();
 
-    SetViewByMouse();
-
+    glColor3f(1.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
     for(auto t : triangles)
     {
@@ -152,16 +98,18 @@ int DrawGLScene()
 
     if(g_coords)
     {
+        const int coordLength = 1000;
+
         glLineWidth(3.0f);
         glBegin(GL_LINES);
         glColor3f(1.0f,0.0f,0.0f); //red X+
-        glVertex3i(5,0,0);
+        glVertex3i(coordLength,0,0);
         glVertex3i(0,0,0);
         glColor3f(0.0f,1.0f,0.0f); //green Y+
-        glVertex3i(0,5,0);
+        glVertex3i(0,coordLength,0);
         glVertex3i(0,0,0);
         glColor3f(0.0f,0.0f,1.0f); //blue Z+
-        glVertex3i(0,0,5);
+        glVertex3i(0,0,coordLength);
         glVertex3i(0,0,0);
         glEnd();
 
@@ -169,17 +117,15 @@ int DrawGLScene()
         glBegin(GL_LINES);
         glColor3f(0.0f,0.4f,0.0f); //green Y-
         glVertex3i(0,0,0);
-        glVertex3i(0,-5,0);
+        glVertex3i(0,-coordLength,0);
         glColor3f(0.4f,0.0f,0.0f); //red X-
         glVertex3i(0,0,0);
-        glVertex3i(-5,0,0);
+        glVertex3i(-coordLength,0,0);
         glColor3f(0.0f,0.0f,0.4f); //blue Z-
         glVertex3i(0,0,0);
-        glVertex3i(0,0,-5);
+        glVertex3i(0,0,-coordLength);
         glEnd();
     }
-
-    return true;
 }
 
 bool CreateSDLWindow(int width, int height)
@@ -214,57 +160,51 @@ void ProcessEvent(SDL_Event event)
 {
     switch(event.type)
     {
-    case SDL_QUIT:
-        g_done = true;
-        return;
-    case SDL_KEYDOWN:
-        g_keys[event.key.keysym.sym] = true;
-        switch(event.key.keysym.sym)
-        {
-        case SDLK_c:
-            g_coords = !g_coords;
+        case SDL_QUIT:
+            g_done = true;
             return;
-        default:
+        case SDL_KEYDOWN:
+            g_keys[event.key.keysym.sym] = true;
+            switch(event.key.keysym.sym)
+            {
+                case SDLK_c:
+                    g_coords = !g_coords;
+                    return;
+                default:
+                    return;
+                case SDLK_p:
+                    g_polygonmode = !g_polygonmode;
+                    if(g_polygonmode)
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    else
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        case SDL_KEYUP:
+            g_keys[event.key.keysym.sym] = false;
             return;
-        case SDLK_p:
-            g_polygonmode = !g_polygonmode;
-            if(g_polygonmode)
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            else
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-    case SDL_KEYUP:
-        g_keys[event.key.keysym.sym] = false;
-        return;
-    case SDL_MOUSEBUTTONDOWN:
-        switch(event.button.button)
-        {
-        case SDL_BUTTON_RIGHT:
-            CaptureMouse(true);
-            SDL_ShowCursor(SDL_DISABLE);
+        case SDL_MOUSEBUTTONDOWN:
+            switch(event.button.button)
+            {
+                case SDL_BUTTON_RIGHT:
+                    camera.SetCaptureMouse(true);
+                    SDL_ShowCursor(SDL_DISABLE);
+                    return;
+                default:
+                    return;
+            }
+        case SDL_MOUSEBUTTONUP:
+            switch(event.button.button)
+            {
+                case SDL_BUTTON_RIGHT:
+                    camera.SetCaptureMouse(false);
+                    SDL_ShowCursor(SDL_ENABLE);
+                    return;
+                default:
+                    return;
+            }
+        case SDL_VIDEORESIZE:
+            ResizeGLScene(event.resize.w, event.resize.h);
             return;
-        case SDL_BUTTON_WHEELDOWN:
-            g_fZoom--;
-            return;
-        case SDL_BUTTON_WHEELUP:
-            g_fZoom++;
-            return;
-        default:
-            return;
-        }
-    case SDL_MOUSEBUTTONUP:
-        switch(event.button.button)
-        {
-        case SDL_BUTTON_RIGHT:
-            CaptureMouse(false);
-            SDL_ShowCursor(SDL_ENABLE);
-            return;
-        default:
-            return;
-        }
-    case SDL_VIDEORESIZE:
-        ResizeGLScene(event.resize.w, event.resize.h);
-        return;
     }
 }
 
@@ -272,6 +212,8 @@ int main(int argc, char **argv )
 {
     if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
         return 0;
+
+    Timer timer;
 
     while (!g_done)
     {
@@ -290,7 +232,9 @@ int main(int argc, char **argv )
                 }
                 else
                 {
-                    DrawGLScene();
+                    timer.Tick();
+                    Update(timer.interval);
+                    Render();
                     SDL_GL_SwapBuffers();
                 }
             }

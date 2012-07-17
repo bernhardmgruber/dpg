@@ -1,6 +1,8 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
+#include <CL/CL.h>
 #include <iostream>
+#include <fstream>
 
 #include "Camera.h"
 #include "Timer.h"
@@ -24,6 +26,11 @@ bool g_polygonmode = false;
 
 World world;
 
+cl_command_queue cmdqueue;
+cl_kernel kernel;
+cl_program program;
+cl_context context;
+
 void ResizeGLScene(int width, int height)
 {
     if (height <= 0)
@@ -40,7 +47,7 @@ void ResizeGLScene(int width, int height)
     glLoadIdentity();
 }
 
-void InitGL()
+bool InitGL()
 {
     glShadeModel(GL_SMOOTH);
     glClearColor(0.3f, 0.5f, 0.7f, 1.0f);
@@ -50,6 +57,71 @@ void InitGL()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     glEnable(GL_MULTISAMPLE);
+
+    return true;
+}
+
+#define CHECK(error) if(error != CL_SUCCESS) { cout << "Error at line " << __LINE__ << ": " << error << endl; }
+
+bool InitCL()
+{
+    cl_int error;
+
+    // get the first available platform
+    cl_platform_id platform;
+    error = clGetPlatformIDs(1, &platform, nullptr);
+    CHECK(error);
+
+    // get a GPU from this platform
+    cl_device_id device;
+    error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, nullptr);
+    CHECK(error);
+
+    // create a context to work with OpenCL
+    context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &error);
+    CHECK(error);
+
+    // read the kernel source
+    ifstream sourceFile("main.cl");
+    string buffer((istreambuf_iterator<char>(sourceFile)), istreambuf_iterator<char>());
+    sourceFile.close();
+    const char* source = buffer.c_str();
+
+    // create an OpenCL program from the source code
+    program = clCreateProgramWithSource(context, 1, &source, nullptr, &error);
+    CHECK(error);
+
+    // build the program
+    error = clBuildProgram(program, 1, &device, "-w", nullptr, nullptr);
+    if(error != CL_SUCCESS)
+    {
+        cout << "##### Error building CL program #####" << endl;
+
+        // get the error log size
+        size_t logSize;
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+
+        // allocate enough space and get the log
+        char* log = new char[logSize + 1];
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, nullptr);
+        log[logSize] = '\0';
+
+        // print the build log and delete it
+        cout << log << endl;
+        delete[] log;
+
+        return false;
+    }
+
+    // set the entry point for an OpenCL kernel
+    kernel = clCreateKernel(program, "MarchChunk", &error);
+    CHECK(error);
+
+    // create a new command queue, where kernels can be executed
+    cmdqueue = clCreateCommandQueue(context, device, 0, &error);
+    CHECK(error);
+
+    return true;
 }
 
 void Update(double interval)
@@ -120,7 +192,11 @@ bool CreateSDLWindow(int width, int height)
 
     SDL_WM_SetCaption(WINDOW_CAPTION, WINDOW_CAPTION);
 
-    InitGL();
+    if(!InitGL())
+        return false;
+    if(!InitCL())
+        return false;
+
     ResizeGLScene(height, width);
 
     return true;

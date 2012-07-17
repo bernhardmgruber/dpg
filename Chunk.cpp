@@ -20,7 +20,7 @@ Chunk* Chunk::fromNoise(Vector3D center)
     // gen noise cube
     noise::module::Perlin perlin;
 
-    const int size = RESOLUTION + 1;
+    const int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
     float* cube = new float[size * size * size];
 
     for(int x = 0; x < size; x++)
@@ -43,9 +43,9 @@ Chunk* Chunk::fromNoise(Vector3D center)
 Vector3D Chunk::ToWorld(int x, int y, int z)
 {
     Vector3D v;
-    v.x = center.x - SIZE / 2.0 + SIZE / RESOLUTION * x;
-    v.y = center.y - SIZE / 2.0 + SIZE / RESOLUTION * y;
-    v.z = center.z - SIZE / 2.0 + SIZE / RESOLUTION * z;
+    v.x = center.x - SIZE / 2.0 + SIZE / RESOLUTION * (x - 1);
+    v.y = center.y - SIZE / 2.0 + SIZE / RESOLUTION * (y - 1);
+    v.z = center.z - SIZE / 2.0 + SIZE / RESOLUTION * (z - 1);
     return v;
 }
 

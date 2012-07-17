@@ -22,27 +22,16 @@ Vector3D interpolate(float da, float db, Vector3D va, Vector3D vb)
     return result;
 }
 
-#define BLOCK_AT(x, y, z) (*(block + (x) * (Chunk::RESOLUTION + 1) * (Chunk::RESOLUTION + 1) + (y) * (Chunk::RESOLUTION + 1) + (z)))
+#define BLOCK_AT(x, y, z) (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)))
 
 void MarchChunk(Chunk& c, float* block)
 {
-    for(int x = 0; x < Chunk::RESOLUTION; x++)
+    for(int x = 1; x < Chunk::RESOLUTION + 1; x++)
     {
-        for(int y = 0; y < Chunk::RESOLUTION; y++)
+        for(int y = 1; y < Chunk::RESOLUTION + 1; y++)
         {
-            for(int z = 0; z < Chunk::RESOLUTION; z++)
+            for(int z = 1; z < Chunk::RESOLUTION + 1; z++)
             {
-                /*
-                float v0 = block[x][y][z];
-                float v1 = block[x][y][z+1];
-                float v2 = block[x+1][y][z+1];
-                float v3 = block[x+1][y][z];
-                float v4 = block[x][y+1][z];
-                float v5 = block[x][y+1][z+1];
-                float v6 = block[x+1][y+1][z+1];
-                float v7 = block[x+1][y+1][z];
-                */
-
                 float v0 = BLOCK_AT(x    , y    , z    );
                 float v1 = BLOCK_AT(x    , y    , z + 1);
                 float v2 = BLOCK_AT(x + 1, y    , z + 1);

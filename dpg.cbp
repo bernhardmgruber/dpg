@@ -39,6 +39,7 @@
 			<Add library="SDL" />
 			<Add library="opengl32" />
 			<Add library="glu32" />
+			<Add library="opencl" />
 			<Add directory="..\..\..\SDKs\SDL-1.2.14\lib" />
 		</Linker>
 		<Unit filename="Camera.cpp" />
@@ -49,7 +50,7 @@
 		<Unit filename="Timer.h" />
 		<Unit filename="World.cpp" />
 		<Unit filename="World.h" />
-		<Unit filename="dpg.layout" />
+		<Unit filename="main.cl" />
 		<Unit filename="main.cpp" />
 		<Unit filename="marchingcubes.cpp" />
 		<Unit filename="marchingcubes.h" />

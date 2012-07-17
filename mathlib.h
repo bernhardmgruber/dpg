@@ -39,6 +39,7 @@ struct Vector3D
 struct Triangle
 {
     Vector3D vertices[3];
+    Vector3D normals[3];
 };
 
 std::ostream& operator<<(std::ostream& os, Vector3D v);

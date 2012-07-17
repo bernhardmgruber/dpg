@@ -1,13 +1,15 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
-
 #include <noise/noise.h>
+#include <iostream>
 
 #include "marchingcubes.h"
 
 #include "Chunk.h"
 
-const float Chunk::SIZE = 10;
+using namespace std;
+
+const float Chunk::SIZE = 2;
 const int Chunk::RESOLUTION = 32;
 
 Chunk* Chunk::fromNoise(Vector3D center)
@@ -26,6 +28,7 @@ Chunk* Chunk::fromNoise(Vector3D center)
             for(int z = 0; z < size; z++)
             {
                 Vector3D world = c->ToWorld(x, y, z);
+                //cout << world << endl;
                 *(cube + x * size * size + y * size + z) = perlin.GetValue(world.x, world.y, world.z);
             }
 

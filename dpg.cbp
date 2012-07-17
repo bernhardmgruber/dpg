@@ -43,13 +43,18 @@
 		</Linker>
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.h" />
+		<Unit filename="Chunk.cpp" />
+		<Unit filename="Chunk.h" />
+		<Unit filename="Timer.cpp" />
+		<Unit filename="Timer.h" />
+		<Unit filename="World.cpp" />
+		<Unit filename="World.h" />
+		<Unit filename="dpg.layout" />
 		<Unit filename="main.cpp" />
 		<Unit filename="marchingcubes.cpp" />
 		<Unit filename="marchingcubes.h" />
 		<Unit filename="mathlib.cpp" />
 		<Unit filename="mathlib.h" />
-		<Unit filename="noiseutils.cpp" />
-		<Unit filename="noiseutils.h" />
 		<Unit filename="tables.inc" />
 		<Extensions>
 			<code_completion />

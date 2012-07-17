@@ -12,28 +12,43 @@ const int Chunk::RESOLUTION = 32;
 
 Chunk* Chunk::fromNoise(Vector3D center)
 {
+    Chunk* c = new Chunk();
+    c->center = center;
+
     // gen noise cube
     noise::module::Perlin perlin;
 
     const int size = RESOLUTION + 1;
-    float cube[size][size][size];
+    float* cube = new float[size * size * size];
 
     for(int x = 0; x < size; x++)
         for(int y = 0; y < size; y++)
             for(int z = 0; z < size; z++)
             {
-                float wx = center.x - SIZE / 2.0 + SIZE / RESOLUTION * x;
-                float wy = center.y - SIZE / 2.0 + SIZE / RESOLUTION * y;
-                float wz = center.z - SIZE / 2.0 + SIZE / RESOLUTION * z;
-                cube[x][y][z] = perlin.GetValue(wx, wy, wz);
+                Vector3D world = c->ToWorld(x, y, z);
+                *(cube + x * size * size + y * size + z) = perlin.GetValue(world.x, world.y, world.z);
             }
 
     // create geometry using marching cubes
-    Chunk* c = new Chunk();
-    c->center = center;
-    c->triangles = MarchBlock((float*)cube, RESOLUTION);
+    MarchChunk(*c, cube);
+
+    delete cube;
 
     return c;
+}
+
+Vector3D Chunk::ToWorld(int x, int y, int z)
+{
+    Vector3D v;
+    v.x = center.x - SIZE / 2.0 + SIZE / RESOLUTION * x;
+    v.y = center.y - SIZE / 2.0 + SIZE / RESOLUTION * y;
+    v.z = center.z - SIZE / 2.0 + SIZE / RESOLUTION * z;
+    return v;
+}
+
+Vector3D Chunk::GetCenter()
+{
+    return center;
 }
 
 void Chunk::Render()

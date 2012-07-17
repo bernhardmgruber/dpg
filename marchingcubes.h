@@ -6,7 +6,8 @@
 #include <vector>
 
 #include "mathlib.h"
+#include "Chunk.h"
 
-std::vector<Triangle> MarchBlock(float* cube, int size);
+void MarchChunk(Chunk& c, float* cube);
 
 #endif

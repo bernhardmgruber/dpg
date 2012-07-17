@@ -27,17 +27,15 @@ Vector3D interpolate(float da, float db, Vector3D va, Vector3D vb)
     return result;
 }
 
-#define BLOCK_AT(x, y, z) (*(block + x * size * size + y * size + z))
+#define BLOCK_AT(x, y, z) (*(block + x * (Chunk::RESOLUTION + 1) * (Chunk::RESOLUTION + 1) + y * (Chunk::RESOLUTION + 1) + z))
 
-vector<Triangle> MarchBlock(float* block, int size)
+void MarchChunk(Chunk& c, float* block)
 {
-    vector<Triangle> triangles;
-
-    for(int x = 0; x < size; x++)
+    for(int x = 0; x < Chunk::RESOLUTION; x++)
     {
-        for(int y = 0; y < size; y++)
+        for(int y = 0; y < Chunk::RESOLUTION; y++)
         {
-            for(int z = 0; z < size; z++)
+            for(int z = 0; z < Chunk::RESOLUTION; z++)
             {
                 /*
                 float v0 = block[x][y][z];
@@ -89,42 +87,42 @@ vector<Triangle> MarchBlock(float* block, int size)
                         switch(edgeIndex)
                         {
                         case 0:
-                            vertices.push_back(interpolate(v0, v1, position(x, y, z), position(x, y, z+1)));
+                            vertices.push_back(interpolate(v0, v1, c.ToWorld(x, y, z), c.ToWorld(x, y, z+1)));
                             break;
                         case 1:
-                            vertices.push_back(interpolate(v1, v2, position(x, y, z+1), position(x+1, y, z+1)));
+                            vertices.push_back(interpolate(v1, v2, c.ToWorld(x, y, z+1), c.ToWorld(x+1, y, z+1)));
                             break;
                         case 2:
-                            vertices.push_back(interpolate(v2, v3, position(x+1, y, z+1), position(x+1, y, z)));
+                            vertices.push_back(interpolate(v2, v3, c.ToWorld(x+1, y, z+1), c.ToWorld(x+1, y, z)));
                             break;
                         case 3:
-                            vertices.push_back(interpolate(v3, v0, position(x+1, y, z), position(x, y, z)));
+                            vertices.push_back(interpolate(v3, v0, c.ToWorld(x+1, y, z), c.ToWorld(x, y, z)));
                             break;
 
                         case 4:
-                            vertices.push_back(interpolate(v4, v5, position(x, y+1, z), position(x, y+1, z+1)));
+                            vertices.push_back(interpolate(v4, v5, c.ToWorld(x, y+1, z), c.ToWorld(x, y+1, z+1)));
                             break;
                         case 5:
-                            vertices.push_back(interpolate(v5, v6, position(x, y+1, z+1), position(x+1, y+1, z+1)));
+                            vertices.push_back(interpolate(v5, v6, c.ToWorld(x, y+1, z+1), c.ToWorld(x+1, y+1, z+1)));
                             break;
                         case 6:
-                            vertices.push_back(interpolate(v6, v7, position(x+1, y+1, z+1), position(x+1, y+1, z)));
+                            vertices.push_back(interpolate(v6, v7, c.ToWorld(x+1, y+1, z+1), c.ToWorld(x+1, y+1, z)));
                             break;
                         case 7:
-                            vertices.push_back(interpolate(v7, v4, position(x+1, y+1, z), position(x, y+1, z)));
+                            vertices.push_back(interpolate(v7, v4, c.ToWorld(x+1, y+1, z), c.ToWorld(x, y+1, z)));
                             break;
 
                         case 8:
-                            vertices.push_back(interpolate(v0, v4, position(x, y, z), position(x, y+1, z)));
+                            vertices.push_back(interpolate(v0, v4, c.ToWorld(x, y, z), c.ToWorld(x, y+1, z)));
                             break;
                         case 9:
-                            vertices.push_back(interpolate(v1, v5, position(x, y, z+1), position(x, y+1, z+1)));
+                            vertices.push_back(interpolate(v1, v5, c.ToWorld(x, y, z+1), c.ToWorld(x, y+1, z+1)));
                             break;
                         case 10:
-                            vertices.push_back(interpolate(v2, v6, position(x+1, y, z+1), position(x+1, y+1, z+1)));
+                            vertices.push_back(interpolate(v2, v6, c.ToWorld(x+1, y, z+1), c.ToWorld(x+1, y+1, z+1)));
                             break;
                         case 11:
-                            vertices.push_back(interpolate(v3, v7, position(x+1, y, z), position(x+1, y+1, z)));
+                            vertices.push_back(interpolate(v3, v7, c.ToWorld(x+1, y, z), c.ToWorld(x+1, y+1, z)));
                             break;
                         default:
                             cerr << "Invalid edge index: " << edgeIndex << endl;
@@ -134,11 +132,9 @@ vector<Triangle> MarchBlock(float* block, int size)
 
                     Triangle tri;
                     memcpy(tri.vertices, vertices.data(), sizeof(Vector3D) * 3);
-                    triangles.push_back(tri);
+                    c.triangles.push_back(tri);
                 }
             }
         }
     }
-
-    return triangles;
 }

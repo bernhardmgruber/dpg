@@ -13,6 +13,7 @@ class World
 
         void Update();
         void Render();
+
     private:
         std::vector<Chunk*> chunks;
 };

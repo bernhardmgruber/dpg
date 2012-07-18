@@ -9,9 +9,9 @@ using namespace std;
 
 #include "tables.inc"
 
-Vector3D interpolate(float da, float db, Vector3D va, Vector3D vb)
+Vector3F interpolate(float da, float db, Vector3F va, Vector3F vb)
 {
-    Vector3D result;
+    Vector3F result;
 
     float part = fabs(da) / (fabs(da) + fabs(db));
 
@@ -61,7 +61,7 @@ void MarchChunk(Chunk& c, float* block)
 
                 for(int t = 0; t < numTriangles; t++)
                 {
-                    vector<Vector3D> vertices;
+                    vector<Vector3F> vertices;
 
                     // for each edge
                     for(int e = 0; e < 3; e++)
@@ -90,7 +90,7 @@ void MarchChunk(Chunk& c, float* block)
                     }
 
                     Triangle tri;
-                    memcpy(tri.vertices, vertices.data(), sizeof(Vector3D) * 3);
+                    memcpy(tri.vertices, vertices.data(), sizeof(Vector3F) * 3);
                     c.triangles.push_back(tri);
                 }
             }

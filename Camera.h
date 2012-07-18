@@ -20,7 +20,7 @@ public:
     /**
      * Returns the current position of the camera.
      */
-    Vector3D GetPosition();
+    Vector3F GetPosition();
 
     /**
      * Sets the position of the camera.
@@ -30,17 +30,17 @@ public:
     /**
      * Sets the position of the camera.
      */
-    void SetPosition(Vector3D v);
+    void SetPosition(Vector3F v);
 
     /**
      * Returns a vector containing the current view angles.
      */
-    Vector2D GetViewAngles();
+    Vector2F GetViewAngles();
 
     /**
      * Returns a vector pointing representing the current view direction.
      */
-    Vector3D GetViewVector();
+    Vector3F GetViewVector();
 
     /**
      * Sets the current view angles.
@@ -50,7 +50,7 @@ public:
     /**
      * Sets the current view angles.
      */
-    void SetPosition(Vector2D v);
+    void SetPosition(Vector2F v);
 
     /**
      * Returns the current movement sensitivity.
@@ -89,7 +89,7 @@ private:
     void operator=(Camera const&); // No implementation, prevent copying singleton
 
     /** The current position */
-    Vector3D position;
+    Vector3F position;
 
     /** If true, the mouse movement is captured to determine the view angles. */
     bool captureMouse;
@@ -107,7 +107,7 @@ private:
     float lookSens;
 
     /** Pixel coords of the origin of the mouse. */
-    Vector2D mouseOrigin;
+    Vector2F mouseOrigin;
 };
 
 #endif // CAMERA_H_INCLUDED

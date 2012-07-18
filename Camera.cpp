@@ -29,7 +29,7 @@ Camera& Camera::GetInstance()
     return camera;
 }
 
-Vector3D Camera::GetPosition()
+Vector3F Camera::GetPosition()
 {
     return position;
 }
@@ -41,22 +41,22 @@ void Camera::SetPosition(float fx, float fy, float fz)
     position.z = fz;
 }
 
-void Camera::SetPosition(Vector3D v)
+void Camera::SetPosition(Vector3F v)
 {
     position = v;
 }
 
-Vector2D Camera::GetViewAngles()
+Vector2F Camera::GetViewAngles()
 {
-    Vector2D vec;
+    Vector2F vec;
     vec.x = pitch;
     vec.y = yaw;
     return vec;
 }
 
-Vector3D Camera::GetViewVector()
+Vector3F Camera::GetViewVector()
 {
-    Vector3D v;
+    Vector3F v;
     v.x = 1;
     v.y = 0;
     v.z = 0;
@@ -76,7 +76,7 @@ void Camera::SetViewAngles(float pitch, float yaw)
     this->yaw = yaw;
 }
 
-void Camera::SetPosition(Vector2D v)
+void Camera::SetPosition(Vector2F v)
 {
     pitch = v.x;
     yaw = v.y;

@@ -194,8 +194,8 @@ bool CreateSDLWindow(int width, int height)
 
     if(!InitGL())
         return false;
-    if(!InitCL())
-        return false;
+    //if(!InitCL())
+    //    return false;
 
     ResizeGLScene(height, width);
 

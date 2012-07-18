@@ -8,27 +8,32 @@
 class Chunk
 {
     public:
-        static Chunk* fromNoise(Vector3D center);
+        static Chunk* fromNoise(Vector3I center);
 
         /**
          * Converts a density value coordinate to a world coordinate.
          */
-        Vector3D ToWorld(int x, int y, int z);
+        Vector3F ToWorld(int x, int y, int z);
 
         static const float SIZE;
         static const int RESOLUTION;
 
-        Vector3D GetCenter();
+        Vector3I GetCenter();
 
         void Render();
 
     private:
         Chunk();
-        Vector3D center;
+
+        Vector3I center;
 
         std::vector<Triangle> triangles;
 
+        /** Set to true by World::RecursiceChunkCheck to avoid infinite recursion. */
+        bool marked;
+
     friend void MarchChunk(Chunk& c, float* block);
+    friend class World;
 };
 
 #endif // CHUNK_H

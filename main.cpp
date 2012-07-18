@@ -1,6 +1,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
 #include <CL/CL.h>
+#include <CL/cl_gl.h>
 #include <iostream>
 #include <fstream>
 
@@ -23,6 +24,8 @@ bool g_fullscreen = false;
 
 bool g_coords = false;
 bool g_polygonmode = false;
+
+Timer timer;
 
 World world;
 
@@ -77,8 +80,15 @@ bool InitCL()
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, nullptr);
     CHECK(error);
 
+    // set properties to work with OpenGL (WINDOWS only) from: http://www.dyn-lab.com/articles/cl-gl.html
+    cl_context_properties properties[] = {
+        CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
+        CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties) platform,
+        0};
+
     // create a context to work with OpenCL
-    context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &error);
+    context = clCreateContext(properties, 1, &device, nullptr, nullptr, &error);
     CHECK(error);
 
     // read the kernel source
@@ -95,7 +105,7 @@ bool InitCL()
     error = clBuildProgram(program, 1, &device, "-w", nullptr, nullptr);
     if(error != CL_SUCCESS)
     {
-        cout << "##### Error building CL program #####" << endl;
+        cerr << "##### Error building CL program #####" << endl;
 
         // get the error log size
         size_t logSize;
@@ -107,14 +117,14 @@ bool InitCL()
         log[logSize] = '\0';
 
         // print the build log and delete it
-        cout << log << endl;
+        cerr << log << endl;
         delete[] log;
 
         return false;
     }
 
     // set the entry point for an OpenCL kernel
-    kernel = clCreateKernel(program, "MarchChunk", &error);
+    kernel = clCreateKernel(program, "GenChunk", &error);
     CHECK(error);
 
     // create a new command queue, where kernels can be executed
@@ -194,8 +204,8 @@ bool CreateSDLWindow(int width, int height)
 
     if(!InitGL())
         return false;
-    //if(!InitCL())
-    //    return false;
+    if(!InitCL())
+        return false;
 
     ResizeGLScene(height, width);
 
@@ -258,8 +268,6 @@ int main(int argc, char **argv )
 {
     if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
         return 0;
-
-    Timer timer;
 
     while (!g_done)
     {

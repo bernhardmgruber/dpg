@@ -1,13 +1,21 @@
 #include <cmath>
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
 #include "Camera.h"
 
 using namespace std;
+using namespace glm;
 
-extern bool g_keys[SDLK_LAST];
+extern SDL_Window* mainwindow;
+extern GLuint uModelViewProjectionMatrixLocation;
+extern mat4 projectionMatrix;
 
 Camera::Camera()
 {
@@ -134,41 +142,43 @@ void Camera::Update(double interval)
             pitch = 90.0f;
 
         // Reset cursor
-        SDL_WarpMouse(mouseOrigin.x, mouseOrigin.y);
+        SDL_WarpMouseInWindow(mainwindow, mouseOrigin.x, mouseOrigin.y);
     }
 
     float tmpMoveSens = moveSens * interval;
 
-    if (g_keys[SDLK_SPACE]) // UP
+    Uint8* keys = SDL_GetKeyboardState(nullptr);
+
+    if (keys[SDL_SCANCODE_SPACE]) // UP
     {
         position.y += tmpMoveSens;
     }
 
-    if (g_keys[SDLK_LCTRL]) // DOWN
+    if (keys[SDL_SCANCODE_LCTRL]) // DOWN
     {
         position.y -= tmpMoveSens;
     }
 
     // TODO: If strafing and moving reduce speed to keep total move per frame constant
-    if (g_keys[SDLK_w]) // FORWARD
+    if (keys[SDL_SCANCODE_W]) // FORWARD
     {
         position.x -= sin(DEGTORAD(yaw)) * tmpMoveSens;
         position.z -= cos(DEGTORAD(yaw)) * tmpMoveSens;
     }
 
-    if (g_keys[SDLK_s]) // BACKWARD
+    if (keys[SDL_SCANCODE_S]) // BACKWARD
     {
         position.x += sin(DEGTORAD(yaw)) * tmpMoveSens;
         position.z += cos(DEGTORAD(yaw)) * tmpMoveSens;
     }
 
-    if (g_keys[SDLK_a]) // LEFT
+    if (keys[SDL_SCANCODE_A]) // LEFT
     {
         position.x -= sin(DEGTORAD(yaw + 90.0f)) * tmpMoveSens;
         position.z -= cos(DEGTORAD(yaw + 90.0f)) * tmpMoveSens;
     }
 
-    if (g_keys[SDLK_d]) // RIGHT
+    if (keys[SDL_SCANCODE_D]) // RIGHT
     {
         position.x -= sin(DEGTORAD(yaw - 90.0f)) * tmpMoveSens;
         position.z -= cos(DEGTORAD(yaw - 90.0f)) * tmpMoveSens;
@@ -177,9 +187,11 @@ void Camera::Update(double interval)
 
 void Camera::Look()
 {
-    glRotatef(-pitch, 1.0f, 0.0f, 0.0f);
-    glRotatef(-yaw, 0.0f, 1.0f, 0.0f);
-    glTranslatef(-position.x, -position.y, -position.z);
+    mat4 modelViewMatrix = rotate(mat4(1.0), -pitch, vec3(1.0, 0.0, 0.0));
+    modelViewMatrix = rotate(modelViewMatrix, -yaw, vec3(0.0, 1.0, 0.0));
+    modelViewMatrix = translate(modelViewMatrix, vec3(-position.x, -position.y, -position.z));
+
+    glUniformMatrix4fv(uModelViewProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix * modelViewMatrix));
 
     //cout << "Look: " << "Pitch " << pitch << " Yaw " << yaw << " Position " << position << endl;
 }

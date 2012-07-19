@@ -1,5 +1,9 @@
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_opengl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <CL/CL.h>
 #include <CL/cl_gl.h>
 #include <iostream>
@@ -11,19 +15,25 @@
 
 #undef main
 
-#define WINDOW_HEIGHT 1024
-#define WINDOW_WIDTH 768
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 768
 #define WINDOW_CAPTION "noise"
 
 using namespace std;
+using namespace glm;
 
 bool g_active = true;
 bool g_done = false;
-bool g_keys[SDLK_LAST] = {false};
 bool g_fullscreen = false;
 
 bool g_coords = false;
 bool g_polygonmode = false;
+
+SDL_Window* mainwindow;
+SDL_GLContext maincontext;
+
+GLuint shaderProgram;
+GLuint uModelViewProjectionMatrixLocation;
 
 Timer timer;
 
@@ -34,8 +44,28 @@ cl_kernel kernel;
 cl_program program;
 cl_context context;
 
+mat4 projectionMatrix;
+
+bool ReadFile(const char* fileName, string& buffer)
+{
+    ifstream sourceFile(fileName);
+    if(!sourceFile)
+    {
+        cerr << "Error opening file " << fileName << endl;
+        return false;
+    }
+
+    buffer = string((istreambuf_iterator<char>(sourceFile)), istreambuf_iterator<char>());
+
+    sourceFile.close();
+
+    return true;
+}
+
 void ResizeGLScene(int width, int height)
 {
+    cout << "Resize " << width << "x" << height << endl;
+
     if (height <= 0)
         height = 1;
 
@@ -44,7 +74,7 @@ void ResizeGLScene(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(45.0f, (float)width/(float)height, 0.1f, 1000.0f);
+    projectionMatrix = glm::perspective(45.0f, (float)width/(float)height, 0.1f, 100.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -60,6 +90,34 @@ bool InitGL()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     glEnable(GL_MULTISAMPLE);
+
+    // Shaders
+    GLuint vsMain = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fsMain = glCreateShader(GL_FRAGMENT_SHADER);
+
+    string buffer;
+    const char* source;
+    if (!ReadFile("shaders/main.vert", buffer))
+        return false;
+    source = buffer.c_str();
+    glShaderSource(vsMain, 1, (const char**)&source, nullptr);
+    if (!ReadFile("shaders/main.frag", buffer))
+        return false;
+    source = buffer.c_str();
+    glShaderSource(fsMain, 1, (const char**)&source, nullptr);
+
+    glCompileShader(vsMain);
+    glCompileShader(fsMain);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vsMain);
+    glAttachShader(shaderProgram, fsMain);
+
+    glLinkProgram(shaderProgram);
+
+    uModelViewProjectionMatrixLocation = glGetUniformLocation(shaderProgram, "uModelViewProjectionMatrix");
+
+    glUseProgram(shaderProgram);
 
     return true;
 }
@@ -92,9 +150,9 @@ bool InitCL()
     CHECK(error);
 
     // read the kernel source
-    ifstream sourceFile("main.cl");
-    string buffer((istreambuf_iterator<char>(sourceFile)), istreambuf_iterator<char>());
-    sourceFile.close();
+    string buffer;
+    if(!ReadFile("kernels/main.cl", buffer))
+        return false;
     const char* source = buffer.c_str();
 
     // create an OpenCL program from the source code
@@ -182,34 +240,51 @@ void Render()
 
 bool CreateSDLWindow(int width, int height)
 {
-    if (SDL_Init(SDL_INIT_VIDEO))
+    if(SDL_Init(SDL_INIT_VIDEO))
     {
-        fprintf(stderr, "Could not initialize SDL\n");
+        cerr << "Could not initialize SDL." << endl;
         return false;
-    };
+    }
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     // enable 2x anti-aliasing
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-    unsigned int flags = SDL_OPENGL | SDL_RESIZABLE;
+    unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
     if(g_fullscreen)
-        flags |= SDL_FULLSCREEN;
+        flags |= SDL_WINDOW_FULLSCREEN;
 
-    SDL_SetVideoMode(height, width, 0, flags);
-
-    SDL_WM_SetCaption(WINDOW_CAPTION, WINDOW_CAPTION);
-
-    if(!InitGL())
+    mainwindow = SDL_CreateWindow(WINDOW_CAPTION, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+    if (mainwindow == nullptr)
+    {
+        cerr << "Unable to create window" << endl;
         return false;
-    if(!InitCL())
-        return false;
+    }
 
-    ResizeGLScene(height, width);
+    maincontext = SDL_GL_CreateContext(mainwindow);
+
+    // GLEW
+    GLenum error = glewInit();
+    if(error != GLEW_OK)
+    {
+        cerr << "Could not initialize GLEW." << endl;
+        return false;
+    }
 
     return true;
+}
+
+void DestroySDLWindow()
+{
+    SDL_GL_DeleteContext(maincontext);
+    SDL_DestroyWindow(mainwindow);
+    SDL_Quit();
 }
 
 void ProcessEvent(SDL_Event event)
@@ -220,13 +295,10 @@ void ProcessEvent(SDL_Event event)
             g_done = true;
             return;
         case SDL_KEYDOWN:
-            g_keys[event.key.keysym.sym] = true;
             switch(event.key.keysym.sym)
             {
                 case SDLK_c:
                     g_coords = !g_coords;
-                    return;
-                default:
                     return;
                 case SDLK_p:
                     g_polygonmode = !g_polygonmode;
@@ -234,16 +306,29 @@ void ProcessEvent(SDL_Event event)
                         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     else
                         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    return;
+                case SDLK_ESCAPE:
+                    g_done = true;
+                    return;
+
+                case SDLK_F1:
+                    SDL_Quit();
+                    g_fullscreen = !g_fullscreen;
+
+                    if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
+                        g_done = true;
+                    return;
+                default:
+                    return;
             }
         case SDL_KEYUP:
-            g_keys[event.key.keysym.sym] = false;
             return;
         case SDL_MOUSEBUTTONDOWN:
             switch(event.button.button)
             {
                 case SDL_BUTTON_RIGHT:
                     Camera::GetInstance().SetCaptureMouse(true);
-                    SDL_ShowCursor(SDL_DISABLE);
+                    //SDL_ShowCursor(SDL_DISABLE);
                     return;
                 default:
                     return;
@@ -258,16 +343,29 @@ void ProcessEvent(SDL_Event event)
                 default:
                     return;
             }
-        case SDL_VIDEORESIZE:
-            ResizeGLScene(event.resize.w, event.resize.h);
-            return;
+        case SDL_WINDOWEVENT:
+            switch(event.window.event)
+            {
+                case SDL_WINDOWEVENT_RESIZED:
+                    ResizeGLScene(event.window.data1, event.window.data2);
+                    return;
+                default:
+                    return;
+            }
     }
 }
 
 int main(int argc, char **argv )
 {
     if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
-        return 0;
+        return -1;
+
+    if(!InitGL())
+        return -1;
+    if(!InitCL())
+        return -1;
+
+    ResizeGLScene(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     while (!g_done)
     {
@@ -280,31 +378,15 @@ int main(int argc, char **argv )
         {
             if (g_active)
             {
-                if (g_keys[SDLK_ESCAPE])
-                {
-                    g_done = true;
-                }
-                else
-                {
-                    timer.Tick();
-                    Update(timer.interval);
-                    Render();
-                    SDL_GL_SwapBuffers();
-                }
-            }
-
-            if (g_keys[SDLK_F1])
-            {
-                g_keys[SDLK_F1] = false;
-                SDL_Quit();
-                g_fullscreen =! g_fullscreen;
-
-                if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
-                    return 0;
+                timer.Tick();
+                Update(timer.interval);
+                Render();
+                SDL_GL_SwapWindow(mainwindow);
             }
         }
     }
 
-    SDL_Quit();
+    DestroySDLWindow();
+
     return 0;
 }

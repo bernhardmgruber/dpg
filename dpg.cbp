@@ -32,15 +32,16 @@
 			<Add option="-std=c++0x" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
-			<Add directory="..\..\..\SDKs\SDL-1.2.14\include" />
+			<Add directory="D:\SDKs\SDL-2.0.0-6275\include" />
 		</Compiler>
 		<Linker>
+			<Add library="glew32s" />
 			<Add library="noise" />
-			<Add library="SDL" />
+			<Add library="SDL2" />
 			<Add library="opengl32" />
 			<Add library="glu32" />
 			<Add library="opencl" />
-			<Add directory="..\..\..\SDKs\SDL-1.2.14\lib" />
+			<Add directory="D:\SDKs\SDL-2.0.0-6275\lib" />
 		</Linker>
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.h" />
@@ -50,12 +51,14 @@
 		<Unit filename="Timer.h" />
 		<Unit filename="World.cpp" />
 		<Unit filename="World.h" />
-		<Unit filename="main.cl" />
+		<Unit filename="kernels\main.cl" />
 		<Unit filename="main.cpp" />
 		<Unit filename="marchingcubes.cpp" />
 		<Unit filename="marchingcubes.h" />
 		<Unit filename="mathlib.cpp" />
 		<Unit filename="mathlib.h" />
+		<Unit filename="shaders\main.frag" />
+		<Unit filename="shaders\main.vert" />
 		<Unit filename="tables.inc" />
 		<Extensions>
 			<code_completion />

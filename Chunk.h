@@ -14,6 +14,7 @@ class Chunk
          * Converts a density value coordinate to a world coordinate.
          */
         Vector3F ToWorld(int x, int y, int z);
+        Vector3F ToWorld(Vector3F in);
 
         static const float SIZE;
         static const int RESOLUTION;

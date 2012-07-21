@@ -16,7 +16,7 @@ World::~World()
     chunks.clear();
 }
 
-#define CAMERA_CHUNK_RADIUS 2
+#define CAMERA_CHUNK_RADIUS 1
 
 void World::Update()
 {

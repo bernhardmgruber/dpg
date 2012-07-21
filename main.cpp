@@ -34,6 +34,7 @@ SDL_GLContext maincontext;
 
 GLuint shaderProgram;
 GLuint uModelViewProjectionMatrixLocation;
+GLuint uModelViewMatrixLocation;
 
 Timer timer;
 
@@ -48,7 +49,7 @@ mat4 projectionMatrix;
 
 bool ReadFile(const char* fileName, string& buffer)
 {
-    ifstream sourceFile(fileName);
+    ifstream sourceFile(fileName, ios::binary | ios::in);
     if(!sourceFile)
     {
         cerr << "Error opening file " << fileName << endl;
@@ -109,13 +110,51 @@ bool InitGL()
     glCompileShader(vsMain);
     glCompileShader(fsMain);
 
+    // check shader status
+    GLuint shaders[] = {vsMain, fsMain};
+    for(GLuint shader : shaders)
+    {
+        GLint status;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+        if (status == GL_FALSE)
+        {
+            GLint length;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+            char* infoLog = new char[length];
+            glGetShaderInfoLog(shader, length, nullptr, infoLog);
+
+            cout << infoLog << endl;
+            delete[] infoLog;
+            return false;
+        }
+    }
+
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vsMain);
     glAttachShader(shaderProgram, fsMain);
 
     glLinkProgram(shaderProgram);
 
+    // check program status
+    {
+        GLint status;
+        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
+        if (status == GL_FALSE)
+        {
+            GLint length;
+            glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &length);
+            char* infoLog = new char[length];
+            glGetProgramInfoLog(shaderProgram, length, nullptr, infoLog);
+
+            cout << infoLog << endl;
+            delete[] infoLog;
+            return false;
+        }
+    }
+
     uModelViewProjectionMatrixLocation = glGetUniformLocation(shaderProgram, "uModelViewProjectionMatrix");
+    uModelViewMatrixLocation = glGetUniformLocation(shaderProgram, "uModelViewMatrix");
 
     glUseProgram(shaderProgram);
 
@@ -352,6 +391,8 @@ void ProcessEvent(SDL_Event event)
                 default:
                     return;
             }
+        default:
+            return;
     }
 }
 
@@ -371,18 +412,13 @@ int main(int argc, char **argv )
     {
         SDL_Event event;
         if (SDL_PollEvent(&event))
-        {
             ProcessEvent(event);
-        }
-        else
+        else if (g_active)
         {
-            if (g_active)
-            {
-                timer.Tick();
-                Update(timer.interval);
-                Render();
-                SDL_GL_SwapWindow(mainwindow);
-            }
+            timer.Tick();
+            Update(timer.interval);
+            Render();
+            SDL_GL_SwapWindow(mainwindow);
         }
     }
 

@@ -15,6 +15,7 @@ using namespace glm;
 
 extern SDL_Window* mainwindow;
 extern GLuint uModelViewProjectionMatrixLocation;
+extern GLuint uModelViewMatrixLocation;
 extern mat4 projectionMatrix;
 
 Camera::Camera()
@@ -192,6 +193,7 @@ void Camera::Look()
     modelViewMatrix = translate(modelViewMatrix, vec3(-position.x, -position.y, -position.z));
 
     glUniformMatrix4fv(uModelViewProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix * modelViewMatrix));
+    glUniformMatrix4fv(uModelViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
 
     //cout << "Look: " << "Pitch " << pitch << " Yaw " << yaw << " Position " << position << endl;
 }

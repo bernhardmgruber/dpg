@@ -1,8 +1,8 @@
 #include <cmath>
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL.h>
+#include <SDL_opengl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -148,7 +148,7 @@ void Camera::Update(double interval)
 
     float tmpMoveSens = moveSens * interval;
 
-    Uint8* keys = SDL_GetKeyboardState(nullptr);
+    const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
     if (keys[SDL_SCANCODE_SPACE]) // UP
     {

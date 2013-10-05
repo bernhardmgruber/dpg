@@ -1,5 +1,5 @@
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL.h>
+#include <SDL_opengl.h>
 #include <noise/noise.h>
 #include <iostream>
 
@@ -10,37 +10,15 @@
 using namespace std;
 using namespace noise;
 
-const float Chunk::SIZE = 0.5;
-const int Chunk::RESOLUTION = 8;
+const float Chunk::SIZE = 2;
+const int Chunk::RESOLUTION = 32;
 
 Chunk* Chunk::fromNoise(Vector3I center)
 {
     Chunk* c = new Chunk();
     c->center = center;
 
-    // gen noise cube
-    /*module::RidgedMulti mountainTerrain;
-
-    module::Billow baseFlatTerrain;
-    baseFlatTerrain.SetFrequency (2.0);
-
-    module::ScaleBias flatTerrain;
-    flatTerrain.SetSourceModule (0, baseFlatTerrain);
-    flatTerrain.SetScale (0.125);
-    flatTerrain.SetBias (-0.75);
-
-    module::Perlin terrainType;
-    terrainType.SetFrequency (0.5);
-    terrainType.SetPersistence (0.25);
-
-    module::Select finalTerrain;
-    finalTerrain.SetSourceModule (0, flatTerrain);
-    finalTerrain.SetSourceModule (1, mountainTerrain);
-    finalTerrain.SetControlModule (terrainType);
-    finalTerrain.SetBounds (0.0, 1000.0);
-    finalTerrain.SetEdgeFalloff (0.125);*/
-
-    module::Perlin finalTerrain;
+    module::Perlin perlin;
 
     const int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
     float* cube = new float[size * size * size];
@@ -51,7 +29,7 @@ Chunk* Chunk::fromNoise(Vector3I center)
             {
                 Vector3F world = c->ToWorld(x, y, z);
                 //cout << world << endl;
-                *(cube + x * size * size + y * size + z) = finalTerrain.GetValue(world.x, world.y, world.z);
+                *(cube + x * size * size + y * size + z) = perlin.GetValue(world.x, world.y, world.z);
             }
 
     // create geometry using marching cubes

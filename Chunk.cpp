@@ -8,7 +8,6 @@
 #include "Chunk.h"
 
 using namespace std;
-using namespace noise;
 
 const float Chunk::SIZE = 2;
 const int Chunk::RESOLUTION = 32;
@@ -18,7 +17,9 @@ Chunk* Chunk::fromNoise(Vector3I center)
     Chunk* c = new Chunk();
     c->center = center;
 
-    module::Perlin perlin;
+    noise::module::Perlin perlin;
+	//perlin.SetOctaveCount(5);
+	perlin.SetFrequency(0.5);
 
     const int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
     float* cube = new float[size * size * size];
@@ -29,7 +30,7 @@ Chunk* Chunk::fromNoise(Vector3I center)
             {
                 Vector3F world = c->ToWorld(x, y, z);
                 //cout << world << endl;
-                *(cube + x * size * size + y * size + z) = perlin.GetValue(world.x, world.y, world.z);
+                *(cube + x * size * size + y * size + z) = (float)perlin.GetValue(world.x, world.y, world.z);
             }
 
     // create geometry using marching cubes
@@ -43,18 +44,18 @@ Chunk* Chunk::fromNoise(Vector3I center)
 Vector3F Chunk::ToWorld(int x, int y, int z)
 {
     Vector3F v;
-    v.x = center.x - SIZE / 2.0 + SIZE / RESOLUTION * (x - 1);
-    v.y = center.y - SIZE / 2.0 + SIZE / RESOLUTION * (y - 1);
-    v.z = center.z - SIZE / 2.0 + SIZE / RESOLUTION * (z - 1);
+    v.x = center.x - SIZE / 2.0f + SIZE / RESOLUTION * (x - 1);
+    v.y = center.y - SIZE / 2.0f + SIZE / RESOLUTION * (y - 1);
+    v.z = center.z - SIZE / 2.0f + SIZE / RESOLUTION * (z - 1);
     return v;
 }
 
 Vector3F Chunk::ToWorld(Vector3F in)
 {
     Vector3F v;
-    v.x = center.x - SIZE / 2.0 + SIZE / RESOLUTION * (in.x - 1);
-    v.y = center.y - SIZE / 2.0 + SIZE / RESOLUTION * (in.y - 1);
-    v.z = center.z - SIZE / 2.0 + SIZE / RESOLUTION * (in.z - 1);
+    v.x = center.x - SIZE / 2.0f + SIZE / RESOLUTION * (in.x - 1);
+    v.y = center.y - SIZE / 2.0f + SIZE / RESOLUTION * (in.y - 1);
+    v.z = center.z - SIZE / 2.0f + SIZE / RESOLUTION * (in.z - 1);
     return v;
 }
 
@@ -72,7 +73,7 @@ void Chunk::Render()
         glNormal3fv((float*)&t.normals[0]);
         glVertex3fv((float*)&t.vertices[0]);
         glNormal3fv((float*)&t.normals[1]);
-        glVertex3fv((float*)&t.vertices[1]);
+        glVertex3fv((float* )&t.vertices[1]);
         glNormal3fv((float*)&t.normals[2]);
         glVertex3fv((float*)&t.vertices[2]);
     }
@@ -85,15 +86,15 @@ void Chunk::Render()
         Vector3F v;
         v = t.vertices[0];
         glVertex3fv((float*)&v);
-        v = t.vertices[0] + t.normals[0] * 0.05;
+        v = t.vertices[0] + t.normals[0] * 0.05f;
         glVertex3fv((float*)&v);
         v = t.vertices[1];
         glVertex3fv((float*)&v);
-        v = t.vertices[1] + t.normals[1] * 0.05;
+        v = t.vertices[1] + t.normals[1] * 0.05f;
         glVertex3fv((float*)&v);
         v = t.vertices[2];
         glVertex3fv((float*)&v);
-        v = t.vertices[2] + t.normals[2] * 0.05;
+        v = t.vertices[2] + t.normals[2] * 0.05f;
         glVertex3fv((float*)&v);
     }
     glEnd();

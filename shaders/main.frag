@@ -28,5 +28,5 @@ void main()
 
    // write Total Color:
    gl_FragColor = Iamb + Idiff + Ispec;
-   gl_FragColor = gl_Color;
+   //gl_FragColor = gl_Color;
 }

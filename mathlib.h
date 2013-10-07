@@ -41,10 +41,15 @@ struct Vector3
 typedef Vector3<float> Vector3F;
 typedef Vector3<int> Vector3I;
 
+struct Vertex
+{
+    Vector3F position;
+    Vector3F normal;
+};
+
 struct Triangle
 {
-    Vector3F vertices[3];
-    Vector3F normals[3];
+	Vertex vertices[3];
 };
 
 std::ostream& operator<<(std::ostream& os, Vector3F v);

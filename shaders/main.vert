@@ -1,17 +1,17 @@
 uniform mat4 uModelViewProjectionMatrix;
 uniform mat4 uModelViewMatrix;
 
-//attribute vec3 aVertex;
-//attribute vec3 aNormal;
+layout(location = 0) in vec3 aVertex;
+layout(location = 1) in vec3 aNormal;
 
-varying vec3 vVertex;
-varying vec3 vNormal;
+out vec3 vVertex;
+out vec3 vNormal;
 
 void main()
 {
-	vVertex = vec3(gl_Vertex);
-	vNormal = gl_Normal;
+	vVertex = aVertex;
+	vNormal = aNormal;
 
-	gl_Position = uModelViewProjectionMatrix * gl_Vertex;
+	gl_Position = uModelViewProjectionMatrix * vec4(aVertex, 1.0);
 	//gl_FrontColor = gl_Color;
 }

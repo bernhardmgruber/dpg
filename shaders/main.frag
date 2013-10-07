@@ -1,5 +1,3 @@
-#version 150
-
 in vec3 vVertex;
 in vec3 vNormal;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #include <vector>
 
 #include "mathlib.h"
@@ -88,6 +89,9 @@ private:
 
 	std::vector<Triangle> triangles;
 
+	GLuint bufferId;
+
+	void createBuffers();
+
 	friend void MarchChunk(Chunk& c, float* block);
-	friend class World;
 };

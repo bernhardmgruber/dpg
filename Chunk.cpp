@@ -1,5 +1,3 @@
-#include <SDL.h>
-#include <SDL_opengl.h>
 #include <noise/noise.h>
 #include <iostream>
 
@@ -32,11 +30,14 @@ Chunk::Chunk(Vector3I position)
 
     // create geometry using marching cubes
     MarchChunk(*this, densities);
+
+	createBuffers();
 }
 
 Chunk::~Chunk()
 {
 	delete[] densities;
+	glDeleteBuffers(1, &bufferId);
 }
 
 const Vector3I Chunk::getPosition() const
@@ -47,17 +48,27 @@ const Vector3I Chunk::getPosition() const
 void Chunk::render() const
 {
     //glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_TRIANGLES);
-    for(auto t : triangles)
-    {
-        glNormal3fv((float*)&t.normals[0]);
-        glVertex3fv((float*)&t.vertices[0]);
-        glNormal3fv((float*)&t.normals[1]);
-        glVertex3fv((float* )&t.vertices[1]);
-        glNormal3fv((float*)&t.normals[2]);
-        glVertex3fv((float*)&t.vertices[2]);
-    }
-    glEnd();
+    //glBegin(GL_TRIANGLES);
+    //for(auto t : triangles)
+    //{
+    //    glNormal3fv((float*)&t.normals[0]);
+    //    glVertex3fv((float*)&t.vertices[0]);
+    //    glNormal3fv((float*)&t.normals[1]);
+    //    glVertex3fv((float* )&t.vertices[1]);
+    //    glNormal3fv((float*)&t.normals[2]);
+    //    glVertex3fv((float*)&t.vertices[2]);
+    //}
+    //glEnd();
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(Vector3F), (const GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(Vector3F), (const GLvoid*)sizeof(Vector3F));
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)triangles.size() * 3);
 
     //glColor3f(1.0, 0.0, 0.0);
     //glBegin(GL_LINES);
@@ -92,4 +103,11 @@ const ChunkMemoryFootprint Chunk::getMemoryFootprint() const
 	mem.triangleSize = sizeof(Triangle);
 
 	return mem;
+}
+
+void Chunk::createBuffers()
+{
+	glGenBuffers(1, &bufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+	glBufferData(GL_ARRAY_BUFFER, triangles.size() * sizeof(triangles[0]), triangles.data(), GL_STATIC_DRAW);
 }

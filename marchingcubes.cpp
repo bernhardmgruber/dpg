@@ -106,12 +106,12 @@ void MarchChunk(Chunk& c, float* block)
 						}
 
 						Vector3F vertex = interpolate(value1, value2, vec1, vec2);
-						tri.vertices[e] = c.toWorld(vertex);
+						tri.vertices[e].position = c.toWorld(vertex);
 
 						Vector3F normal1 = getNormal(block, vec1);
 						Vector3F normal2 = getNormal(block, vec2);
 
-						tri.normals[e] = Normalize(interpolate(value1, value2, normal1, normal2));
+						tri.vertices[e].normal = Normalize(interpolate(value1, value2, normal1, normal2));
 					}
 
 					c.triangles.push_back(tri);

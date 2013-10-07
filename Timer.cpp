@@ -5,8 +5,11 @@
 
 Timer::Timer()
 {
-    //if (!QueryPerformanceFrequency(&HPF))
-    //    HPF.QuadPart = 0; //set 0 if not suppored
+    if (!QueryPerformanceFrequency(&frequency))
+        frequency.QuadPart = 0; //set 0 if not suppored
+
+	tickCounter = 0;
+    lastTimeFPSUpdate = 0.0;
 
     tick();
 }
@@ -17,11 +20,7 @@ void Timer::tick()
 
     double currentTime = getTime();
     interval = currentTime - lastTime;
-
     lastTime = currentTime;
-
-    static int tickCounter = 0;
-    static double lastTimeFPSUpdate = 0.0;
 
     tickCounter++;
 
@@ -36,12 +35,12 @@ void Timer::tick()
 
 double Timer::getTime()
 {
-    /*if (HPF.QuadPart) //g_HPF.QuadPart is 0, if not supported
+    if (frequency.QuadPart) //g_HPF.QuadPart is 0, if not supported
     {
         LARGE_INTEGER PerformanceCounter;
         QueryPerformanceCounter(&PerformanceCounter);
-        return (double)PerformanceCounter.QuadPart / (double)HPF.QuadPart;
+        return (double)PerformanceCounter.QuadPart / (double)frequency.QuadPart;
     }
-    else*/
+    else
         return (double)clock() / (double)CLOCKS_PER_SEC;
 }

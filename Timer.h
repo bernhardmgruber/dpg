@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <windows.h>
+#include <windows.h>
 
 class Timer
 {
@@ -13,5 +13,8 @@ public:
     double interval; // The time passed since the last call of Tick()
 
 private:
-    //LARGE_INTEGER HPF;
+    int tickCounter;
+    double lastTimeFPSUpdate;
+
+    LARGE_INTEGER frequency;
 };

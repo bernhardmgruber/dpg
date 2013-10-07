@@ -19,7 +19,7 @@ World::~World()
 	chunks.clear();
 }
 
-#define CAMERA_CHUNK_RADIUS 3
+#define CAMERA_CHUNK_RADIUS 5
 
 void World::update()
 {

@@ -21,30 +21,33 @@ Chunk::Chunk(Vector3I position)
 	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 	densities = new DensityType[size * size * size];
 
-	Timer timer;
+	//Timer timer;
 
-#pragma omp parallel for
 	for(int x = 0; x < size; x++)
+	{
 		for(int y = 0; y < size; y++)
+		{
 			for(int z = 0; z < size; z++)
 			{
 				Vector3F world = toWorld(x, y, z);
 				densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);
 			}
+		}
+	}
 
-			timer.tick();
-			cout << "Noise took " << timer.interval << " seconds" << endl;
+	//timer.tick();
+	//cout << "Noise took " << timer.interval << " seconds" << endl;
 
-			// create geometry using marching cubes
-			marchChunk(*this, densities);
+	// create geometry using marching cubes
+	marchChunk(*this, densities);
 
-			timer.tick();
-			cout << "Marching took " << timer.interval << " seconds" << endl;
+	//timer.tick();
+	//cout << "Marching took " << timer.interval << " seconds" << endl;
 
-			createBuffers();
+	createBuffers();
 
-			timer.tick();
-			cout << "Buffers took " << timer.interval << " seconds" << endl;
+	//timer.tick();
+	//cout << "Buffers took " << timer.interval << " seconds" << endl;
 }
 
 Chunk::~Chunk()

@@ -17,6 +17,21 @@ struct Vector2
     Vector2(T x, T y)
         : x(x), y(y)
     {};
+
+	template<typename U>
+	Vector2(Vector2<U> v)
+		: x(v.x), y(v.y)
+	{};
+
+	T& operator[](int index)
+	{
+		switch(index)
+		{
+		case 0: return x;
+		case 1: return y;
+		default: throw out_of_range("invalid index");
+		}
+	}
 };
 
 typedef Vector2<float> Vector2F;
@@ -36,12 +51,24 @@ struct Vector3
 
 	template<typename U>
 	Vector3(Vector3<U> v)
-		: x(v.x), y(v.y), z(v.z)
+		: x((T)v.x), y((T)v.y), z((T)v.z)
 	{};
+
+	T& operator[](int index)
+	{
+		switch(index)
+		{
+		case 0: return x;
+		case 1: return y;
+		case 2: return z;
+		default: throw out_of_range("invalid index");
+		}
+	}
 };
 
 typedef Vector3<float> Vector3F;
 typedef Vector3<int> Vector3I;
+typedef Vector3<unsigned int> Vector3UI;
 
 struct Vertex
 {

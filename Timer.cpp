@@ -8,14 +8,14 @@ Timer::Timer()
     //if (!QueryPerformanceFrequency(&HPF))
     //    HPF.QuadPart = 0; //set 0 if not suppored
 
-    Tick();
+    tick();
 }
 
-void Timer::Tick()
+void Timer::tick()
 {
     static double lastTime = 0.0;
 
-    double currentTime = GetTime();
+    double currentTime = getTime();
     interval = currentTime - lastTime;
 
     lastTime = currentTime;
@@ -34,7 +34,7 @@ void Timer::Tick()
     }
 }
 
-double Timer::GetTime()
+double Timer::getTime()
 {
     /*if (HPF.QuadPart) //g_HPF.QuadPart is 0, if not supported
     {

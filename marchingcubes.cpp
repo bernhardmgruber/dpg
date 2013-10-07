@@ -10,6 +10,8 @@ using namespace std;
 
 #include "tables.inc"
 
+#define BLOCK_AT(x, y, z) (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)))
+
 template<typename T>
 Vector3F interpolate(float da, float db, Vector3<T> va, Vector3<T> vb)
 {
@@ -23,50 +25,6 @@ Vector3F interpolate(float da, float db, Vector3<T> va, Vector3<T> vb)
 
 	return result;
 }
-
-#define BLOCK_AT(x, y, z) (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)))
-
-//float samplePoint(float* block, Vector3F v)
-//{
-//	// trilinear interpolation, http://en.wikipedia.org/wiki/Trilinear_interpolation
-//	int x0 = (int) v.x;
-//	int y0 = (int) v.y;
-//	int z0 = (int) v.z;
-//	int x1 = x0 + 1;
-//	int y1 = y0 + 1;
-//	int z1 = z0 + 1;
-//
-//	if(x1 > 34) x1 = 34;
-//	if(y1 > 34) y1 = 34;
-//	if(z1 > 34) z1 = 34;
-//
-//	float xd = (v.x - x0) / (x1 - x0);
-//	float yd = (v.y - y0) / (y1 - y0);
-//	float zd = (v.z - z0) / (z1 - z0);
-//
-//	float c00 = BLOCK_AT(x0, y0, z0) * (1 - xd) + BLOCK_AT(x1, y0, z0) * xd;
-//	float c10 = BLOCK_AT(x0, y1, z0) * (1 - xd) + BLOCK_AT(x1, y1, z0) * xd;
-//	float c01 = BLOCK_AT(x0, y0, z1) * (1 - xd) + BLOCK_AT(x1, y0, z1) * xd;
-//	float c11 = BLOCK_AT(x0, y1, z1) * (1 - xd) + BLOCK_AT(x1, y1, z1) * xd;
-//
-//	float c0 = c00 * (1 - yd) + c10 * yd;
-//	float c1 = c01 * (1 - yd) + c11 * yd;
-//
-//	float c = c0 * (1 - zd) + c1 * zd;
-//
-//	return c;
-//}
-
-//Vector3F sampleNormal(float* block, Vector3F& v)
-//{
-//	//cout << "Sample normal at " << v << endl;
-//	Vector3F grad;
-//	grad.x = samplePoint(block, Vector3F(v.x + 1, v.y, v.z)) + samplePoint(block, Vector3F(v.x - 1, v.y, v.z));
-//	grad.y = samplePoint(block, Vector3F(v.x, v.y + 1, v.z)) + samplePoint(block, Vector3F(v.x, v.y - 1, v.z));
-//	grad.z = samplePoint(block, Vector3F(v.x, v.y, v.z + 1)) + samplePoint(block, Vector3F(v.x, v.y, v.z - 1));
-//
-//	return -1 * Normalize(grad);
-//}
 
 Vector3F getNormal(float* block, const Vector3I& v)
 {

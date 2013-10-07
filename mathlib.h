@@ -1,5 +1,4 @@
-#ifndef MATHLIB_H
-#define MATHLIB_H
+#pragma once
 
 #include <cmath>
 #include <iostream>
@@ -69,5 +68,3 @@ bool PointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist);
 Vector3F RotateX(float a, Vector3F v);
 Vector3F RotateY(float a, Vector3F v);
 Vector3F RotateZ(float a, Vector3F v);
-
-#endif

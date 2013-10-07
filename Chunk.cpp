@@ -19,15 +19,15 @@ Chunk::Chunk(Vector3I position)
 	//perlin.SetOctaveCount(5);
 	perlin.SetFrequency(0.3);
 
-    const int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
-    densities = new float[size * size * size];
+    const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
+    densities = new DensityType[size * size * size];
 
-    for(int x = 0; x < size; x++)
-        for(int y = 0; y < size; y++)
-            for(int z = 0; z < size; z++)
+    for(unsigned int x = 0; x < size; x++)
+        for(unsigned int y = 0; y < size; y++)
+            for(unsigned int z = 0; z < size; z++)
             {
                 Vector3F world = toWorld(x, y, z);
-                densities[x * size * size + y * size + z] = (float)perlin.GetValue(world.x, world.y, world.z);
+                densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);
             }
 
     // create geometry using marching cubes
@@ -39,12 +39,12 @@ Chunk::~Chunk()
 	delete[] densities;
 }
 
-Vector3I Chunk::getPosition()
+const Vector3I Chunk::getPosition() const
 {
     return position;
 }
 
-void Chunk::render()
+void Chunk::render() const
 {
     //glColor3f(1.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
@@ -78,4 +78,18 @@ void Chunk::render()
     //    glVertex3fv((float*)&v);
     //}
     //glEnd();
+}
+
+const ChunkMemoryFootprint Chunk::getMemoryFootprint() const
+{
+	ChunkMemoryFootprint mem;
+
+	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
+
+	mem.densityValues = size * size * size;
+	mem.densityValues = sizeof(DensityType);
+	mem.triangles = triangles.size();
+	mem.triangleBytes = sizeof(Triangle);
+
+	return mem;
 }

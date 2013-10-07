@@ -1,5 +1,4 @@
-#ifndef TIMER_H_INCLUDED
-#define TIMER_H_INCLUDED
+#pragma once
 
 //#include <windows.h>
 
@@ -7,8 +6,8 @@ class Timer
 {
 public:
     Timer();
-    void Tick();
-    double GetTime();
+    void tick();
+    double getTime();
 
     float tps;      // Ticks per second
     double interval; // The time passed since the last call of Tick()
@@ -16,5 +15,3 @@ public:
 private:
     //LARGE_INTEGER HPF;
 };
-
-#endif // TIMER_H_INCLUDED

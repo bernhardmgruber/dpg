@@ -1,5 +1,4 @@
-#ifndef WORLD_H
-#define WORLD_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -22,12 +21,12 @@ class World
         World();
         virtual ~World();
 
-        void Update();
-        void Render();
+        void update();
+        void render();
 
     private:
 
-        void RecursiveChunkCheck(Chunk* c, int level);
+        void recursiveChunkCheck(Chunk* c, int level);
 
         /** Holds all loaded chunks */
         std::unordered_map<Vector3I, Chunk*, Vector3IHash, Vector3Equal> chunks;
@@ -35,5 +34,3 @@ class World
         /** Holds all chunks that need to be rendered. This list is generated during Update() and used by Render(). */
         std::vector<Chunk*> renderList;
 };
-
-#endif // WORLD_H

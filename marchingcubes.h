@@ -1,5 +1,4 @@
-#ifndef MARCHINGCUBES_H
-#define MARCHINGCUBES_H
+#pragma once
 
 #include <vector>
 
@@ -7,5 +6,3 @@
 #include "Chunk.h"
 
 void MarchChunk(Chunk& c, float* cube);
-
-#endif

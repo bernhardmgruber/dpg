@@ -1,5 +1,4 @@
-#ifndef CAMERA_H_INCLUDED
-#define CAMERA_H_INCLUDED
+#pragma once
 
 #include "mathlib.h"
 
@@ -109,5 +108,3 @@ private:
     /** Pixel coords of the origin of the mouse. */
     Vector2F mouseOrigin;
 };
-
-#endif // CAMERA_H_INCLUDED

@@ -29,7 +29,7 @@ class World
 
     private:
 
-        void recursiveChunkCheck(const Vector3I& chunkPos, int level);
+        void recursiveChunkCheck(const Vector3I& chunkPos, const Vector3F& cameraPos);
 
         /** Holds all loaded chunks */
 		std::unordered_map<Vector3I, std::tuple<Chunk*, bool>, Vector3IHash, Vector3IEqual> chunks;

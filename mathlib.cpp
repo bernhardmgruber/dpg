@@ -143,7 +143,7 @@ bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist)
 
 Vector3F rotateX(float a, Vector3F v)
 {
-    a = DEGTORAD(a);
+    a = degToRad(a);
 
     Vector3F res;
     res.x = v.x;
@@ -154,7 +154,7 @@ Vector3F rotateX(float a, Vector3F v)
 
 Vector3F rotateY(float a, Vector3F v)
 {
-    a = DEGTORAD(a);
+    a = degToRad(a);
 
     Vector3F res;
     res.x = v.x *  cos(a) + v.z * sin(a);
@@ -165,7 +165,7 @@ Vector3F rotateY(float a, Vector3F v)
 
 Vector3F rotateZ(float a, Vector3F v)
 {
-    a = DEGTORAD(a);
+    a = degToRad(a);
 
     Vector3F res;
     res.x = v.x * cos(a) + v.y * -sin(a);

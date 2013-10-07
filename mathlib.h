@@ -6,9 +6,6 @@
 #define EPSILON 0.0001
 #define PI 3.14159265
 
-#define DEGTORAD(x) ((x) * PI / 180.0)
-#define RADTODEG(x) ((x) * 180.0 / PI)
-
 template<typename T>
 struct Vector2
 {
@@ -36,6 +33,11 @@ struct Vector3
     Vector3(T x, T y, T z)
         : x(x), y(y), z(z)
     {};
+
+	template<typename U>
+	Vector3(Vector3<U> v)
+		: x(v.x), y(v.y), z(v.z)
+	{};
 };
 
 typedef Vector3<float> Vector3F;
@@ -64,13 +66,33 @@ Vector3F operator*(Vector3F v, float f);                        // Vector multip
 Vector3F operator/(Vector3F v, float f);                        // Vector division through a scalar
 bool operator==(Vector3F v1, Vector3F v2);
 bool operator!=(Vector3F v1, Vector3F v2);
+
 float length(Vector3F v);                                       // Returns the length of a vector
 Vector3F normalize(Vector3F v);                                 // Returns the normalized vector
 float dotProduct(Vector3F v1, Vector3F v2);                     // Returns the dot product of the two vectors given
 Vector3F crossProduct(Vector3F v1, Vector3F v2);                // Returns the cross product vector of the two vectors given
+
 bool pointInBox(Vector3F vPoint, short vMin[3], short vMax[3]); // Returns a bool spezifing whether or not a point is in the defined box
 bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist);
+
+template<typename T>
+float distance(Vector3<T> a, Vector3<T> b)
+{
+	return length(a - b);
+}
 
 Vector3F rotateX(float a, Vector3F v);
 Vector3F rotateY(float a, Vector3F v);
 Vector3F rotateZ(float a, Vector3F v);
+
+template<typename T>
+T degToRad(T deg)
+{
+	return (deg / (T)180.0) * (T)PI;
+}
+
+template<typename T>
+T radToDeg(T rad)
+{
+	return (rad / (T)PI) * (T)180.0;
+}

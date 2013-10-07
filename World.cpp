@@ -19,7 +19,7 @@ World::~World()
 	chunks.clear();
 }
 
-#define CAMERA_CHUNK_RADIUS 4
+#define CAMERA_CHUNK_RADIUS 3
 
 void World::update()
 {
@@ -42,7 +42,7 @@ void World::update()
 	renderList.clear();
 
 	// Check for chunks to load, unload, generate and build renderList
-	recursiveChunkCheck(cameraChunkPos, CAMERA_CHUNK_RADIUS);
+	recursiveChunkCheck(cameraChunkPos, pos);
 
 	//cout << "END world update (memory: " << sizeToString(getMemoryFootprint().totalBytes()) << ")" << endl;
 }
@@ -71,9 +71,9 @@ const ChunkMemoryFootprint World::getMemoryFootprint() const
 	return mem;
 }
 
-void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
+void World::recursiveChunkCheck(const Vector3I& chunkPos, const Vector3F& cameraPos)
 {
-	if(level == 0)
+	if(::distance(Vector3F(chunkPos), cameraPos) > CAMERA_CHUNK_RADIUS)
 		return;
 
 	//cout << "Checking chunk " << chunkPos << " level " << level << endl;
@@ -89,11 +89,17 @@ void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 
 		c = new Chunk(chunkPos);
 		chunks[chunkPos] = make_tuple(c, true);
+
+		cout << "memory: " << sizeToString(getMemoryFootprint().totalBytes()) << endl;
 	}
 	else
 	{
 		// this chunk is loaded
 		c = get<0>(it->second);
+
+		if(get<1>(it->second) == true)
+			return; // we have already visited this chunk
+
 		get<1>(it->second) = true;
 	}
 
@@ -104,6 +110,6 @@ void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 	for(Vector3I& offset : offsets)
 	{
 		Vector3I neighborCenter = c->getPosition() + offset;
-		recursiveChunkCheck(neighborCenter, level - 1);
+		recursiveChunkCheck(neighborCenter, cameraPos);
 	}
 }

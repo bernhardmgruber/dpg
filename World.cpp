@@ -90,7 +90,8 @@ void World::recursiveChunkCheck(const Vector3I& chunkPos, const Vector3F& camera
 		c = new Chunk(chunkPos);
 		chunks[chunkPos] = make_tuple(c, true);
 
-		cout << "memory: " << sizeToString(getMemoryFootprint().totalBytes()) << endl;
+		const ChunkMemoryFootprint mem = getMemoryFootprint();
+		cout << "memory: " << sizeToString(mem.totalBytes()) << "(density: " << sizeToString(mem.densityBytes()) << " triangles: " << sizeToString(mem.triangleBytes()) << ")" << endl;
 	}
 	else
 	{

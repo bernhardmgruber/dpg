@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLEW_STATIC
 #include <GL/glew.h>
 #include <vector>
 
@@ -39,7 +40,8 @@ public:
 	static const float SIZE;
 
 	/**
-	* The size of the cube of density values for this chunk
+	* The number of sub cubes along one axis.
+	* RESOLUTION + 1 is the edge length of the density cube.
 	*/
 	static const unsigned int RESOLUTION;
 
@@ -87,9 +89,12 @@ private:
 
 	DensityType* densities;
 
-	std::vector<Triangle> triangles;
+	std::vector<Vector3UI> triangles;
 
-	GLuint bufferId;
+	std::vector<Vertex> vertices;
+
+	GLuint vertexBuffer;
+	GLuint indexBuffer;
 
 	void createBuffers();
 

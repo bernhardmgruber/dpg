@@ -1,9 +1,11 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include <unordered_map>
 
 #include "mathlib.h"
 #include "Chunk.h"
+
 #include "marchingcubes.h"
 
 using namespace std;
@@ -11,6 +13,8 @@ using namespace std;
 #include "tables.inc"
 
 #define BLOCK_AT(x, y, z) (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)))
+
+const unsigned int CHUNK_TRIANGLE_MAP_INITIAL_SIZE = 3000;
 
 template<typename T>
 Vector3F interpolate(float da, float db, Vector3<T> va, Vector3<T> vb)
@@ -36,8 +40,29 @@ Vector3F getNormal(float* block, const Vector3I& v)
 	return normalize(grad);
 }
 
+// z order curve, from: http://graphics.stanford.edu/~seander/bithacks.html
+//struct Vector3UIHash
+//{
+//	size_t operator() (const Vector3UI& v) const
+//	{
+//		size_t hash = 0;
+//
+//		for (int i = 0; i < sizeof(unsigned int) * 8; i++) 
+//			hash |= (v.x & 1u << i) << (i << 1) | (v.y & 1u << i) << ((i << 1) + 1) | (v.z & 1u << i) << ((i << 1) + 2);
+//
+//		return hash;
+//	}
+//};
+
+struct Vector3UIHash
+{
+	size_t operator() (const Vector3UI& v) const { return v.x ^ (v.y << 11) ^ (v.z << 22); }
+};
+
 void marchChunk(Chunk& c, float* block)
 {
+	unordered_map<Vector3F, unsigned int, Vector3UIHash> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
+
 	for(unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
 	{
 		for(unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++)
@@ -71,11 +96,12 @@ void marchChunk(Chunk& c, float* block)
 
 				int numTriangles = case_to_numpolys[caseIndex];
 
+				// for each triangle of the cube
 				for(int t = 0; t < numTriangles; t++)
 				{
-					Triangle tri;
+					Vector3I tri;
 
-					// for each edge
+					// for each edge of the cube a triangle vertex is on
 					for(int e = 0; e < 3; e++)
 					{
 						int edgeIndex = edge_connect_list[caseIndex][t][e];
@@ -106,12 +132,26 @@ void marchChunk(Chunk& c, float* block)
 						}
 
 						Vector3F vertex = interpolate(value1, value2, vec1, vec2);
-						tri.vertices[e].position = c.toWorld(vertex);
 
-						Vector3F normal1 = getNormal(block, vec1);
-						Vector3F normal2 = getNormal(block, vec2);
+						// lookup this vertex
+						auto it = vertexMap.find(vertex);
+						if(it != vertexMap.end()) // we found it
+							tri[e] = it->second;
+						else
+						{
+							// calculate a new one
+							Vertex v;
+							v.position = c.toWorld(vertex);
 
-						tri.vertices[e].normal = normalize(interpolate(value1, value2, normal1, normal2));
+							Vector3F normal1 = getNormal(block, vec1);
+							Vector3F normal2 = getNormal(block, vec2);
+							v.normal = normalize(interpolate(value1, value2, normal1, normal2));
+
+							tri[e] = (unsigned int)c.vertices.size();
+							c.vertices.push_back(v);
+
+							vertexMap[v.position] = tri[e];
+						}
 					}
 
 					c.triangles.push_back(tri);
@@ -119,4 +159,6 @@ void marchChunk(Chunk& c, float* block)
 			}
 		}
 	}
+
+	cout << "Vertex map size " << vertexMap.size() << endl;
 }

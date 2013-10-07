@@ -1,6 +1,8 @@
 #include <iostream>
+#include <cmath>
 
 #include "Camera.h"
+#include "utils.h"
 
 #include "World.h"
 
@@ -16,7 +18,7 @@ World::~World()
 	chunks.clear();
 }
 
-#define CAMERA_CHUNK_RADIUS 3
+#define CAMERA_CHUNK_RADIUS 4
 
 void World::update()
 {
@@ -26,7 +28,10 @@ void World::update()
 	Vector3F pos = Camera::GetInstance().GetPosition();
 
 	// Determine the chunk the camera is in.
-	Vector3I cameraChunkPos = Vector3I(0, 0, 0);
+	Vector3I cameraChunkPos(0, 0, 0);
+
+	//pos = pos / Chunk::SIZE;
+	//Vector3I cameraChunkPos(round(pos.x), round(pos.y), round(pos.z));
 
 	// Reset markers and clear renderList
 	for(auto& tuple : chunks)
@@ -36,7 +41,7 @@ void World::update()
 	// Check for chunks to load, unload, generate and build renderList
 	recursiveChunkCheck(cameraChunkPos, CAMERA_CHUNK_RADIUS);
 
-	cout << "END world update" << endl;
+	cout << "END world update (memory: " << sizeToString(getMemoryFootprint().totalBytes()) << ")" << endl;
 }
 
 void World::render()
@@ -45,12 +50,30 @@ void World::render()
 		c->render();
 }
 
+const ChunkMemoryFootprint World::getMemoryFootprint() const
+{
+	ChunkMemoryFootprint mem = {0};
+
+	for(const auto& tuple : chunks)
+	{
+		const ChunkMemoryFootprint& cmem = get<0>(tuple.second)->getMemoryFootprint();
+		mem.densityValues += cmem.densityValues;
+		mem.densityValueSize = cmem.densityValueSize;
+		mem.triangles += cmem.triangles;
+		mem.triangleSize = cmem.triangleSize;
+
+		//cout << tuple.first << " density " << sizeToString(cmem.densityBytes()) << " triangles " << sizeToString(cmem.triangleBytes()) << endl;
+	}
+
+	return mem;
+}
+
 void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 {
 	if(level == 0)
 		return;
 
-	cout << "Checking chunk " << chunkPos << " level " << level << endl;
+	//cout << "Checking chunk " << chunkPos << " level " << level << endl;
 
 	// try to find chunk
 	Chunk* c;
@@ -59,7 +82,7 @@ void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 	if(it == chunks.end())
 	{
 		// this chunk has not been loaded
-		cout << "  chunk not loaded" << endl;
+		//cout << "  chunk not loaded" << endl;
 
 		c = new Chunk(chunkPos);
 		chunks[chunkPos] = make_tuple(c, true);

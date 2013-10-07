@@ -28,6 +28,7 @@
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="World.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -36,5 +37,6 @@
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
 </Project>

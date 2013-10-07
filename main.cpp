@@ -396,7 +396,7 @@ void ProcessEvent(SDL_Event event)
     }
 }
 
-int main(int argc, char **argv )
+int main(int argc, char **argv)
 {
     if (!CreateSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
         return -1;

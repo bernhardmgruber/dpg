@@ -25,6 +25,8 @@ class World
         void update();
         void render();
 
+		const ChunkMemoryFootprint getMemoryFootprint() const;
+
     private:
 
         void recursiveChunkCheck(const Vector3I& chunkPos, int level);

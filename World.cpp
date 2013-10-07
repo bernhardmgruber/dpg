@@ -13,82 +13,71 @@ World::World()
 
 World::~World()
 {
-    chunks.clear();
+	chunks.clear();
 }
 
 #define CAMERA_CHUNK_RADIUS 3
 
-void World::Update()
+void World::update()
 {
-    cout << "BEGIN world update" << endl;
+	cout << "BEGIN world update" << endl;
 
-    // Get camera position
-    Vector3F pos = Camera::GetInstance().GetPosition();
+	// Get camera position
+	Vector3F pos = Camera::GetInstance().GetPosition();
 
-    // Determine the chunk the camera is in.
-    Chunk* cameraChunk;
+	// Determine the chunk the camera is in.
+	Vector3I cameraChunkPos = Vector3I(0, 0, 0);
 
-    static bool first = true;
+	// Reset markers and clear renderList
+	for(auto& tuple : chunks)
+		get<1>(tuple.second) = false;
+	renderList.clear();
 
-    if(first)
-    {
-        first = false;
+	// Check for chunks to load, unload, generate and build renderList
+	recursiveChunkCheck(cameraChunkPos, CAMERA_CHUNK_RADIUS);
 
-        cameraChunk = new Chunk(Vector3I(0, 0, 0));
-		chunks[cameraChunk->getPosition()] = cameraChunk;
-    }
-    else
-        cameraChunk = chunks[Vector3I(0, 0, 0)];
-
-    // Reset markers and clear renderList
-    for(Chunk* c : renderList)
-        c->marked = false;
-    renderList.clear();
-
-    // Check for chunks to load, unload, generate and build renderList
-    RecursiveChunkCheck(cameraChunk, CAMERA_CHUNK_RADIUS);
-
-    cout << "END world update" << endl;
+	cout << "END world update" << endl;
 }
 
-void World::Render()
+void World::render()
 {
-    for(Chunk* c : renderList)
-        c->render();
+	for(Chunk* c : renderList)
+		c->render();
 }
 
-void World::RecursiveChunkCheck(Chunk* c, int level)
+void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 {
-    if(level == 0 || c->marked)
-        return;
+	if(level == 0)
+		return;
 
-	cout << "Checking chunk " << c->getPosition() << " level " << level << endl;
+	cout << "Checking chunk " << chunkPos << " level " << level << endl;
 
-    renderList.push_back(c);
-    c->marked = true;
+	// try to find chunk
+	Chunk* c;
 
-    Vector3I offsets[] = {Vector3I(1, 0, 0), Vector3I(-1, 0, 0), Vector3I(0, 1, 0), Vector3I(0, -1, 0), Vector3I(0, 0, 1), Vector3I(0, 0, -1)};
+	auto it = chunks.find(chunkPos);
+	if(it == chunks.end())
+	{
+		// this chunk has not been loaded
+		cout << "  chunk not loaded" << endl;
 
-    for(Vector3I& offset : offsets)
-    {
-        Vector3I neighborCenter = c->getPosition() + offset;
-        Chunk* neighborChunk;
+		c = new Chunk(chunkPos);
+		chunks[chunkPos] = make_tuple(c, true);
+	}
+	else
+	{
+		// this chunk is loaded
+		c = get<0>(it->second);
+		get<1>(it->second) = true;
+	}
 
-        auto it = chunks.find(neighborCenter);
-        if(it == chunks.end())
-        {
-            // this neighbor chunk has not been loaded
-            cout << "Chunk " << c->getPosition() << " has no neighbor at " << neighborCenter << endl;
+	renderList.push_back(c);
 
-            neighborChunk = new Chunk(neighborCenter);
-            chunks[neighborCenter] = neighborChunk;
-        }
-        else
-        {
-            // this neighbor chunk is loaded
-            neighborChunk = it->second;
-        }
-
-        RecursiveChunkCheck(neighborChunk, level - 1);
-    }
+	// recurse on neighbors
+	Vector3I offsets[] = {Vector3I(1, 0, 0), Vector3I(-1, 0, 0), Vector3I(0, 1, 0), Vector3I(0, -1, 0), Vector3I(0, 0, 1), Vector3I(0, 0, -1)};
+	for(Vector3I& offset : offsets)
+	{
+		Vector3I neighborCenter = c->getPosition() + offset;
+		recursiveChunkCheck(neighborCenter, level - 1);
+	}
 }

@@ -146,43 +146,43 @@ void Camera::Update(double interval)
         SDL_WarpMouseInWindow(mainwindow, mouseOrigin.x, mouseOrigin.y);
     }
 
-    float tmpMoveSens = moveSens * interval;
+    double tmpMoveSens = moveSens * interval;
 
     const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
     if (keys[SDL_SCANCODE_SPACE]) // UP
     {
-        position.y += tmpMoveSens;
+        position.y += (float)tmpMoveSens;
     }
 
     if (keys[SDL_SCANCODE_LCTRL]) // DOWN
     {
-        position.y -= tmpMoveSens;
+        position.y -= (float)tmpMoveSens;
     }
 
     // TODO: If strafing and moving reduce speed to keep total move per frame constant
     if (keys[SDL_SCANCODE_W]) // FORWARD
     {
-        position.x -= sin(DEGTORAD(yaw)) * tmpMoveSens;
-        position.z -= cos(DEGTORAD(yaw)) * tmpMoveSens;
+        position.x -= (float)(sin(DEGTORAD(yaw)) * tmpMoveSens);
+        position.z -= (float)(cos(DEGTORAD(yaw)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_S]) // BACKWARD
     {
-        position.x += sin(DEGTORAD(yaw)) * tmpMoveSens;
-        position.z += cos(DEGTORAD(yaw)) * tmpMoveSens;
+        position.x += (float)(sin(DEGTORAD(yaw)) * tmpMoveSens);
+        position.z += (float)(cos(DEGTORAD(yaw)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_A]) // LEFT
     {
-        position.x -= sin(DEGTORAD(yaw + 90.0f)) * tmpMoveSens;
-        position.z -= cos(DEGTORAD(yaw + 90.0f)) * tmpMoveSens;
+        position.x -= (float)(sin(DEGTORAD(yaw + 90.0f)) * tmpMoveSens);
+        position.z -= (float)(cos(DEGTORAD(yaw + 90.0f)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_D]) // RIGHT
     {
-        position.x -= sin(DEGTORAD(yaw - 90.0f)) * tmpMoveSens;
-        position.z -= cos(DEGTORAD(yaw - 90.0f)) * tmpMoveSens;
+        position.x -= (float)(sin(DEGTORAD(yaw - 90.0f)) * tmpMoveSens);
+        position.z -= (float)(cos(DEGTORAD(yaw - 90.0f)) * tmpMoveSens);
     }
 }
 

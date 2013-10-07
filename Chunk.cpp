@@ -13,7 +13,7 @@ const float Chunk::SIZE = 2.0;
 const unsigned int Chunk::RESOLUTION = 32;
 
 Chunk::Chunk(Vector3I position)
-	: position(position), marked(false)
+	: position(position)
 {
     noise::module::Perlin perlin;
 	//perlin.SetOctaveCount(5);
@@ -87,9 +87,9 @@ const ChunkMemoryFootprint Chunk::getMemoryFootprint() const
 	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 
 	mem.densityValues = size * size * size;
-	mem.densityValues = sizeof(DensityType);
+	mem.densityValueSize = sizeof(DensityType);
 	mem.triangles = triangles.size();
-	mem.triangleBytes = sizeof(Triangle);
+	mem.triangleSize = sizeof(Triangle);
 
 	return mem;
 }

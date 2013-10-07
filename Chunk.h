@@ -88,9 +88,6 @@ private:
 
 	std::vector<Triangle> triangles;
 
-	/** Set to true by World::RecursiceChunkCheck to avoid infinite recursion. */
-	bool marked;
-
 	friend void MarchChunk(Chunk& c, float* block);
 	friend class World;
 };

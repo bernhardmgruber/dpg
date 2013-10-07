@@ -23,6 +23,7 @@ struct Vector2
 };
 
 typedef Vector2<float> Vector2F;
+typedef Vector2<int> Vector2I;
 
 template<typename T>
 struct Vector3

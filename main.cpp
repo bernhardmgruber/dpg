@@ -234,7 +234,7 @@ bool InitCL()
 void Update(double interval)
 {
     Camera::GetInstance().Update(interval);
-    world.Update();
+    world.update();
 }
 
 void Render()
@@ -243,7 +243,7 @@ void Render()
     glLoadIdentity();
 
     Camera::GetInstance().Look();
-    world.Render();
+    world.render();
 
     if(g_coords)
     {
@@ -415,7 +415,7 @@ int main(int argc, char **argv )
             ProcessEvent(event);
         else if (g_active)
         {
-            timer.Tick();
+            timer.tick();
             Update(timer.interval);
             Render();
             SDL_GL_SwapWindow(mainwindow);

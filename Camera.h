@@ -2,8 +2,8 @@
 
 #include "mathlib.h"
 
-#define CAMERA_MOVE_SENS 5
-#define CAMERA_LOOK_SENS 0.15
+#define CAMERA_MOVE_SENS 5.0f
+#define CAMERA_LOOK_SENS 0.15f
 
 /**
  * Camera singleton.
@@ -106,5 +106,5 @@ private:
     float lookSens;
 
     /** Pixel coords of the origin of the mouse. */
-    Vector2F mouseOrigin;
+    Vector2I mouseOrigin;
 };

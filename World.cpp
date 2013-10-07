@@ -16,7 +16,7 @@ World::~World()
     chunks.clear();
 }
 
-#define CAMERA_CHUNK_RADIUS 1
+#define CAMERA_CHUNK_RADIUS 3
 
 void World::Update()
 {
@@ -34,8 +34,8 @@ void World::Update()
     {
         first = false;
 
-        cameraChunk = Chunk::fromNoise(Vector3I(0, 0, 0));
-        chunks[cameraChunk->center] = cameraChunk;
+        cameraChunk = new Chunk(Vector3I(0, 0, 0));
+		chunks[cameraChunk->getPosition()] = cameraChunk;
     }
     else
         cameraChunk = chunks[Vector3I(0, 0, 0)];
@@ -54,7 +54,7 @@ void World::Update()
 void World::Render()
 {
     for(Chunk* c : renderList)
-        c->Render();
+        c->render();
 }
 
 void World::RecursiveChunkCheck(Chunk* c, int level)
@@ -62,7 +62,7 @@ void World::RecursiveChunkCheck(Chunk* c, int level)
     if(level == 0 || c->marked)
         return;
 
-    cout << "Checking chunk " << c->center << " level " << level << endl;
+	cout << "Checking chunk " << c->getPosition() << " level " << level << endl;
 
     renderList.push_back(c);
     c->marked = true;
@@ -71,16 +71,16 @@ void World::RecursiveChunkCheck(Chunk* c, int level)
 
     for(Vector3I& offset : offsets)
     {
-        Vector3I neighborCenter = c->center + offset;
+        Vector3I neighborCenter = c->getPosition() + offset;
         Chunk* neighborChunk;
 
         auto it = chunks.find(neighborCenter);
         if(it == chunks.end())
         {
             // this neighbor chunk has not been loaded
-            cout << "Chunk " << c->center << " has no neighbor at " << neighborCenter << endl;
+            cout << "Chunk " << c->getPosition() << " has no neighbor at " << neighborCenter << endl;
 
-            neighborChunk = Chunk::fromNoise(neighborCenter);
+            neighborChunk = new Chunk(neighborCenter);
             chunks[neighborCenter] = neighborChunk;
         }
         else

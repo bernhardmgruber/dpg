@@ -9,8 +9,9 @@ varying vec3 vNormal;
 
 void main()
 {
-	vVertex = vec3(uModelViewMatrix * gl_Vertex);
-	vNormal = vec3(uModelViewMatrix * vec4(gl_Normal, 1.0));
+	vVertex = vec3(gl_Vertex);
+	vNormal = gl_Normal;
+
 	gl_Position = uModelViewProjectionMatrix * gl_Vertex;
-	gl_FrontColor = gl_Color;
+	//gl_FrontColor = gl_Color;
 }

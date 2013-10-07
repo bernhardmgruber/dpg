@@ -80,11 +80,11 @@ Vector3F getNormal(float* block, const Vector3I& v)
 
 void MarchChunk(Chunk& c, float* block)
 {
-	for(int x = 1; x < Chunk::RESOLUTION + 1; x++)
+	for(unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
 	{
-		for(int y = 1; y < Chunk::RESOLUTION + 1; y++)
+		for(unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++)
 		{
-			for(int z = 1; z < Chunk::RESOLUTION + 1; z++)
+			for(unsigned int z = 1; z < Chunk::RESOLUTION + 1; z++)
 			{
 				float v0 = BLOCK_AT(x    , y    , z    );
 				float v1 = BLOCK_AT(x    , y    , z + 1);
@@ -148,7 +148,7 @@ void MarchChunk(Chunk& c, float* block)
 						}
 
 						Vector3F vertex = interpolate(value1, value2, vec1, vec2);
-						tri.vertices[e] = c.ToWorld(vertex);
+						tri.vertices[e] = c.toWorld(vertex);
 
 						Vector3F normal1 = getNormal(block, vec1);
 						Vector3F normal2 = getNormal(block, vec2);

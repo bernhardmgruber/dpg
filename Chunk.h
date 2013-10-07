@@ -7,34 +7,66 @@
 
 class Chunk
 {
-    public:
-        static Chunk* fromNoise(Vector3I center);
+public:
+	/**
+	* The size of the chunk
+	*/
+	static const float SIZE;
 
-        /**
-         * Converts a density value coordinate to a world coordinate.
-         */
-        Vector3F ToWorld(int x, int y, int z);
-        Vector3F ToWorld(Vector3F in);
+	/**
+	* The size of the cube of density values for this chunk
+	*/
+	static const unsigned int RESOLUTION;
 
-        static const float SIZE;
-        static const int RESOLUTION;
+	/**
+	* ctor
+	* Generates a new chunk for the given chunk position
+	*/
+	Chunk(Vector3I position);
 
-        Vector3I GetCenter();
+	/**
+	* dtor
+	*/
+	~Chunk();
 
-        void Render();
+	/**
+	* Converts a density value coordinate to a world coordinate.
+	*/
+	template<typename T>
+	Vector3F toWorld(T x, T y, T z)
+	{
+		Vector3F v;
+		v.x = position.x * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (x - 1);
+		v.y = position.y * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (y - 1);
+		v.z = position.z * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (z - 1);
+		return v;
+	}
 
-    private:
-        Chunk();
+	/**
+	* Converts a density value coordinate to a world coordinate.
+	*/
+	template<typename T>
+	Vector3<T> toWorld(Vector3<T> v)
+	{
+		return toWorld<T>(v.x, v.y, v.z);
+	}
 
-        Vector3I center;
+	Vector3I getPosition();
 
-        std::vector<Triangle> triangles;
+	void render();
 
-        /** Set to true by World::RecursiceChunkCheck to avoid infinite recursion. */
-        bool marked;
+private:
+	Vector3I position;
 
-    friend void MarchChunk(Chunk& c, float* block);
-    friend class World;
+	float* densities;
+
+	std::vector<Triangle> triangles;
+
+	/** Set to true by World::RecursiceChunkCheck to avoid infinite recursion. */
+	bool marked;
+
+	friend void MarchChunk(Chunk& c, float* block);
+	friend class World;
 };
 
 #endif // CHUNK_H

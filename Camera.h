@@ -14,69 +14,69 @@ public:
     /**
      * Gets the instance of the singleton.
      */
-    static Camera& GetInstance();
+    static Camera& getInstance();
 
     /**
      * Returns the current position of the camera.
      */
-    Vector3F GetPosition();
+    Vector3F getPosition();
 
     /**
      * Sets the position of the camera.
      */
-    void SetPosition(float x, float y, float z);
+    void setPosition(float x, float y, float z);
 
     /**
      * Sets the position of the camera.
      */
-    void SetPosition(Vector3F v);
+    void setPosition(Vector3F v);
 
     /**
      * Returns a vector containing the current view angles.
      */
-    Vector2F GetViewAngles();
+    Vector2F getViewAngles();
 
     /**
      * Returns a vector pointing representing the current view direction.
      */
-    Vector3F GetViewVector();
+    Vector3F getViewVector();
 
     /**
      * Sets the current view angles.
      */
-    void SetViewAngles(float pitch, float yaw);
+    void setViewAngles(float pitch, float yaw);
 
     /**
      * Sets the current view angles.
      */
-    void SetPosition(Vector2F v);
+    void setPosition(Vector2F v);
 
     /**
      * Returns the current movement sensitivity.
      */
-    float GetMoveSens();
+    float getMoveSens();
 
     /**
      * Sets the current movement sensitivity.
      */
-    void SetMoveSens(float moveSens);
+    void setMoveSens(float moveSens);
 
     /**
      * Sets whether or not the mouse should be captured to determine the current view angles.
      */
-    void SetCaptureMouse(bool captureMouse);
+    void setCaptureMouse(bool captureMouse);
 
     /**
      * Updates the position of the coord system according to user input and time passed since the last update.
      *
      * @param interval Time passed since the last update in seconds.
      */
-    void Update(double interval);
+    void update(double interval);
 
     /**
      * Sets the modelview matrix according to the current position and view angles.
      */
-    void Look();
+    void look();
 
 private:
     /**

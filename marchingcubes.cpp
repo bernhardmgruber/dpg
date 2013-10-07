@@ -33,10 +33,10 @@ Vector3F getNormal(float* block, const Vector3I& v)
 	grad.y = BLOCK_AT(v.x    , v.y + 1, v.z    ) - BLOCK_AT(v.x    , v.y - 1, v.z    );
 	grad.z = BLOCK_AT(v.x    , v.y    , v.z + 1) - BLOCK_AT(v.x    , v.y    , v.z - 1);
 
-	return Normalize(grad);
+	return normalize(grad);
 }
 
-void MarchChunk(Chunk& c, float* block)
+void marchChunk(Chunk& c, float* block)
 {
 	for(unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
 	{
@@ -111,7 +111,7 @@ void MarchChunk(Chunk& c, float* block)
 						Vector3F normal1 = getNormal(block, vec1);
 						Vector3F normal2 = getNormal(block, vec2);
 
-						tri.vertices[e].normal = Normalize(interpolate(value1, value2, normal1, normal2));
+						tri.vertices[e].normal = normalize(interpolate(value1, value2, normal1, normal2));
 					}
 
 					c.triangles.push_back(tri);

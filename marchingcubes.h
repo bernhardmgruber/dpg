@@ -5,4 +5,4 @@
 #include "mathlib.h"
 #include "Chunk.h"
 
-void MarchChunk(Chunk& c, float* cube);
+void marchChunk(Chunk& c, float* cube);

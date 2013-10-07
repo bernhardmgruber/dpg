@@ -93,5 +93,5 @@ private:
 
 	void createBuffers();
 
-	friend void MarchChunk(Chunk& c, float* block);
+	friend void marchChunk(Chunk& c, float* block);
 };

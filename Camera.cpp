@@ -31,31 +31,31 @@ Camera::Camera()
     lookSens = CAMERA_LOOK_SENS;
 }
 
-Camera& Camera::GetInstance()
+Camera& Camera::getInstance()
 {
     static Camera camera;
 
     return camera;
 }
 
-Vector3F Camera::GetPosition()
+Vector3F Camera::getPosition()
 {
     return position;
 }
 
-void Camera::SetPosition(float fx, float fy, float fz)
+void Camera::setPosition(float fx, float fy, float fz)
 {
     position.x = fx;
     position.y = fy;
     position.z = fz;
 }
 
-void Camera::SetPosition(Vector3F v)
+void Camera::setPosition(Vector3F v)
 {
     position = v;
 }
 
-Vector2F Camera::GetViewAngles()
+Vector2F Camera::getViewAngles()
 {
     Vector2F vec;
     vec.x = pitch;
@@ -63,7 +63,7 @@ Vector2F Camera::GetViewAngles()
     return vec;
 }
 
-Vector3F Camera::GetViewVector()
+Vector3F Camera::getViewVector()
 {
     Vector3F v;
     v.x = 1;
@@ -71,37 +71,37 @@ Vector3F Camera::GetViewVector()
     v.z = 0;
 
     // rotate pitch along -y
-    v = RotateY(-pitch, v);
+    v = rotateY(-pitch, v);
 
     // rotate yaw along z
-    v = RotateZ(yaw, v);
+    v = rotateZ(yaw, v);
 
     return v;
 }
 
-void Camera::SetViewAngles(float pitch, float yaw)
+void Camera::setViewAngles(float pitch, float yaw)
 {
     this->pitch = pitch;
     this->yaw = yaw;
 }
 
-void Camera::SetPosition(Vector2F v)
+void Camera::setPosition(Vector2F v)
 {
     pitch = v.x;
     yaw = v.y;
 }
 
-float Camera::GetMoveSens()
+float Camera::getMoveSens()
 {
     return moveSens;
 }
 
-void Camera::SetMoveSens(float moveSens)
+void Camera::setMoveSens(float moveSens)
 {
     this->moveSens = moveSens;
 }
 
-void Camera::SetCaptureMouse(bool captureMouse)
+void Camera::setCaptureMouse(bool captureMouse)
 {
     this->captureMouse = captureMouse;
 
@@ -114,7 +114,7 @@ void Camera::SetCaptureMouse(bool captureMouse)
     }
 }
 
-void Camera::Update(double interval)
+void Camera::update(double interval)
 {
     // else update camera object
     if(captureMouse)
@@ -186,7 +186,7 @@ void Camera::Update(double interval)
     }
 }
 
-void Camera::Look()
+void Camera::look()
 {
     mat4 modelViewMatrix = rotate(mat4(1.0), -pitch, vec3(1.0, 0.0, 0.0));
     modelViewMatrix = rotate(modelViewMatrix, -yaw, vec3(0.0, 1.0, 0.0));

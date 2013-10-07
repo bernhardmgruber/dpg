@@ -14,22 +14,23 @@ Chunk::Chunk(Vector3I position)
 	: position(position)
 {
     noise::module::Perlin perlin;
-	//perlin.SetOctaveCount(5);
+	perlin.SetOctaveCount(5);
 	perlin.SetFrequency(0.3);
 
     const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
     densities = new DensityType[size * size * size];
 
-    for(unsigned int x = 0; x < size; x++)
-        for(unsigned int y = 0; y < size; y++)
-            for(unsigned int z = 0; z < size; z++)
+	#pragma omp parallel for
+    for(int x = 0; x < size; x++)
+        for(int y = 0; y < size; y++)
+            for(int z = 0; z < size; z++)
             {
                 Vector3F world = toWorld(x, y, z);
                 densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);
             }
 
     // create geometry using marching cubes
-    MarchChunk(*this, densities);
+    marchChunk(*this, densities);
 
 	createBuffers();
 }

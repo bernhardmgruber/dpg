@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <iomanip>
 
 #include "Camera.h"
 #include "utils.h"
@@ -22,16 +23,18 @@ World::~World()
 
 void World::update()
 {
-	cout << "BEGIN world update" << endl;
+	//cout << "BEGIN world update" << endl;
 
 	// Get camera position
-	Vector3F pos = Camera::GetInstance().GetPosition();
+	Vector3F pos = Camera::getInstance().getPosition();
 
 	// Determine the chunk the camera is in.
-	Vector3I cameraChunkPos(0, 0, 0);
+	//Vector3I cameraChunkPos(0, 0, 0);
 
-	//pos = pos / Chunk::SIZE;
-	//Vector3I cameraChunkPos(round(pos.x), round(pos.y), round(pos.z));
+	pos = pos / Chunk::SIZE;
+	Vector3I cameraChunkPos(round(pos.x), round(pos.y), round(pos.z));
+
+	//cout << "camera at " << setprecision(2) << Camera::getInstance().getPosition() << " = chunk " << cameraChunkPos << endl;
 
 	// Reset markers and clear renderList
 	for(auto& tuple : chunks)
@@ -41,7 +44,7 @@ void World::update()
 	// Check for chunks to load, unload, generate and build renderList
 	recursiveChunkCheck(cameraChunkPos, CAMERA_CHUNK_RADIUS);
 
-	cout << "END world update (memory: " << sizeToString(getMemoryFootprint().totalBytes()) << ")" << endl;
+	//cout << "END world update (memory: " << sizeToString(getMemoryFootprint().totalBytes()) << ")" << endl;
 }
 
 void World::render()
@@ -82,7 +85,7 @@ void World::recursiveChunkCheck(const Vector3I& chunkPos, int level)
 	if(it == chunks.end())
 	{
 		// this chunk has not been loaded
-		//cout << "  chunk not loaded" << endl;
+		cout << "Chunk " << chunkPos << " not loaded" << endl;
 
 		c = new Chunk(chunkPos);
 		chunks[chunkPos] = make_tuple(c, true);

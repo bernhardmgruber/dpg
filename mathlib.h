@@ -64,13 +64,13 @@ Vector3F operator*(Vector3F v, float f);                        // Vector multip
 Vector3F operator/(Vector3F v, float f);                        // Vector division through a scalar
 bool operator==(Vector3F v1, Vector3F v2);
 bool operator!=(Vector3F v1, Vector3F v2);
-float Length(Vector3F v);                                       // Returns the length of a vector
-Vector3F Normalize(Vector3F v);                                 // Returns the normalized vector
-float DotProduct(Vector3F v1, Vector3F v2);                     // Returns the dot product of the two vectors given
-Vector3F CrossProduct(Vector3F v1, Vector3F v2);                // Returns the cross product vector of the two vectors given
-bool PointInBox(Vector3F vPoint, short vMin[3], short vMax[3]); // Returns a bool spezifing whether or not a point is in the defined box
-bool PointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist);
+float length(Vector3F v);                                       // Returns the length of a vector
+Vector3F normalize(Vector3F v);                                 // Returns the normalized vector
+float dotProduct(Vector3F v1, Vector3F v2);                     // Returns the dot product of the two vectors given
+Vector3F crossProduct(Vector3F v1, Vector3F v2);                // Returns the cross product vector of the two vectors given
+bool pointInBox(Vector3F vPoint, short vMin[3], short vMax[3]); // Returns a bool spezifing whether or not a point is in the defined box
+bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist);
 
-Vector3F RotateX(float a, Vector3F v);
-Vector3F RotateY(float a, Vector3F v);
-Vector3F RotateZ(float a, Vector3F v);
+Vector3F rotateX(float a, Vector3F v);
+Vector3F rotateY(float a, Vector3F v);
+Vector3F rotateZ(float a, Vector3F v);

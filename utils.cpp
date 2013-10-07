@@ -1,5 +1,8 @@
 #include <sstream>
 #include <iomanip>
+#include <fstream>
+#include <iterator>
+#include <iostream>
 
 #include "utils.h"
 
@@ -24,4 +27,20 @@ string sizeToString(size_t size)
 int round(float f)
 {
 	return (int)(f + 0.5f);
+}
+
+bool readFile(const std::string& fileName, string& buffer)
+{
+	ifstream sourceFile(fileName, ios::binary | ios::in);
+	if(!sourceFile)
+	{
+		cerr << "Error opening file " << fileName << endl;
+		return false;
+	}
+
+	buffer = string((istreambuf_iterator<char>(sourceFile)), istreambuf_iterator<char>());
+
+	sourceFile.close();
+
+	return true;
 }

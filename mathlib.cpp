@@ -96,22 +96,22 @@ bool operator!=(Vector3F v1, Vector3F v2)
 	return !(v1 == v2);
 }
 
-float Length(Vector3F v)
+float length(Vector3F v)
 {
     return sqrt((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
 }
 
-Vector3F Normalize(Vector3F v)
+Vector3F normalize(Vector3F v)
 {
-    return v / Length(v);
+    return v / length(v);
 }
 
-float DotProduct(Vector3F v1, Vector3F v2)
+float dotProduct(Vector3F v1, Vector3F v2)
 {
     return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
 }
 
-Vector3F CrossProduct(Vector3F v1, Vector3F v2)
+Vector3F crossProduct(Vector3F v1, Vector3F v2)
 {
     Vector3F perpendicularVector;
     perpendicularVector.x = (v2.y * v1.z) - (v2.z * v1.y);
@@ -120,7 +120,7 @@ Vector3F CrossProduct(Vector3F v1, Vector3F v2)
     return perpendicularVector;
 }
 
-bool PointInBox(Vector3F vPoint, short vMin[3], short vMax[3])
+bool pointInBox(Vector3F vPoint, short vMin[3], short vMax[3])
 {
     if(((float)vMin[0] <= vPoint.x && vPoint.x <= (float)vMax[0] &&
         (float)vMin[1] <= vPoint.y && vPoint.y <= (float)vMax[1] &&
@@ -133,15 +133,15 @@ bool PointInBox(Vector3F vPoint, short vMin[3], short vMax[3])
         return false;
 }
 
-bool PointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist)
+bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist)
 {
-    if(fabs(DotProduct(vPoint, vNormal) - fDist) < EPSILON)
+    if(fabs(dotProduct(vPoint, vNormal) - fDist) < EPSILON)
         return true;
     else
         return false;
 }
 
-Vector3F RotateX(float a, Vector3F v)
+Vector3F rotateX(float a, Vector3F v)
 {
     a = DEGTORAD(a);
 
@@ -152,7 +152,7 @@ Vector3F RotateX(float a, Vector3F v)
     return res;
 }
 
-Vector3F RotateY(float a, Vector3F v)
+Vector3F rotateY(float a, Vector3F v)
 {
     a = DEGTORAD(a);
 
@@ -163,7 +163,7 @@ Vector3F RotateY(float a, Vector3F v)
     return res;
 }
 
-Vector3F RotateZ(float a, Vector3F v)
+Vector3F rotateZ(float a, Vector3F v)
 {
     a = DEGTORAD(a);
 

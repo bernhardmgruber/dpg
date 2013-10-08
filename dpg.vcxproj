@@ -126,6 +126,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Chunk.cpp" />
+    <ClCompile Include="ChunkLoader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="marchingcubes.cpp" />
     <ClCompile Include="mathlib.cpp" />
@@ -136,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
+    <ClInclude Include="ChunkLoader.h" />
     <ClInclude Include="marchingcubes.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="Timer.h" />

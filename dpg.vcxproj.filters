@@ -29,6 +29,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="ChunkLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -38,5 +39,6 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="ChunkLoader.h" />
   </ItemGroup>
 </Project>

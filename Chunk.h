@@ -84,6 +84,11 @@ public:
 
 	const ChunkMemoryFootprint getMemoryFootprint() const;
 
+	/**
+	* Called by ChunkLoader
+	*/
+	void createBuffers();
+
 private:
 	Vector3I position;
 
@@ -93,10 +98,10 @@ private:
 
 	std::vector<Vertex> vertices;
 
+	bool buffersInitialized;
+
 	GLuint vertexBuffer;
 	GLuint indexBuffer;
-
-	void createBuffers();
 
 	friend void marchChunk(Chunk& c, float* block);
 };

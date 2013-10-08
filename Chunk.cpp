@@ -12,7 +12,7 @@ const float Chunk::SIZE = 1.0;
 const unsigned int Chunk::RESOLUTION = 16;
 
 Chunk::Chunk(Vector3I position)
-	: position(position)
+	: position(position), buffersInitialized(false)
 {
 	noise::module::Perlin perlin;
 	perlin.SetOctaveCount(5);
@@ -43,18 +43,17 @@ Chunk::Chunk(Vector3I position)
 
 	//timer.tick();
 	//cout << "Marching took " << timer.interval << " seconds" << endl;
-
-	createBuffers();
-
-	//timer.tick();
-	//cout << "Buffers took " << timer.interval << " seconds" << endl;
 }
 
 Chunk::~Chunk()
 {
 	delete[] densities;
-	glDeleteBuffers(1, &vertexBuffer);
-	glDeleteBuffers(1, &indexBuffer);
+
+	if(buffersInitialized)
+	{
+		glDeleteBuffers(1, &vertexBuffer);
+		glDeleteBuffers(1, &indexBuffer);
+	}
 }
 
 const Vector3I Chunk::getPosition() const
@@ -138,4 +137,6 @@ void Chunk::createBuffers()
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(triangles[0]), triangles.data(), GL_STATIC_DRAW);
+
+	buffersInitialized = true;
 }

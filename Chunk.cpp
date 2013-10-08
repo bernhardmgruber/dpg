@@ -23,11 +23,11 @@ Chunk::Chunk(Vector3I position)
 
 	//Timer timer;
 
-	for(int x = 0; x < size; x++)
+	for(unsigned int x = 0; x < size; x++)
 	{
-		for(int y = 0; y < size; y++)
+		for(unsigned int y = 0; y < size; y++)
 		{
-			for(int z = 0; z < size; z++)
+			for(unsigned int z = 0; z < size; z++)
 			{
 				Vector3F world = toWorld(x, y, z);
 				densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);

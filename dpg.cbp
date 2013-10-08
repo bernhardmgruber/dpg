@@ -7,8 +7,8 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin\Debug\dpg" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Debug\" />
+				<Option output="bin/Debug/dpg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -16,8 +16,8 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin\Release\dpg" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Release\" />
+				<Option output="bin/Release/dpg" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -29,10 +29,10 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-std=c++0x" />
+			<Add option="-std=c++11" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
-			<Add directory="D:\SDKs\SDL-2.0.0-6275\include" />
+			<Add directory="D:/SDKs/SDL-2.0.0-6275/include" />
 		</Compiler>
 		<Linker>
 			<Add library="glew32s" />
@@ -41,25 +41,29 @@
 			<Add library="opengl32" />
 			<Add library="glu32" />
 			<Add library="opencl" />
-			<Add directory="D:\SDKs\SDL-2.0.0-6275\lib" />
+			<Add directory="D:/SDKs/SDL-2.0.0-6275/lib" />
 		</Linker>
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.h" />
 		<Unit filename="Chunk.cpp" />
 		<Unit filename="Chunk.h" />
+		<Unit filename="ChunkLoader.cpp" />
+		<Unit filename="ChunkLoader.h" />
 		<Unit filename="Timer.cpp" />
 		<Unit filename="Timer.h" />
 		<Unit filename="World.cpp" />
 		<Unit filename="World.h" />
-		<Unit filename="kernels\main.cl" />
+		<Unit filename="kernels/main.cl" />
 		<Unit filename="main.cpp" />
 		<Unit filename="marchingcubes.cpp" />
 		<Unit filename="marchingcubes.h" />
 		<Unit filename="mathlib.cpp" />
 		<Unit filename="mathlib.h" />
-		<Unit filename="shaders\main.frag" />
-		<Unit filename="shaders\main.vert" />
+		<Unit filename="shaders/main.frag" />
+		<Unit filename="shaders/main.vert" />
 		<Unit filename="tables.inc" />
+		<Unit filename="utils.cpp" />
+		<Unit filename="utils.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

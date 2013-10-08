@@ -8,24 +8,40 @@ using namespace std;
 ChunkLoader::ChunkLoader(unsigned int loaderThreads)
 	: shutdown(false)
 {
-	auto func = [&]()
+	// infulenced by: http://progsch.net/wordpress/?p=81
+	auto func = [this]()
 	{
 		while(true)
 		{
-			// wait for 
-			loadingChunkMutex.lock();
-			cout << "Loader thread #" << std::this_thread::get_id() << " is ready" << endl;
-			loadingChunkCV.wait(loadingChunkMutex, [&](){ return enqueuedChunkLoads.size() > 0 || shutdown; });
-			cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;
-			// check for shutdown
-			if(shutdown)
-				return;
+			Vector3I chunkPos;
 
-			// dequeue load request
-			Vector3I chunkPos = enqueuedChunkLoads.front();
-			enqueuedChunkLoads.pop();
-			cout << "Loader thread #" << std::this_thread::get_id() << " starts loading chunk " << chunkPos << endl;
-			loadingChunkMutex.unlock();
+			// wait for
+			{
+				unique_lock<mutex> lock(loadingChunkMutex);
+
+				// check for shutdown (shutdown might have been set during unlocked chunk loading)
+				if(shutdown)
+				{
+					cout << "Loader thread #" << std::this_thread::get_id() << " exited 2" << endl;
+					return;
+				}
+
+				cout << "Loader thread #" << std::this_thread::get_id() << " is ready" << endl;
+				loadingChunkCV.wait(lock, [this](){ return enqueuedChunkLoads.size() > 0 || shutdown; });
+				cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;
+
+				// check for shutdown
+				if(shutdown)
+				{
+					cout << "Loader thread #" << std::this_thread::get_id() << " exited 1" << endl;
+					return;
+				}
+
+				// dequeue load request
+				chunkPos = enqueuedChunkLoads.front();
+				enqueuedChunkLoads.pop();
+				cout << "Loader thread #" << std::this_thread::get_id() << " starts loading chunk " << chunkPos << endl;
+			}
 
 			// do load
 			Chunk* c = new Chunk(chunkPos);
@@ -43,11 +59,14 @@ ChunkLoader::ChunkLoader(unsigned int loaderThreads)
 
 ChunkLoader::~ChunkLoader()
 {
-	// join 
-	loadingChunkMutex.lock();
-	shutdown = true;
-	loadingChunkCV.notify_all();
-	loadingChunkMutex.unlock();
+	// join
+	{
+		unique_lock<mutex> lock(loadingChunkMutex);
+
+		shutdown = true;
+		loadingChunkCV.notify_all();
+	}
+
 	for(thread& t : loaderThreadPool)
 		t.join();
 

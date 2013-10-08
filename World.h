@@ -26,6 +26,7 @@ class World
         std::vector<Chunk*> renderList;
 
 		Vector3I lastCameraChunk;
+		bool renderListComplete;
 
         void buildRenderList(const Vector3I& cameraChunkPos);
 };

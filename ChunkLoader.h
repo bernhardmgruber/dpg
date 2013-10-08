@@ -36,7 +36,7 @@ private:
 	std::mutex updatingChunks;
 
 	std::mutex loadingChunkMutex;
-	std::condition_variable_any loadingChunkCV;
+	std::condition_variable loadingChunkCV;
 	std::queue<Vector3I> enqueuedChunkLoads;
 
 	bool shutdown;

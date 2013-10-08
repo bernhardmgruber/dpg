@@ -10,6 +10,7 @@
 using namespace std;
 
 World::World()
+	: renderListComplete(false)
 {
 
 }
@@ -46,11 +47,12 @@ void World::render()
 
 void World::buildRenderList(const Vector3I& cameraChunkPos)
 {
-	if(lastCameraChunk == cameraChunkPos)
+	if(lastCameraChunk == cameraChunkPos && renderListComplete)
 		return; // the camera chunk has not changed, no need to rebuild the render list
 
 	// clear renderList
 	renderList.clear();
+	renderListComplete = true;
 
 	// iterate a cube around the camera and check the chunk's distance to camera chunk to get a sphere around the camera
 	for(int x = cameraChunkPos.x - CAMERA_CHUNK_RADIUS; x <= cameraChunkPos.x + CAMERA_CHUNK_RADIUS; x++)
@@ -64,5 +66,7 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
 				Chunk* c = loader.get(cameraChunkPos);
 				if(c)
 					renderList.push_back(c);
+				else
+					renderListComplete = false;
 			}
 }

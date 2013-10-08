@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 
 #define EPSILON 0.0001
 #define PI 3.14159265
@@ -29,7 +30,7 @@ struct Vector2
 		{
 		case 0: return x;
 		case 1: return y;
-		default: throw out_of_range("invalid index");
+		default: throw std::out_of_range("invalid index");
 		}
 	}
 };
@@ -61,7 +62,7 @@ struct Vector3
 		case 0: return x;
 		case 1: return y;
 		case 2: return z;
-		default: throw out_of_range("invalid index");
+		default: throw std::out_of_range("invalid index");
 		}
 	}
 };

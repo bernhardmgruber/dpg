@@ -8,7 +8,7 @@ using namespace std;
 ChunkLoader::ChunkLoader(unsigned int loaderThreads)
 	: shutdown(false)
 {
-	// infulenced by: http://progsch.net/wordpress/?p=81
+	// influenced by: http://progsch.net/wordpress/?p=81
 	auto func = [this]()
 	{
 		while(true)
@@ -27,8 +27,11 @@ ChunkLoader::ChunkLoader(unsigned int loaderThreads)
 				}
 
 				cout << "Loader thread #" << std::this_thread::get_id() << " is ready" << endl;
-				loadingChunkCV.wait(lock, [this](){ return enqueuedChunkLoads.size() > 0 || shutdown; });
-				cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;
+				while(enqueuedChunkLoads.size() == 0 && !shutdown)
+				{
+					loadingChunkCV.wait(lock);
+					cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;
+				}
 
 				// check for shutdown
 				if(shutdown)
@@ -62,13 +65,12 @@ ChunkLoader::~ChunkLoader()
 	// join
 	{
 		unique_lock<mutex> lock(loadingChunkMutex);
-
 		shutdown = true;
-		loadingChunkCV.notify_all();
 	}
+	loadingChunkCV.notify_all();
 
 	for(thread& t : loaderThreadPool)
-		t.join();
+		t.join(); // for some reason, this blocks forever =/
 
 	for(auto& pair : chunks)
 		delete pair.second;
@@ -112,6 +114,10 @@ Chunk* ChunkLoader::get(const Vector3I& pos)
 
 void ChunkLoader::enqueueChunkLoad(const Vector3I& chunkPos)
 {
+	if(enqueuedLoads.find(chunkPos) != enqueuedLoads.end())
+		return; // chunk is already enqueued for loading
+	enqueuedLoads.insert(chunkPos);
+
 	loadingChunkMutex.lock();
 	enqueuedChunkLoads.push(chunkPos);
 	loadingChunkMutex.unlock();

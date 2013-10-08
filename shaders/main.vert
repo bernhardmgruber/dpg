@@ -13,5 +13,4 @@ void main()
 	vNormal = aNormal;
 
 	gl_Position = uModelViewProjectionMatrix * vec4(aVertex, 1.0);
-	//gl_FrontColor = gl_Color;
 }

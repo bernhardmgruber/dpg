@@ -4,6 +4,7 @@
 #include <queue>
 #include <mutex>
 #include <unordered_map>
+#include <unordered_set>
 #include <condition_variable>
 #include <thread>
 
@@ -18,7 +19,7 @@ struct Vector3IHash
 class ChunkLoader
 {
 public:
-	ChunkLoader(unsigned int loaderThreads = 4);
+	ChunkLoader(unsigned int loaderThreads = 1);
 	~ChunkLoader();
 
 	Chunk* get(const Vector3I& pos);
@@ -29,6 +30,8 @@ private:
 
 	/// loaded chunks, missing OpenGL initialization
 	std::unordered_map<Vector3I, Chunk*, Vector3IHash> uninitializedChunks;
+
+	std::unordered_set<Vector3I, Vector3IHash> enqueuedLoads;
 
 	/// A thread pool providing threads for loading
 	std::vector<std::thread> loaderThreadPool;

@@ -63,7 +63,7 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
 				if(::distance(chunkPos, cameraChunkPos) > CAMERA_CHUNK_RADIUS)
 					continue;
 
-				Chunk* c = loader.get(cameraChunkPos);
+				Chunk* c = loader.get(chunkPos);
 				if(c)
 					renderList.push_back(c);
 				else

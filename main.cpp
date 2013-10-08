@@ -394,8 +394,8 @@ int main(int argc, char **argv)
 
 	if(!initGL())
 		return -1;
-	if(!initCL())
-		return -1;
+	//if(!initCL())
+	//	return -1;
 
 	resizeGLScene(WINDOW_WIDTH, WINDOW_HEIGHT);
 

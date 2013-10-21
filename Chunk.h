@@ -35,6 +35,13 @@ class Chunk
 public:
     typedef float DensityType;
 
+    enum class BlockType
+    {
+        SOLID,
+        SURFACE,
+        AIR
+    };
+
     /**
     * The size of the chunk
     */
@@ -60,29 +67,38 @@ public:
     /**
     * Converts a density value coordinate to a world coordinate.
     */
-    template<typename T>
-    Vector3F toWorld(T x, T y, T z) const
-    {
-        Vector3F v;
-        v.x = position.x * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (x - 1);
-        v.y = position.y * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (y - 1);
-        v.z = position.z * SIZE - SIZE / 2.0f + SIZE / RESOLUTION * (z - 1);
-        return v;
-    }
+    Vector3F toWorld(unsigned int x, unsigned int y, unsigned int z) const;
 
     /**
     * Converts a density value coordinate to a world coordinate.
     */
-    template<typename T>
-    Vector3<T> toWorld(Vector3<T> v) const
-    {
-        return toWorld<T>(v.x, v.y, v.z);
-    }
+    Vector3F toWorld(const Vector3UI& v) const;
 
-    const Vector3I getPosition() const;
+    Vector3UI toDensity(const Vector3F& v) const;
 
+    /**
+    * Gets the position of the chunk's center in the voxel grid.
+    */
+    const Vector3I getVoxelPosition() const;
+
+    /**
+    * Gets the position of the chunk's center in the world.
+    */
+    const Vector3F getWorldPosition() const;
+
+    /**
+    * Categorizes the given position in world coordinates.
+    */
+    BlockType categorizeWorldPosition(const Vector3F& pos) const;
+
+    /**
+    * Renders the chunk.
+    */
     void render() const;
 
+    /**
+    * Get the memory footprint of this chunk.
+    */
     const ChunkMemoryFootprint getMemoryFootprint() const;
 
     /**
@@ -105,10 +121,8 @@ private:
     GLuint indexBuffer;
 
     //
-    // marching cubes
+    // marching cubes and density functions
     //
-
-    inline DensityType blockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const;
 
     template<typename T>
     Vector3F interpolate(DensityType da, DensityType db, Vector3<T> va, Vector3<T> vb) const
@@ -124,12 +138,14 @@ private:
         return result;
     }
 
+    inline DensityType blockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const;
+
     Vector3F getNormal(DensityType* block, const Vector3I& v) const;
 
     inline std::array<DensityType, 8> getDensityBlockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const;
 
-    inline unsigned int Chunk::getCaseIndexFromDensityBlock(std::array<DensityType, 8> values) const;
+    inline unsigned int getCaseIndexFromDensityBlock(std::array<DensityType, 8> values) const;
 
-    void Chunk::marchChunk(DensityType* block);
+    void marchChunk(DensityType* block);
 
 };

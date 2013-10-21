@@ -65,12 +65,12 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
             }
 }
 
-bool World::isSolid(const Vector3F& pos) const
+bool World::isAir(const Vector3F& pos) const
 {
     const Vector3I chunkPos = getChunkPos(pos);
     const Chunk* chunk = loader.get(chunkPos);
 
-
+    return chunk->categorizeWorldPosition(pos) == Chunk::BlockType::AIR;
 }
 
 Vector3F World::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const

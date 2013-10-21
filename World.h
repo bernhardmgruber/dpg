@@ -24,9 +24,9 @@ class World
         //
 
         /**
-        * Checks whether or not a position is inside the solid world or not (air).
+        * Checks whether or not a position is inside the solid world (or surface) or not (air).
         */
-        bool isSolid(const Vector3F& pos) const;
+        bool isAir(const Vector3F& pos) const;
 
         /**
         * Moves the position with the bounding box to the nearest non solid position.

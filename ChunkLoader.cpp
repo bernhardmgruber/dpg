@@ -49,7 +49,7 @@ ChunkLoader::ChunkLoader(unsigned int loaderThreads)
 			// do load
 			Chunk* c = new Chunk(chunkPos);
 			updatingChunks.lock();
-			uninitializedChunks[c->getPosition()] = c;
+			uninitializedChunks[c->getVoxelPosition()] = c;
 			updatingChunks.unlock();
 			cout << "Loader thread #" << std::this_thread::get_id() << " finished loading chunk " << chunkPos << endl;
 		}
@@ -103,7 +103,7 @@ Chunk* ChunkLoader::get(const Vector3I& pos)
 	if(c)
 	{
 		c->createBuffers();
-		chunks[c->getPosition()] = c;
+		chunks[c->getVoxelPosition()] = c;
 		return c;
 	}
 

@@ -138,6 +138,7 @@
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="ChunkLoader.h" />
     <ClInclude Include="mathlib.h" />
+    <ClInclude Include="mathtypes.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="World.h" />

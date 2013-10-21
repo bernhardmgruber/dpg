@@ -19,24 +19,34 @@
     <Filter Include="kernels">
       <UniqueIdentifier>{4973c645-747d-43ea-a394-871ff331ce1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{beafefaf-f64c-49c0-a011-1e1af0c38b7a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Chunk.cpp" />
-    <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="ChunkLoader.cpp" />
+    <ClCompile Include="mathlib.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
-    <ClInclude Include="mathlib.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="ChunkLoader.h" />
+    <ClInclude Include="mathlib.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="mathtypes.h">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

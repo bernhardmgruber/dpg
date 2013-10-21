@@ -191,14 +191,9 @@ inline unsigned int Chunk::getCaseIndexFromDensityBlock(array<DensityType, 8> va
     return caseIndex;
 }
 
-struct Vector3UIHash
-{
-    size_t operator() (const Vector3UI& v) const { return v.x ^ (v.y << 11) ^ (v.z << 22); }
-};
-
 void Chunk::marchChunk(DensityType* block)
 {
-    unordered_map<Vector3F, unsigned int, Vector3UIHash> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
+    unordered_map<Vector3F, unsigned int> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
 
     for(unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
     {

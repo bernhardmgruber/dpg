@@ -11,11 +11,6 @@
 #include "Chunk.h"
 #include "mathlib.h"
 
-struct Vector3IHash
-{
-	size_t operator() (const Vector3I& v) const { return v.x ^ (v.y << 11) ^ (v.z << 22); }
-};
-
 class ChunkLoader
 {
 public:
@@ -26,12 +21,12 @@ public:
 
 private:
 	/// fully loaded chunks
-	std::unordered_map<Vector3I, Chunk*, Vector3IHash> chunks;
+	std::unordered_map<Vector3I, Chunk*> chunks;
 
 	/// loaded chunks, missing OpenGL initialization
-	std::unordered_map<Vector3I, Chunk*, Vector3IHash> uninitializedChunks;
+	std::unordered_map<Vector3I, Chunk*> uninitializedChunks;
 
-	std::unordered_set<Vector3I, Vector3IHash> enqueuedLoads;
+	std::unordered_set<Vector3I> enqueuedLoads;
 
 	/// A thread pool providing threads for loading
 	std::vector<std::thread> loaderThreadPool;

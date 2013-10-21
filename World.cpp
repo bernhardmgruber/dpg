@@ -67,6 +67,9 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
 
 bool World::isSolid(const Vector3F& pos) const
 {
+    const Vector3I chunkPos = getChunkPos(pos);
+    const Chunk* chunk = loader.get(chunkPos);
+
 
 }
 

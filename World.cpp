@@ -10,7 +10,7 @@
 using namespace std;
 
 World::World()
-	: renderListComplete(false)
+    : renderListComplete(false)
 {
 
 }
@@ -24,49 +24,64 @@ World::~World()
 
 void World::update()
 {
-	// Get camera position
-	Vector3F pos = Camera::getInstance().getPosition();
+    // Get camera position
+    Vector3I cameraChunkPos = getChunkPos(Camera::getInstance().getPosition());
 
-	// Determine the chunk the camera is in.
-	//Vector3I cameraChunkPos(0, 0, 0);
+    //cout << "camera at " << setprecision(2) << Camera::getInstance().getPosition() << " = chunk " << cameraChunkPos << endl;
 
-	pos = pos / Chunk::SIZE;
-	Vector3I cameraChunkPos(round(pos.x), round(pos.y), round(pos.z));
-
-	//cout << "camera at " << setprecision(2) << Camera::getInstance().getPosition() << " = chunk " << cameraChunkPos << endl;
-
-	// Check for chunks to load, unload, generate and build renderList
-	buildRenderList(cameraChunkPos);
+    // Check for chunks to load, unload, generate and build renderList
+    buildRenderList(cameraChunkPos);
 }
 
 void World::render()
 {
-	for(Chunk* c : renderList)
-		c->render();
+    for(Chunk* c : renderList)
+        c->render();
 }
 
 void World::buildRenderList(const Vector3I& cameraChunkPos)
 {
-	if(lastCameraChunk == cameraChunkPos && renderListComplete)
-		return; // the camera chunk has not changed, no need to rebuild the render list
+    if(lastCameraChunk == cameraChunkPos && renderListComplete)
+        return; // the camera chunk has not changed, no need to rebuild the render list
 
-	// clear renderList
-	renderList.clear();
-	renderListComplete = true;
+    // clear renderList
+    renderList.clear();
+    renderListComplete = true;
 
-	// iterate a cube around the camera and check the chunk's distance to camera chunk to get a sphere around the camera
-	for(int x = cameraChunkPos.x - CAMERA_CHUNK_RADIUS; x <= cameraChunkPos.x + CAMERA_CHUNK_RADIUS; x++)
-		for(int y = cameraChunkPos.y - CAMERA_CHUNK_RADIUS; y <= cameraChunkPos.y + CAMERA_CHUNK_RADIUS; y++)
-			for(int z = cameraChunkPos.z - CAMERA_CHUNK_RADIUS; z <= cameraChunkPos.z + CAMERA_CHUNK_RADIUS; z++)
-			{
-				Vector3I chunkPos(x, y, z);
-				if(::distance(chunkPos, cameraChunkPos) > CAMERA_CHUNK_RADIUS)
-					continue;
+    // iterate a cube around the camera and check the chunk's distance to camera chunk to get a sphere around the camera
+    for(int x = cameraChunkPos.x - CAMERA_CHUNK_RADIUS; x <= cameraChunkPos.x + CAMERA_CHUNK_RADIUS; x++)
+        for(int y = cameraChunkPos.y - CAMERA_CHUNK_RADIUS; y <= cameraChunkPos.y + CAMERA_CHUNK_RADIUS; y++)
+            for(int z = cameraChunkPos.z - CAMERA_CHUNK_RADIUS; z <= cameraChunkPos.z + CAMERA_CHUNK_RADIUS; z++)
+            {
+                Vector3I chunkPos(x, y, z);
+                if(::distance(chunkPos, cameraChunkPos) > CAMERA_CHUNK_RADIUS)
+                    continue;
 
-				Chunk* c = loader.get(chunkPos);
-				if(c)
-					renderList.push_back(c);
-				else
-					renderListComplete = false;
-			}
+                Chunk* c = loader.get(chunkPos);
+                if(c)
+                    renderList.push_back(c);
+                else
+                    renderListComplete = false;
+            }
+}
+
+bool World::isSolid(const Vector3F& pos) const
+{
+
+}
+
+Vector3F World::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const
+{
+
+}
+
+Vector3F World::move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const
+{
+    return dst;
+}
+
+Vector3I World::getChunkPos(const Vector3F& pos) const
+{
+    Vector3F chunkPos = pos / Chunk::SIZE;
+    return Vector3I(round(chunkPos.x), round(chunkPos.y), round(chunkPos.z));
 }

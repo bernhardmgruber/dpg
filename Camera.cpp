@@ -8,6 +8,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
+#include "World.h"
+
 #include "Camera.h"
 
 using namespace std;
@@ -17,6 +19,8 @@ extern SDL_Window* mainwindow;
 extern GLuint uModelViewProjectionMatrixLocation;
 extern GLuint uModelViewMatrixLocation;
 extern mat4 projectionMatrix;
+
+extern World world;
 
 Camera::Camera()
 {
@@ -116,7 +120,10 @@ void Camera::setCaptureMouse(bool captureMouse)
 
 void Camera::update(double interval)
 {
-    // else update camera object
+	//
+	// view
+	//
+
     if(captureMouse)
     {
         int x, y;
@@ -146,44 +153,55 @@ void Camera::update(double interval)
         SDL_WarpMouseInWindow(mainwindow, mouseOrigin.x, mouseOrigin.y);
     }
 
+	//
+	// displacement
+	//
+
+	Vector3F newPos = position;
+
     double tmpMoveSens = moveSens * interval;
 
     const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
     if (keys[SDL_SCANCODE_SPACE]) // UP
     {
-        position.y += (float)tmpMoveSens;
+        newPos.y += (float)tmpMoveSens;
     }
 
     if (keys[SDL_SCANCODE_LCTRL]) // DOWN
     {
-        position.y -= (float)tmpMoveSens;
+        newPos.y -= (float)tmpMoveSens;
     }
 
     // TODO: If strafing and moving reduce speed to keep total move per frame constant
     if (keys[SDL_SCANCODE_W]) // FORWARD
     {
-        position.x -= (float)(sin(degToRad(yaw)) * tmpMoveSens);
-        position.z -= (float)(cos(degToRad(yaw)) * tmpMoveSens);
+        newPos.x -= (float)(sin(degToRad(yaw)) * tmpMoveSens);
+        newPos.z -= (float)(cos(degToRad(yaw)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_S]) // BACKWARD
     {
-        position.x += (float)(sin(degToRad(yaw)) * tmpMoveSens);
-        position.z += (float)(cos(degToRad(yaw)) * tmpMoveSens);
+        newPos.x += (float)(sin(degToRad(yaw)) * tmpMoveSens);
+        newPos.z += (float)(cos(degToRad(yaw)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_A]) // LEFT
     {
-        position.x -= (float)(sin(degToRad(yaw + 90.0f)) * tmpMoveSens);
-        position.z -= (float)(cos(degToRad(yaw + 90.0f)) * tmpMoveSens);
+        newPos.x -= (float)(sin(degToRad(yaw + 90.0f)) * tmpMoveSens);
+        newPos.z -= (float)(cos(degToRad(yaw + 90.0f)) * tmpMoveSens);
     }
 
     if (keys[SDL_SCANCODE_D]) // RIGHT
     {
-        position.x -= (float)(sin(degToRad(yaw - 90.0f)) * tmpMoveSens);
-        position.z -= (float)(cos(degToRad(yaw - 90.0f)) * tmpMoveSens);
+        newPos.x -= (float)(sin(degToRad(yaw - 90.0f)) * tmpMoveSens);
+        newPos.z -= (float)(cos(degToRad(yaw - 90.0f)) * tmpMoveSens);
     }
+
+	// check move
+	// ... TODO
+
+    position = world.move(position, BoundingBox(position, position), newPos);
 }
 
 void Camera::look()

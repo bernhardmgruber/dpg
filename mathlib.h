@@ -82,6 +82,15 @@ struct Triangle
 	Vertex vertices[3];
 };
 
+struct BoundingBox
+{
+    Vector3F lower;
+    Vector3F upper;
+
+    BoundingBox(const Vector3F& lower, const Vector3F& upper)
+        : lower(lower), upper(upper) { };
+};
+
 std::ostream& operator<<(std::ostream& os, Vector3F v);
 std::ostream& operator<<(std::ostream& os, Vector3I v);
 std::ostream& operator<<(std::ostream& os, Vector2F v);

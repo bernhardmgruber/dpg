@@ -24,7 +24,7 @@ string sizeToString(size_t size)
     return ss.str();
 }
 
-int round(float f)
+int roundToInt(float f)
 {
 	return (int)(f + 0.5f);
 }

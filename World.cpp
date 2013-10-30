@@ -86,5 +86,5 @@ Vector3F World::move(const Vector3F src, const BoundingBox& box, const Vector3F 
 Vector3I World::getChunkPos(const Vector3F& pos) const
 {
     Vector3F chunkPos = pos / Chunk::SIZE;
-    return Vector3I(round(chunkPos.x), round(chunkPos.y), round(chunkPos.z));
+    return Vector3I(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
 }

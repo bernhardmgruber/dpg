@@ -59,21 +59,8 @@ Chunk::~Chunk()
     }
 }
 
-Vector3F Chunk::toWorld(unsigned int x, unsigned int y, unsigned int z) const
-{
-    Vector3F v;
-    v.x = SIZE / RESOLUTION * (x - 1);
-    v.y = SIZE / RESOLUTION * (y - 1);
-    v.z = SIZE / RESOLUTION * (z - 1);
-    return getWorldPosition() + v;
-}
 
-Vector3F Chunk::toWorld(const Vector3UI& v) const
-{
-    return toWorld(v.x, v.y, v.z);
-}
-
-Vector3UI Chunk::toDensity(const Vector3F& v) const
+Vector3UI Chunk::toDensityBlockCoord(const Vector3F& v) const
 {
     Vector3F rel = (v - getWorldPosition()) / SIZE * RESOLUTION;
 
@@ -102,7 +89,7 @@ const Vector3F Chunk::getWorldPosition() const
 
 Chunk::BlockType Chunk::categorizeWorldPosition(const Vector3F& pos) const
 {
-    const Vector3UI blockCoord = toDensity(pos);
+    const Vector3UI blockCoord = toDensityBlockCoord(pos);
     unsigned int caseIndex = getCaseIndexFromDensityBlock(getDensityBlockAt(densities, blockCoord.x, blockCoord.y, blockCoord.z));
 
     if(caseIndex == 255)

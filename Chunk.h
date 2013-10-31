@@ -67,14 +67,26 @@ public:
     /**
     * Converts a density value coordinate to a world coordinate.
     */
-    Vector3F toWorld(unsigned int x, unsigned int y, unsigned int z) const;
+    template<typename T>
+    Vector3F toWorld(T x, T y, T z) const
+    {
+        Vector3F v;
+        v.x = SIZE / RESOLUTION * (x - 1);
+        v.y = SIZE / RESOLUTION * (y - 1);
+        v.z = SIZE / RESOLUTION * (z - 1);
+        return getWorldPosition() + v;
+    }
 
     /**
     * Converts a density value coordinate to a world coordinate.
     */
-    Vector3F toWorld(const Vector3UI& v) const;
-
-    Vector3UI toDensity(const Vector3F& v) const;
+    template<typename T>
+    Vector3<T> toWorld(Vector3<T> v) const
+    {
+        return toWorld<T>(v.x, v.y, v.z);
+    }
+	
+    Vector3UI toDensityBlockCoord(const Vector3F& v) const;
 
     /**
     * Gets the position of the chunk's center in the voxel grid.

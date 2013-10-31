@@ -10,14 +10,14 @@ namespace gl
     {
     public:
         Program();
-        Program(std::initializer_list<Shader> shaders);
+        Program(std::initializer_list<const Shader> shaders);
         ~Program();
 
-        GLuint get();
+        GLuint get() const;
 
-        GLint getUniformLocation(const std::string& name);
+        GLint getUniformLocation(const std::string& name) const;
 
-        void use();
+        void use() const;
 
     private:
         GLuint program;

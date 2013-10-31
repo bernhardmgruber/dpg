@@ -1,7 +1,6 @@
 #pragma once
 
-#define GLEW_STATIC
-#include <GL/glew.h>
+#include "gl.h"
 #include <vector>
 #include <array>
 

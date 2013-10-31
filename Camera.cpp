@@ -1,11 +1,7 @@
-#include <cmath>
-#define GLEW_STATIC
-#include <GL/glew.h>
+#include "gl.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <cmath>
 #include <iostream>
 
 #include "World.h"
@@ -16,10 +12,6 @@ using namespace std;
 using namespace glm;
 
 extern SDL_Window* mainwindow;
-extern GLuint uModelViewProjectionMatrixLocation;
-extern GLuint uModelViewMatrixLocation;
-extern mat4 projectionMatrix;
-
 extern World world;
 
 Camera::Camera()
@@ -204,14 +196,13 @@ void Camera::update(double interval)
     position = world.move(position, BoundingBox(position, position), newPos);
 }
 
-void Camera::look()
+mat4 Camera::getViewMatrix() const
 {
     mat4 modelViewMatrix = rotate(mat4(1.0), -pitch, vec3(1.0, 0.0, 0.0));
     modelViewMatrix = rotate(modelViewMatrix, -yaw, vec3(0.0, 1.0, 0.0));
     modelViewMatrix = translate(modelViewMatrix, vec3(-position.x, -position.y, -position.z));
 
-    glUniformMatrix4fv(uModelViewProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix * modelViewMatrix));
-    glUniformMatrix4fv(uModelViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-
     //cout << "Look: " << "Pitch " << pitch << " Yaw " << yaw << " Position " << position << endl;
+
+    return modelViewMatrix;
 }

@@ -11,6 +11,15 @@
       <Filter>kernels</Filter>
     </None>
     <None Include="tables.inc" />
+    <None Include="shaders\normals.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\normals.geom">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\normals.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

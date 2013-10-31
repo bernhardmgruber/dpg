@@ -9,7 +9,7 @@ namespace gl
 {
     Shader::Shader()
     {
-
+        shader = 0;
     }
 
     Shader::Shader(GLenum shaderType, const std::string& file)
@@ -49,7 +49,7 @@ namespace gl
         glDeleteShader(shader);
     }
 
-    GLuint Shader::get()
+    GLuint Shader::get() const
     {
         return shader;
     }

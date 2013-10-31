@@ -125,6 +125,9 @@
     <None Include="kernels\main.cl" />
     <None Include="shaders\main.frag" />
     <None Include="shaders\main.vert" />
+    <None Include="shaders\normals.frag" />
+    <None Include="shaders\normals.geom" />
+    <None Include="shaders\normals.vert" />
     <None Include="tables.inc" />
   </ItemGroup>
   <ItemGroup>

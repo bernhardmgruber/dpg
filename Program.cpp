@@ -6,14 +6,14 @@ namespace gl
 {
     Program::Program()
     {
-
+        program = 0;
     }
 
-    Program::Program(initializer_list<Shader> shaders)
+    Program::Program(initializer_list<const Shader> shaders)
     {
         program = glCreateProgram();
 
-        for (auto shader : shaders)
+        for (const auto& shader : shaders)
             glAttachShader(program, shader.get());
 
         glLinkProgram(program);
@@ -40,17 +40,17 @@ namespace gl
         glDeleteProgram(program);
     }
 
-    GLuint Program::get()
+    GLuint Program::get() const
     {
         return program;
     }
 
-    GLint Program::getUniformLocation(const std::string& name)
+    GLint Program::getUniformLocation(const std::string& name) const
     {
         return glGetUniformLocation(program, name.c_str());
     }
 
-    void Program::use()
+    void Program::use() const
     {
         glUseProgram(program);
     }

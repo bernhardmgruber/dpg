@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gl.h"
 #include "mathlib.h"
 
 #define CAMERA_MOVE_SENS 5.0f
@@ -74,9 +75,9 @@ public:
     void update(double interval);
 
     /**
-     * Sets the modelview matrix according to the current position and view angles.
+     * Gets the modelview matrix according to the current position and view angles.
      */
-    void look();
+    glm::mat4 getViewMatrix() const;
 
 private:
     /**

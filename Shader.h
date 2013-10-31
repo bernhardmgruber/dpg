@@ -12,7 +12,7 @@ namespace gl
         Shader(GLenum shaderType, const std::string& file);
         ~Shader();
 
-        GLuint get();
+        GLuint get() const;
 
     private:
         GLuint shader;

@@ -35,10 +35,10 @@ SDL_Window* mainwindow;
 SDL_GLContext maincontext;
 
 gl::Program shaderProgram;
-GLuint uModelViewProjectionMatrixLocation;
-GLuint uModelViewMatrixLocation;
-
-GLuint normalDebuggingProgram;
+gl::Program normalDebuggingProgram;
+GLint uViewProjectionMatrixLocation;
+GLint uViewProjectionMatrixLocationNormalDebuggingProgram;
+GLint uViewMatrixLocation;
 
 Timer timer;
 
@@ -71,96 +71,31 @@ void resizeGLScene(int width, int height)
 
 bool initGL()
 {
-    glShadeModel(GL_SMOOTH);
     glClearColor(0.3f, 0.5f, 0.7f, 1.0f);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     glEnable(GL_MULTISAMPLE);
 
     // Shaders
+    swap(shaderProgram, gl::Program(
+    {
+        gl::Shader(GL_VERTEX_SHADER, "shaders/main.vert"),
+        gl::Shader(GL_FRAGMENT_SHADER, "shaders/main.frag")
+    }));
+    swap(normalDebuggingProgram, gl::Program(
+    {
+        gl::Shader(GL_VERTEX_SHADER, "shaders/normals.vert"),
+        gl::Shader(GL_GEOMETRY_SHADER, "shaders/normals.geom"),
+        gl::Shader(GL_FRAGMENT_SHADER, "shaders/normals.frag")
+    }));
 
-    gl::Shader vsMain(GL_VERTEX_SHADER, "shaders/main.vert");
-    gl::Shader fsMain(GL_VERTEX_SHADER, "shaders/main.frag");
-
-    shaderProgram = gl::Program({ vsMain, fsMain });
-
-    uModelViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uModelViewProjectionMatrix");
-    uModelViewMatrixLocation = shaderProgram.getUniformLocation("uModelViewMatrix");
+    uViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uViewProjectionMatrix");
+    uViewMatrixLocation = shaderProgram.getUniformLocation("uViewMatrix");
+    uViewProjectionMatrixLocationNormalDebuggingProgram = normalDebuggingProgram.getUniformLocation("uViewProjectionMatrix");
 
     shaderProgram.use();
-
-    return true;
-}
-
-#define CHECK(error) if(error != CL_SUCCESS) { cout << "Error at line " << __LINE__ << ": " << error << endl; }
-
-bool initCL()
-{
-    cl_int error;
-
-    // get the first available platform
-    cl_platform_id platform;
-    error = clGetPlatformIDs(1, &platform, nullptr);
-    CHECK(error);
-
-    // get a GPU from this platform
-    cl_device_id device;
-    error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, nullptr);
-    CHECK(error);
-
-    // set properties to work with OpenGL (WINDOWS only) from: http://www.dyn-lab.com/articles/cl-gl.html
-    cl_context_properties properties[] = {
-        CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
-        CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
-        CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
-        0 };
-
-    // create a context to work with OpenCL
-    context = clCreateContext(properties, 1, &device, nullptr, nullptr, &error);
-    CHECK(error);
-
-    // read the kernel source
-    string buffer;
-    if (!readFile("kernels/main.cl", buffer))
-        return false;
-    const char* source = buffer.c_str();
-
-    // create an OpenCL program from the source code
-    program = clCreateProgramWithSource(context, 1, &source, nullptr, &error);
-    CHECK(error);
-
-    // build the program
-    error = clBuildProgram(program, 1, &device, "-w", nullptr, nullptr);
-    if (error != CL_SUCCESS)
-    {
-        cerr << "##### Error building CL program #####" << endl;
-
-        // get the error log size
-        size_t logSize;
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-
-        // allocate enough space and get the log
-        char* log = new char[logSize + 1];
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, nullptr);
-        log[logSize] = '\0';
-
-        // print the build log and delete it
-        cerr << log << endl;
-        delete[] log;
-
-        return false;
-    }
-
-    // set the entry point for an OpenCL kernel
-    kernel = clCreateKernel(program, "GenChunk", &error);
-    CHECK(error);
-
-    // create a new command queue, where kernels can be executed
-    cmdqueue = clCreateCommandQueue(context, device, 0, &error);
-    CHECK(error);
 
     return true;
 }
@@ -177,14 +112,20 @@ void update(double interval)
 
 void render()
 {
+    // clear
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
 
-    Camera::getInstance().look();
+    // update shader states
+    mat4 viewMatrix = Camera::getInstance().getViewMatrix();
+    mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+
+    glUniformMatrix4fv(uViewProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
+    glUniformMatrix4fv(uViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+    // render the world
     world.render();
 
-
-
+    // render coordinate system
     if (global::coords)
     {
         const int coordLength = 1000;
@@ -214,6 +155,15 @@ void render()
         glVertex3i(0, 0, 0);
         glVertex3i(0, 0, -coordLength);
         glEnd();
+    }
+
+    // render normals
+    if (global::normals)
+    {
+        normalDebuggingProgram.use();
+        glUniformMatrix4fv(uViewProjectionMatrixLocationNormalDebuggingProgram, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
+        world.render();
+        shaderProgram.use();
     }
 }
 
@@ -360,8 +310,16 @@ int main(int argc, char **argv)
     if (!createSDLWindow(initialWindowWidth, initialWindowHeight))
         return -1;
 
-    if (!initGL())
-        return -1;
+    try
+    {
+        if (!initGL())
+            return -1;
+    }
+    catch (const exception& e)
+    {
+        cerr << e.what() << endl;
+        return -2;
+    }
     //if(!initCL())
     //	return -1;
 

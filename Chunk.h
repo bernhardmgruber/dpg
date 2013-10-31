@@ -71,9 +71,10 @@ public:
     Vector3F toWorld(T x, T y, T z) const
     {
         Vector3F v;
-        v.x = SIZE / RESOLUTION * (x - 1);
-        v.y = SIZE / RESOLUTION * (y - 1);
-        v.z = SIZE / RESOLUTION * (z - 1);
+        float blockLength = SIZE / RESOLUTION;
+        v.x = blockLength * ((float)x - 1.0f);
+        v.y = blockLength * ((float)y - 1.0f);
+        v.z = blockLength * ((float)z - 1.0f);
         return getWorldPosition() + v;
     }
 
@@ -152,7 +153,7 @@ private:
 
     inline DensityType blockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const;
 
-    Vector3F getNormal(DensityType* block, const Vector3I& v) const;
+    Vector3F getNormal(DensityType* block, const Vector3UI& v) const;
 
     inline std::array<DensityType, 8> getDensityBlockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const;
 

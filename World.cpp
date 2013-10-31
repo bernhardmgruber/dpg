@@ -75,7 +75,7 @@ bool World::isAir(const Vector3F& pos) const
 
 Vector3F World::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const
 {
-
+    return Vector3F();
 }
 
 Vector3F World::move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const

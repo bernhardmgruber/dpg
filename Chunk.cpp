@@ -117,6 +117,25 @@ void Chunk::render() const
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+
+    // debug normals
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    for(auto t : triangles)
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            Vertex vert = vertices[t[i]];
+            Vector3F pos = vert.position;
+            Vector3F normal = vert.normal;
+
+            
+            glVertex3fv((float*)&pos);
+            pos = pos + (normal * 0.05f);
+            glVertex3fv((float*)&pos);
+        }
+    }
+    glEnd();
 }
 
 const ChunkMemoryFootprint Chunk::getMemoryFootprint() const
@@ -150,10 +169,13 @@ void Chunk::createBuffers()
 
 inline float Chunk::blockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const
 {
+    assert(x < (Chunk::RESOLUTION + 1 + 2));
+    assert(y < (Chunk::RESOLUTION + 1 + 2));
+    assert(z < (Chunk::RESOLUTION + 1 + 2));
     return (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)));
 }
 
-Vector3F Chunk::getNormal(DensityType* block, const Vector3I& v) const
+Vector3F Chunk::getNormal(DensityType* block, const Vector3UI& v) const
 {
     Vector3F grad;
     grad.x = blockAt(block, v.x + 1, v.y    , v.z    ) - blockAt(block, v.x - 1, v.y    , v.z    );

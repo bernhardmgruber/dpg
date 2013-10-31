@@ -4,6 +4,7 @@
 
 #include "Timer.h"
 #include "tables.inc"
+#include "globals.h"
 
 #include "Chunk.h"
 
@@ -15,7 +16,7 @@ const unsigned int Chunk::RESOLUTION = 16;
 const unsigned int CHUNK_TRIANGLE_MAP_INITIAL_SIZE = 3000;
 
 Chunk::Chunk(Vector3I position)
-    : position(position), buffersInitialized(false)
+: position(position), buffersInitialized(false)
 {
     noise::module::Perlin perlin;
     perlin.SetOctaveCount(5);
@@ -26,11 +27,11 @@ Chunk::Chunk(Vector3I position)
 
     //Timer timer;
 
-    for(unsigned int x = 0; x < size; x++)
+    for (unsigned int x = 0; x < size; x++)
     {
-        for(unsigned int y = 0; y < size; y++)
+        for (unsigned int y = 0; y < size; y++)
         {
-            for(unsigned int z = 0; z < size; z++)
+            for (unsigned int z = 0; z < size; z++)
             {
                 Vector3F world = toWorld(x, y, z);
                 densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);
@@ -52,7 +53,7 @@ Chunk::~Chunk()
 {
     delete[] densities;
 
-    if(buffersInitialized)
+    if (buffersInitialized)
     {
         glDeleteBuffers(1, &vertexBuffer);
         glDeleteBuffers(1, &indexBuffer);
@@ -64,7 +65,7 @@ Vector3UI Chunk::toDensityBlockCoord(const Vector3F& v) const
 {
     Vector3F rel = (v - getWorldPosition()) / SIZE * RESOLUTION;
 
-    Vector3UI blockCoord((unsigned int) rel.x, (unsigned int) rel.y, (unsigned int) rel.z);
+    Vector3UI blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
 
     assert(rel.x > 0 && rel.x < 16);
     assert(rel.y > 0 && rel.y < 16);
@@ -92,9 +93,9 @@ Chunk::BlockType Chunk::categorizeWorldPosition(const Vector3F& pos) const
     const Vector3UI blockCoord = toDensityBlockCoord(pos);
     unsigned int caseIndex = getCaseIndexFromDensityBlock(getDensityBlockAt(densities, blockCoord.x, blockCoord.y, blockCoord.z));
 
-    if(caseIndex == 255)
+    if (caseIndex == 255)
         return BlockType::SOLID;
-    if(caseIndex == 0)
+    if (caseIndex == 0)
         return BlockType::AIR;
     return BlockType::SURFACE;
 }
@@ -118,24 +119,27 @@ void Chunk::render() const
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
-    // debug normals
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_LINES);
-    for(auto t : triangles)
+    if (global::normals)
     {
-        for(int i = 0; i < 3; i++)
-        {
-            Vertex vert = vertices[t[i]];
-            Vector3F pos = vert.position;
-            Vector3F normal = vert.normal;
 
-            
-            glVertex3fv((float*)&pos);
-            pos = pos + (normal * 0.05f);
-            glVertex3fv((float*)&pos);
+        glColor3f(1.0, 0.0, 0.0);
+        glBegin(GL_LINES);
+        for (auto t : triangles)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                Vertex vert = vertices[t[i]];
+                Vector3F pos = vert.position;
+                Vector3F normal = vert.normal;
+
+
+                glVertex3fv((float*)&pos);
+                pos = pos + (normal * 0.05f);
+                glVertex3fv((float*)&pos);
+            }
         }
+        glEnd();
     }
-    glEnd();
 }
 
 const ChunkMemoryFootprint Chunk::getMemoryFootprint() const
@@ -172,15 +176,15 @@ inline float Chunk::blockAt(DensityType* block, unsigned int x, unsigned int y, 
     assert(x < (Chunk::RESOLUTION + 1 + 2));
     assert(y < (Chunk::RESOLUTION + 1 + 2));
     assert(z < (Chunk::RESOLUTION + 1 + 2));
-    return (*(block + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)));
+    return (*(block + (x)* (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y)* (Chunk::RESOLUTION + 1 + 2) + (z)));
 }
 
 Vector3F Chunk::getNormal(DensityType* block, const Vector3UI& v) const
 {
     Vector3F grad;
-    grad.x = blockAt(block, v.x + 1, v.y    , v.z    ) - blockAt(block, v.x - 1, v.y    , v.z    );
-    grad.y = blockAt(block, v.x    , v.y + 1, v.z    ) - blockAt(block, v.x    , v.y - 1, v.z    );
-    grad.z = blockAt(block, v.x    , v.y    , v.z + 1) - blockAt(block, v.x    , v.y    , v.z - 1);
+    grad.x = blockAt(block, v.x + 1, v.y, v.z) - blockAt(block, v.x - 1, v.y, v.z);
+    grad.y = blockAt(block, v.x, v.y + 1, v.z) - blockAt(block, v.x, v.y - 1, v.z);
+    grad.z = blockAt(block, v.x, v.y, v.z + 1) - blockAt(block, v.x, v.y, v.z - 1);
 
     return normalize(grad);
 }
@@ -188,14 +192,14 @@ Vector3F Chunk::getNormal(DensityType* block, const Vector3UI& v) const
 array<Chunk::DensityType, 8> Chunk::getDensityBlockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const
 {
     array<DensityType, 8> values;
-    values[0] = blockAt(block, x    , y    , z    );
-    values[1] = blockAt(block, x    , y    , z + 1);
-    values[2] = blockAt(block, x + 1, y    , z + 1);
-    values[3] = blockAt(block, x + 1, y    , z    );
-    values[4] = blockAt(block, x    , y + 1, z    );
-    values[5] = blockAt(block, x    , y + 1, z + 1);
+    values[0] = blockAt(block, x, y, z);
+    values[1] = blockAt(block, x, y, z + 1);
+    values[2] = blockAt(block, x + 1, y, z + 1);
+    values[3] = blockAt(block, x + 1, y, z);
+    values[4] = blockAt(block, x, y + 1, z);
+    values[5] = blockAt(block, x, y + 1, z + 1);
     values[6] = blockAt(block, x + 1, y + 1, z + 1);
-    values[7] = blockAt(block, x + 1, y + 1, z    );
+    values[7] = blockAt(block, x + 1, y + 1, z);
     return values;
 }
 
@@ -203,14 +207,14 @@ inline unsigned int Chunk::getCaseIndexFromDensityBlock(array<DensityType, 8> va
 {
     int caseIndex = 0;
 
-    if(values[0] > 0) caseIndex |= 0x01;
-    if(values[1] > 0) caseIndex |= 0x02;
-    if(values[2] > 0) caseIndex |= 0x04;
-    if(values[3] > 0) caseIndex |= 0x08;
-    if(values[4] > 0) caseIndex |= 0x10;
-    if(values[5] > 0) caseIndex |= 0x20;
-    if(values[6] > 0) caseIndex |= 0x40;
-    if(values[7] > 0) caseIndex |= 0x80;
+    if (values[0] > 0) caseIndex |= 0x01;
+    if (values[1] > 0) caseIndex |= 0x02;
+    if (values[2] > 0) caseIndex |= 0x04;
+    if (values[3] > 0) caseIndex |= 0x08;
+    if (values[4] > 0) caseIndex |= 0x10;
+    if (values[5] > 0) caseIndex |= 0x20;
+    if (values[6] > 0) caseIndex |= 0x40;
+    if (values[7] > 0) caseIndex |= 0x80;
 
     return caseIndex;
 }
@@ -219,30 +223,30 @@ void Chunk::marchChunk(DensityType* block)
 {
     unordered_map<Vector3F, unsigned int> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
 
-    for(unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
+    for (unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
     {
-        for(unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++)
+        for (unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++)
         {
-            for(unsigned int z = 1; z < Chunk::RESOLUTION + 1; z++)
+            for (unsigned int z = 1; z < Chunk::RESOLUTION + 1; z++)
             {
                 array<DensityType, 8> values = getDensityBlockAt(block, x, y, z);
 
                 unsigned int caseIndex = getCaseIndexFromDensityBlock(values);
 
-                if(caseIndex == 255)
+                if (caseIndex == 255)
                     continue; // solid block
-                if(caseIndex == 0)
+                if (caseIndex == 0)
                     continue; // air block
 
                 int numTriangles = case_to_numpolys[caseIndex];
 
                 // for each triangle of the cube
-                for(int t = 0; t < numTriangles; t++)
+                for (int t = 0; t < numTriangles; t++)
                 {
                     Vector3I tri;
 
                     // for each edge of the cube a triangle vertex is on
-                    for(int e = 0; e < 3; e++)
+                    for (int e = 0; e < 3; e++)
                     {
                         int edgeIndex = edge_connect_list[caseIndex][t][e];
 
@@ -251,22 +255,22 @@ void Chunk::marchChunk(DensityType* block)
                         Vector3I vec1;
                         Vector3I vec2;
 
-                        switch(edgeIndex)
+                        switch (edgeIndex)
                         {
-                        case 0:  value1 = values[0]; value2 = values[1]; vec1 = Vector3I(x    , y    , z    ); vec2 = Vector3I(x    , y    , z + 1); break;
-                        case 1:  value1 = values[1]; value2 = values[2]; vec1 = Vector3I(x    , y    , z + 1); vec2 = Vector3I(x + 1, y    , z + 1); break;
-                        case 2:  value1 = values[2]; value2 = values[3]; vec1 = Vector3I(x + 1, y    , z + 1); vec2 = Vector3I(x + 1, y    , z    ); break;
-                        case 3:  value1 = values[3]; value2 = values[0]; vec1 = Vector3I(x + 1, y    , z    ); vec2 = Vector3I(x    , y    , z    ); break;
+                        case 0:  value1 = values[0]; value2 = values[1]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y, z + 1); break;
+                        case 1:  value1 = values[1]; value2 = values[2]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x + 1, y, z + 1); break;
+                        case 2:  value1 = values[2]; value2 = values[3]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y, z); break;
+                        case 3:  value1 = values[3]; value2 = values[0]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x, y, z); break;
 
-                        case 4:  value1 = values[4]; value2 = values[5]; vec1 = Vector3I(x    , y + 1, z    ); vec2 = Vector3I(x    , y + 1, z + 1); break;
-                        case 5:  value1 = values[5]; value2 = values[6]; vec1 = Vector3I(x    , y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                        case 6:  value1 = values[6]; value2 = values[7]; vec1 = Vector3I(x + 1, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z    ); break;
-                        case 7:  value1 = values[7]; value2 = values[4]; vec1 = Vector3I(x + 1, y + 1, z    ); vec2 = Vector3I(x    , y + 1, z    ); break;
+                        case 4:  value1 = values[4]; value2 = values[5]; vec1 = Vector3I(x, y + 1, z); vec2 = Vector3I(x, y + 1, z + 1); break;
+                        case 5:  value1 = values[5]; value2 = values[6]; vec1 = Vector3I(x, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
+                        case 6:  value1 = values[6]; value2 = values[7]; vec1 = Vector3I(x + 1, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z); break;
+                        case 7:  value1 = values[7]; value2 = values[4]; vec1 = Vector3I(x + 1, y + 1, z); vec2 = Vector3I(x, y + 1, z); break;
 
-                        case 8:  value1 = values[0]; value2 = values[4]; vec1 = Vector3I(x    , y    , z    ); vec2 = Vector3I(x    , y + 1, z    ); break;
-                        case 9:  value1 = values[1]; value2 = values[5]; vec1 = Vector3I(x    , y    , z + 1); vec2 = Vector3I(x    , y + 1, z + 1); break;
-                        case 10: value1 = values[2]; value2 = values[6]; vec1 = Vector3I(x + 1, y    , z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                        case 11: value1 = values[3]; value2 = values[7]; vec1 = Vector3I(x + 1, y    , z    ); vec2 = Vector3I(x + 1, y + 1, z    ); break;
+                        case 8:  value1 = values[0]; value2 = values[4]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y + 1, z); break;
+                        case 9:  value1 = values[1]; value2 = values[5]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x, y + 1, z + 1); break;
+                        case 10: value1 = values[2]; value2 = values[6]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
+                        case 11: value1 = values[3]; value2 = values[7]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x + 1, y + 1, z); break;
 
                         default: cerr << "Invalid edge index: " << edgeIndex << endl; break;
                         }
@@ -275,7 +279,7 @@ void Chunk::marchChunk(DensityType* block)
 
                         // lookup this vertex
                         auto it = vertexMap.find(vertex);
-                        if(it != vertexMap.end()) // we found it
+                        if (it != vertexMap.end()) // we found it
                             tri[e] = it->second;
                         else
                         {

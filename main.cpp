@@ -1,44 +1,44 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
+#include "gl.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <CL/CL.h>
 #include <CL/cl_gl.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <string>
 
+#include "Shader.h"
+#include "Program.h"
 #include "ThreadedCommandConsole.h"
 #include "Camera.h"
 #include "Timer.h"
 #include "World.h"
 #include "utils.h"
+#include "globals.h"
 
 #undef main
-
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
-#define WINDOW_CAPTION "noise"
 
 using namespace std;
 using namespace glm;
 
-bool g_active = true;
-bool g_done = false;
-bool g_fullscreen = false;
+const static unsigned int initialWindowWidth = 1024;
+const static unsigned int initialWindowHeight = 768;
+const static string windowCaption = "noise";
 
-bool g_coords = false;
-bool g_polygonmode = false;
+static bool g_active = true;
+static bool g_done = false;
+static bool g_fullscreen = false;
 
 SDL_Window* mainwindow;
 SDL_GLContext maincontext;
 
-GLuint shaderProgram;
+gl::Program shaderProgram;
 GLuint uModelViewProjectionMatrixLocation;
 GLuint uModelViewMatrixLocation;
+
+GLuint normalDebuggingProgram;
 
 Timer timer;
 
@@ -81,70 +81,16 @@ bool initGL()
     glEnable(GL_MULTISAMPLE);
 
     // Shaders
-    GLuint vsMain = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fsMain = glCreateShader(GL_FRAGMENT_SHADER);
 
-    string buffer;
-    const char* source;
-    if (!readFile("shaders/main.vert", buffer))
-        return false;
-    source = buffer.c_str();
-    glShaderSource(vsMain, 1, (const char**)&source, nullptr);
-    if (!readFile("shaders/main.frag", buffer))
-        return false;
-    source = buffer.c_str();
-    glShaderSource(fsMain, 1, (const char**)&source, nullptr);
+    gl::Shader vsMain(GL_VERTEX_SHADER, "shaders/main.vert");
+    gl::Shader fsMain(GL_VERTEX_SHADER, "shaders/main.frag");
 
-    glCompileShader(vsMain);
-    glCompileShader(fsMain);
+    shaderProgram = gl::Program({ vsMain, fsMain });
 
-    // check shader status
-    GLuint shaders[] = { vsMain, fsMain };
-    for (GLuint shader : shaders)
-    {
-        GLint status;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-        if (status == GL_FALSE)
-        {
-            GLint length;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    uModelViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uModelViewProjectionMatrix");
+    uModelViewMatrixLocation = shaderProgram.getUniformLocation("uModelViewMatrix");
 
-            char* infoLog = new char[length];
-            glGetShaderInfoLog(shader, length, nullptr, infoLog);
-
-            cout << infoLog << endl;
-            delete[] infoLog;
-            return false;
-        }
-    }
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vsMain);
-    glAttachShader(shaderProgram, fsMain);
-
-    glLinkProgram(shaderProgram);
-
-    // check program status
-    {
-        GLint status;
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-        if (status == GL_FALSE)
-        {
-            GLint length;
-            glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &length);
-            char* infoLog = new char[length];
-            glGetProgramInfoLog(shaderProgram, length, nullptr, infoLog);
-
-            cout << infoLog << endl;
-            delete[] infoLog;
-            return false;
-        }
-    }
-
-    uModelViewProjectionMatrixLocation = glGetUniformLocation(shaderProgram, "uModelViewProjectionMatrix");
-    uModelViewMatrixLocation = glGetUniformLocation(shaderProgram, "uModelViewMatrix");
-
-    glUseProgram(shaderProgram);
+    shaderProgram.use();
 
     return true;
 }
@@ -222,7 +168,7 @@ bool initCL()
 void update(double interval)
 {
     stringstream caption;
-    caption << WINDOW_CAPTION << " @ " << fixed << setprecision(1) << timer.tps << " FPS";
+    caption << windowCaption << " @ " << fixed << setprecision(1) << timer.tps << " FPS";
     SDL_SetWindowTitle(mainwindow, caption.str().c_str());
 
     Camera::getInstance().update(interval);
@@ -237,7 +183,9 @@ void render()
     Camera::getInstance().look();
     world.render();
 
-    if (g_coords)
+
+
+    if (global::coords)
     {
         const int coordLength = 1000;
 
@@ -277,7 +225,7 @@ bool createSDLWindow(int width, int height)
         return false;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -291,7 +239,7 @@ bool createSDLWindow(int width, int height)
     if (g_fullscreen)
         flags |= SDL_WINDOW_FULLSCREEN;
 
-    mainwindow = SDL_CreateWindow(WINDOW_CAPTION, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+    mainwindow = SDL_CreateWindow(windowCaption.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
     if (mainwindow == nullptr)
     {
         cerr << "Unable to create window" << endl;
@@ -346,7 +294,7 @@ void processEvent(SDL_Event event)
             SDL_Quit();
             g_fullscreen = !g_fullscreen;
 
-            if (!createSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
+            if (!createSDLWindow(initialWindowWidth, initialWindowHeight))
                 g_done = true;
             return;
         default:
@@ -390,7 +338,8 @@ void processEvent(SDL_Event event)
 
 void showPolygons(vector<string> args)
 {
-    if (args[1] == "true")
+    global::polygonmode = args[1] == "true";
+    if (global::polygonmode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -398,12 +347,17 @@ void showPolygons(vector<string> args)
 
 void showCoordinateSystem(vector<string> args)
 {
-    g_coords = args[1] == "true";
+    global::coords = args[1] == "true";
+}
+
+void showNormals(vector<string> args)
+{
+    global::normals = args[1] == "true";
 }
 
 int main(int argc, char **argv)
 {
-    if (!createSDLWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
+    if (!createSDLWindow(initialWindowWidth, initialWindowHeight))
         return -1;
 
     if (!initGL())
@@ -411,11 +365,12 @@ int main(int argc, char **argv)
     //if(!initCL())
     //	return -1;
 
-    resizeGLScene(WINDOW_WIDTH, WINDOW_HEIGHT);
+    resizeGLScene(initialWindowWidth, initialWindowHeight);
 
     ThreadedCommandConsole console;
     console.addCommand("polygons", regex("polygons (true|false)"), &showPolygons);
-    console.addCommand("coords", regex("coords (true|false)"), &showPolygons);
+    console.addCommand("coords", regex("coords (true|false)"), &showCoordinateSystem);
+    console.addCommand("normals", regex("normals (true|false)"), &showNormals);
 
     while (!g_done)
     {

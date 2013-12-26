@@ -1,9 +1,7 @@
-#include <noise/noise.h>
 #include <iostream>
 #include <unordered_map>
 
 #include "Timer.h"
-#include "tables.inc"
 #include "globals.h"
 
 #include "Chunk.h"
@@ -13,45 +11,31 @@ using namespace std;
 const float Chunk::SIZE = 1.0;
 const unsigned int Chunk::RESOLUTION = 16;
 
-const unsigned int CHUNK_TRIANGLE_MAP_INITIAL_SIZE = 3000;
-
-Chunk::Chunk(Vector3I position)
-: position(position), buffersInitialized(false)
+Chunk::IdType Chunk::ChunkGridCoordinateToId(Vector3I chunkGridCoord)
 {
-    noise::module::Perlin perlin;
-    perlin.SetOctaveCount(5);
-    perlin.SetFrequency(0.3);
+    uint32_t mask = 0x001FFFFF; // 21 bit
 
-    const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
-    densities = new DensityType[size * size * size];
-
-    //Timer timer;
-
-    for (unsigned int x = 0; x < size; x++)
-    {
-        for (unsigned int y = 0; y < size; y++)
-        {
-            for (unsigned int z = 0; z < size; z++)
-            {
-                Vector3F world = toWorld(x, y, z);
-                densities[x * size * size + y * size + z] = (DensityType)perlin.GetValue(world.x, world.y, world.z);
-            }
-        }
-    }
-
-    //timer.tick();
-    //cout << "Noise took " << timer.interval << " seconds" << endl;
-
-    // create geometry using marching cubes
-    marchChunk(densities);
-
-    //timer.tick();
-    //cout << "Marching took " << timer.interval << " seconds" << endl;
+    return (((IdType)(chunkGridCoord.x & mask)) << 42) | (((IdType)(chunkGridCoord.y & mask)) << 21) | (((IdType)(chunkGridCoord.z & mask)) << 0);
 }
+
+Vector3I Chunk::IdToChunkGridCoordinate(IdType id)
+{
+    uint32_t mask = 0x001FFFFF; // 21 bit
+    return Vector3I((id >> 42) & mask, (id >> 21) & mask, (id >> 0) & mask);
+}
+
+Chunk::Chunk(IdType id)
+: id(id), position(IdToChunkGridCoordinate(id)), buffersInitialized(false), densities(nullptr)
+{}
+
+Chunk::Chunk(Vector3I chunkGridCoord)
+: id(ChunkGridCoordinateToId(chunkGridCoord)), position(chunkGridCoord), buffersInitialized(false), densities(nullptr)
+{}
 
 Chunk::~Chunk()
 {
-    delete[] densities;
+    if (densities)
+        delete[] densities;
 
     if (buffersInitialized)
     {
@@ -61,7 +45,7 @@ Chunk::~Chunk()
 }
 
 
-Vector3UI Chunk::toDensityBlockCoord(const Vector3F& v) const
+Vector3UI Chunk::toVoxelCoord(const Vector3F& v) const
 {
     Vector3F rel = (v - getWorldPosition()) / SIZE * RESOLUTION;
 
@@ -74,7 +58,12 @@ Vector3UI Chunk::toDensityBlockCoord(const Vector3F& v) const
     return blockCoord;
 }
 
-const Vector3I Chunk::getVoxelPosition() const
+const Chunk::IdType Chunk::getId() const
+{
+    return id;
+}
+
+const Vector3I Chunk::getChunkGridPositon() const
 {
     return position;
 }
@@ -88,16 +77,16 @@ const Vector3F Chunk::getWorldPosition() const
     return v;
 }
 
-Chunk::BlockType Chunk::categorizeWorldPosition(const Vector3F& pos) const
+Chunk::VoxelType Chunk::categorizeWorldPosition(const Vector3F& pos) const
 {
-    const Vector3UI blockCoord = toDensityBlockCoord(pos);
-    unsigned int caseIndex = getCaseIndexFromDensityBlock(getDensityBlockAt(densities, blockCoord.x, blockCoord.y, blockCoord.z));
+    const Vector3UI blockCoord = toVoxelCoord(pos);
+    unsigned int caseIndex = caseIndexFromVoxel(voxelCubeAt(blockCoord.x, blockCoord.y, blockCoord.z));
 
     if (caseIndex == 255)
-        return BlockType::SOLID;
+        return VoxelType::SOLID;
     if (caseIndex == 0)
-        return BlockType::AIR;
-    return BlockType::SURFACE;
+        return VoxelType::AIR;
+    return VoxelType::SURFACE;
 }
 
 void Chunk::render() const
@@ -121,7 +110,6 @@ void Chunk::render() const
 
     if (global::normals)
     {
-
         glColor3f(1.0, 0.0, 0.0);
         glBegin(GL_LINES);
         for (auto t : triangles)
@@ -170,40 +158,29 @@ void Chunk::createBuffers()
 }
 
 
-
-inline float Chunk::blockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const
+inline float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const
 {
     assert(x < (Chunk::RESOLUTION + 1 + 2));
     assert(y < (Chunk::RESOLUTION + 1 + 2));
     assert(z < (Chunk::RESOLUTION + 1 + 2));
-    return (*(block + (x)* (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y)* (Chunk::RESOLUTION + 1 + 2) + (z)));
+    return (*(densities + (x)* (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y)* (Chunk::RESOLUTION + 1 + 2) + (z)));
 }
 
-Vector3F Chunk::getNormal(DensityType* block, const Vector3UI& v) const
-{
-    Vector3F grad;
-    grad.x = blockAt(block, v.x + 1, v.y, v.z) - blockAt(block, v.x - 1, v.y, v.z);
-    grad.y = blockAt(block, v.x, v.y + 1, v.z) - blockAt(block, v.x, v.y - 1, v.z);
-    grad.z = blockAt(block, v.x, v.y, v.z + 1) - blockAt(block, v.x, v.y, v.z - 1);
-
-    return normalize(grad);
-}
-
-array<Chunk::DensityType, 8> Chunk::getDensityBlockAt(DensityType* block, unsigned int x, unsigned int y, unsigned int z) const
+array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const
 {
     array<DensityType, 8> values;
-    values[0] = blockAt(block, x, y, z);
-    values[1] = blockAt(block, x, y, z + 1);
-    values[2] = blockAt(block, x + 1, y, z + 1);
-    values[3] = blockAt(block, x + 1, y, z);
-    values[4] = blockAt(block, x, y + 1, z);
-    values[5] = blockAt(block, x, y + 1, z + 1);
-    values[6] = blockAt(block, x + 1, y + 1, z + 1);
-    values[7] = blockAt(block, x + 1, y + 1, z);
+    values[0] = voxelAt(x, y, z);
+    values[1] = voxelAt(x, y, z + 1);
+    values[2] = voxelAt(x + 1, y, z + 1);
+    values[3] = voxelAt(x + 1, y, z);
+    values[4] = voxelAt(x, y + 1, z);
+    values[5] = voxelAt(x, y + 1, z + 1);
+    values[6] = voxelAt(x + 1, y + 1, z + 1);
+    values[7] = voxelAt(x + 1, y + 1, z);
     return values;
 }
 
-inline unsigned int Chunk::getCaseIndexFromDensityBlock(array<DensityType, 8> values) const
+inline unsigned int Chunk::caseIndexFromVoxel(array<DensityType, 8> values) const
 {
     int caseIndex = 0;
 
@@ -217,92 +194,4 @@ inline unsigned int Chunk::getCaseIndexFromDensityBlock(array<DensityType, 8> va
     if (values[7] > 0) caseIndex |= 0x80;
 
     return caseIndex;
-}
-
-void Chunk::marchChunk(DensityType* block)
-{
-    unordered_map<Vector3F, unsigned int> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
-
-    for (unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
-    {
-        for (unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++)
-        {
-            for (unsigned int z = 1; z < Chunk::RESOLUTION + 1; z++)
-            {
-                array<DensityType, 8> values = getDensityBlockAt(block, x, y, z);
-
-                unsigned int caseIndex = getCaseIndexFromDensityBlock(values);
-
-                if (caseIndex == 255)
-                    continue; // solid block
-                if (caseIndex == 0)
-                    continue; // air block
-
-                int numTriangles = case_to_numpolys[caseIndex];
-
-                // for each triangle of the cube
-                for (int t = 0; t < numTriangles; t++)
-                {
-                    Vector3I tri;
-
-                    // for each edge of the cube a triangle vertex is on
-                    for (int e = 0; e < 3; e++)
-                    {
-                        int edgeIndex = edge_connect_list[caseIndex][t][e];
-
-                        DensityType value1;
-                        DensityType value2;
-                        Vector3I vec1;
-                        Vector3I vec2;
-
-                        switch (edgeIndex)
-                        {
-                        case 0:  value1 = values[0]; value2 = values[1]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y, z + 1); break;
-                        case 1:  value1 = values[1]; value2 = values[2]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x + 1, y, z + 1); break;
-                        case 2:  value1 = values[2]; value2 = values[3]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y, z); break;
-                        case 3:  value1 = values[3]; value2 = values[0]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x, y, z); break;
-
-                        case 4:  value1 = values[4]; value2 = values[5]; vec1 = Vector3I(x, y + 1, z); vec2 = Vector3I(x, y + 1, z + 1); break;
-                        case 5:  value1 = values[5]; value2 = values[6]; vec1 = Vector3I(x, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                        case 6:  value1 = values[6]; value2 = values[7]; vec1 = Vector3I(x + 1, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z); break;
-                        case 7:  value1 = values[7]; value2 = values[4]; vec1 = Vector3I(x + 1, y + 1, z); vec2 = Vector3I(x, y + 1, z); break;
-
-                        case 8:  value1 = values[0]; value2 = values[4]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y + 1, z); break;
-                        case 9:  value1 = values[1]; value2 = values[5]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x, y + 1, z + 1); break;
-                        case 10: value1 = values[2]; value2 = values[6]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                        case 11: value1 = values[3]; value2 = values[7]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x + 1, y + 1, z); break;
-
-                        default: cerr << "Invalid edge index: " << edgeIndex << endl; break;
-                        }
-
-                        Vector3F vertex = interpolate(value1, value2, vec1, vec2);
-
-                        // lookup this vertex
-                        auto it = vertexMap.find(vertex);
-                        if (it != vertexMap.end()) // we found it
-                            tri[e] = it->second;
-                        else
-                        {
-                            // calculate a new one
-                            Vertex v;
-                            v.position = toWorld(vertex);
-
-                            Vector3F normal1 = getNormal(block, vec1);
-                            Vector3F normal2 = getNormal(block, vec2);
-                            v.normal = normalize(interpolate(value1, value2, normal1, normal2));
-
-                            tri[e] = (unsigned int)vertices.size();
-                            vertices.push_back(v);
-
-                            vertexMap[v.position] = tri[e];
-                        }
-                    }
-
-                    triangles.push_back(tri);
-                }
-            }
-        }
-    }
-
-    cout << "Vertex map size " << vertexMap.size() << endl;
 }

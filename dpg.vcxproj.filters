@@ -37,15 +37,16 @@
     <Filter Include="gl">
       <UniqueIdentifier>{0dd45a57-aff1-41fd-8e13-2d2ae1b45baf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="chunks">
+      <UniqueIdentifier>{8a6a530b-ab52-4a29-8f83-66bd49cfe0cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="utils.cpp" />
-    <ClCompile Include="ChunkLoader.cpp" />
     <ClCompile Include="mathlib.cpp">
       <Filter>math</Filter>
     </ClCompile>
@@ -59,14 +60,24 @@
     <ClCompile Include="Program.cpp">
       <Filter>gl</Filter>
     </ClCompile>
+    <ClCompile Include="Chunk.cpp">
+      <Filter>chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkManager.cpp">
+      <Filter>chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkSerializer.cpp">
+      <Filter>chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkCreator.cpp">
+      <Filter>chunks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Chunk.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="ChunkLoader.h" />
     <ClInclude Include="mathlib.h">
       <Filter>math</Filter>
     </ClInclude>
@@ -85,6 +96,18 @@
     </ClInclude>
     <ClInclude Include="Program.h">
       <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk.h">
+      <Filter>chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkManager.h">
+      <Filter>chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkSerializer.h">
+      <Filter>chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkCreator.h">
+      <Filter>chunks</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

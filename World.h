@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <tuple>
 
-#include "ChunkLoader.h"
+#include "ChunkManager.h"
 #include "Chunk.h"
 
 class World
@@ -41,7 +41,7 @@ class World
         Vector3F move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const;
 
     private:
-		mutable ChunkLoader loader;
+		mutable ChunkManager loader;
 
         /** Holds all chunks that need to be rendered. This list is generated during Update() and used by Render(). */
         std::vector<Chunk*> renderList;

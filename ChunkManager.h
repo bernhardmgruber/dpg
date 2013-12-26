@@ -9,17 +9,22 @@
 #include <thread>
 
 #include "Chunk.h"
+#include "ChunkCreator.h"
+#include "ChunkSerializer.h"
 #include "mathlib.h"
 
-class ChunkLoader
+class ChunkManager
 {
 public:
-	ChunkLoader(unsigned int loaderThreads = 1);
-	~ChunkLoader();
+    ChunkManager(unsigned int loaderThreads = 1);
+    ~ChunkManager();
 
 	Chunk* get(const Vector3I& pos);
 
 private:
+    ChunkCreator creator;
+    ChunkSerializer serializer;
+
 	/// fully loaded chunks
 	std::unordered_map<Vector3I, Chunk*> chunks;
 
@@ -46,4 +51,6 @@ private:
 	void enqueueChunkLoad(const Vector3I& chunkPos);
 
 	const ChunkMemoryFootprint getMemoryFootprint() const;
+
+    void loaderThreadMain();
 };

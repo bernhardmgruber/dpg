@@ -9,6 +9,7 @@ using namespace std;
 ThreadedCommandConsole::ThreadedCommandConsole()
 {
     consoleThread = thread(&ThreadedCommandConsole::runConsoleLoop, this);
+    consoleThread.detach();
 }
 
 ThreadedCommandConsole::~ThreadedCommandConsole()

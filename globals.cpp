@@ -5,4 +5,5 @@ namespace global
     bool coords = false;
     bool polygonmode = false;
     bool normals = false;
+    bool enableChunkCache = true;
 }

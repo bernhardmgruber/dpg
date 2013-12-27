@@ -7,7 +7,7 @@
 
 #include "mathlib.h"
 
-struct ChunkMemoryFootprint
+struct ChunkMemoryFootprint final
 {
     size_t densityValues;
     size_t densityValueSize;

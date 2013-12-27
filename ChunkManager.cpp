@@ -7,7 +7,7 @@
 using namespace std;
 
 ChunkManager::ChunkManager(unsigned int loaderThreads)
-: serializer("chunks")
+: serializer("chunks/")
 {
 
 }
@@ -16,7 +16,6 @@ ChunkManager::~ChunkManager()
 {
     for (auto& pair : chunks)
     {
-
         serializer.storeChunk(pair.second);
         delete pair.second;
     }
@@ -24,17 +23,15 @@ ChunkManager::~ChunkManager()
 
 Chunk* ChunkManager::get(const Vector3I& pos)
 {
-    Chunk::IdType id = Chunk::ChunkGridCoordinateToId(pos);
-
     // check if chunk is available
     auto it = chunks.find(pos);
     if (it != chunks.end())
         return it->second;
 
     // chunk was not found, ask the cache on disk
-    if (serializer.hasChunk(id))
+    if (serializer.hasChunk(pos))
     {
-        Chunk* c = serializer.loadChunk(id);
+        Chunk* c = serializer.get(pos);
         if (c != nullptr)
             chunks[pos] = c;
         return c;

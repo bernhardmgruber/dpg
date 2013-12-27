@@ -1,23 +1,20 @@
 #pragma once
 
-#include <string>
-#include <unordered_set>
-
-#include "Chunk.h"
+#include "AsyncChunkSource.h"
 
 using namespace std;
 
-class ChunkSerializer final
+class ChunkSerializer final : public AsyncChunkSource
 {
 public:
     ChunkSerializer(string chunkDir);
-    ~ChunkSerializer();
+    virtual ~ChunkSerializer();
 
-    bool hasChunk(Chunk::IdType chunkId);
-
+    bool hasChunk(const Vector3I& chunkPos);
     void storeChunk(const Chunk* chunk);
-    Chunk* loadChunk(Chunk::IdType chunkId);
-    //Chunk* loadChunk(Vector3I& chunkGridPos);
+
+protected:
+    virtual Chunk* getChunk(const Vector3I& chunkPos) override;
 
 private:
     std::string chunkDir;

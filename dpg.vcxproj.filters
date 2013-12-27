@@ -72,6 +72,9 @@
     <ClCompile Include="ChunkCreator.cpp">
       <Filter>chunks</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncChunkSource.cpp">
+      <Filter>chunks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -107,6 +110,9 @@
       <Filter>chunks</Filter>
     </ClInclude>
     <ClInclude Include="ChunkCreator.h">
+      <Filter>chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncChunkSource.h">
       <Filter>chunks</Filter>
     </ClInclude>
   </ItemGroup>

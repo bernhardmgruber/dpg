@@ -131,6 +131,7 @@
     <None Include="tables.inc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncChunkSource.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ChunkCreator.cpp" />
@@ -147,6 +148,7 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AsyncChunkSource.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="ChunkCreator.h" />

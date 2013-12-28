@@ -40,6 +40,9 @@
     <Filter Include="chunks">
       <UniqueIdentifier>{8a6a530b-ab52-4a29-8f83-66bd49cfe0cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{15062a30-b8e8-44f1-a71c-1ff423cd618b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -74,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="AsyncChunkSource.cpp">
       <Filter>chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldPhysics.cpp">
+      <Filter>physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +123,12 @@
     </ClInclude>
     <ClInclude Include="AsyncChunkSource.h">
       <Filter>chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldPhysics.h">
+      <Filter>physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

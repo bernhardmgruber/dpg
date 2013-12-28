@@ -137,6 +137,7 @@
     <ClCompile Include="ChunkCreator.cpp" />
     <ClCompile Include="ChunkManager.cpp" />
     <ClCompile Include="ChunkSerializer.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="World.cpp" />
+    <ClCompile Include="WorldPhysics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncChunkSource.h" />
@@ -154,6 +156,7 @@
     <ClInclude Include="ChunkCreator.h" />
     <ClInclude Include="ChunkManager.h" />
     <ClInclude Include="ChunkSerializer.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="gl.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="Program.h" />
@@ -164,6 +167,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="WorldPhysics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

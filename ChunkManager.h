@@ -16,7 +16,8 @@
 class ChunkManager final
 {
 public:
-    ChunkManager(unsigned int loaderThreads = 1);
+    ChunkManager();
+    ChunkManager(const ChunkManager& mgr) = delete;
     ~ChunkManager();
 
 	Chunk* get(const Vector3I& pos);

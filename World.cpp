@@ -65,26 +65,3 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
             }
 }
 
-bool World::isAir(const Vector3F& pos) const
-{
-    const Vector3I chunkPos = getChunkPos(pos);
-    const Chunk* chunk = loader.get(chunkPos);
-
-    return chunk->categorizeWorldPosition(pos) == Chunk::VoxelType::AIR;
-}
-
-Vector3F World::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const
-{
-    return Vector3F();
-}
-
-Vector3F World::move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const
-{
-    return dst;
-}
-
-Vector3I World::getChunkPos(const Vector3F& pos) const
-{
-    Vector3F chunkPos = pos / Chunk::SIZE;
-    return Vector3I(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
-}

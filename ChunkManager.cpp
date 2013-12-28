@@ -6,7 +6,7 @@
 
 using namespace std;
 
-ChunkManager::ChunkManager(unsigned int loaderThreads)
+ChunkManager::ChunkManager()
 : serializer("chunks/")
 {
 

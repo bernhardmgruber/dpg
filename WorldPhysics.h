@@ -20,6 +20,13 @@ public:
     Vector3F getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const;
 
     /**
+    * Performs the move from src to dst inside the world.
+    *
+    * @return Returns the final destination position after possible collisions, sliding, etc.
+    */
+    Vector3F move(const Vector3F src, const Vector3F dst) const;
+
+    /**
     * Performs the move from src to dst with the given bounding box inside the world.
     *
     * @return Returns the final destination position after possible collisions, sliding, etc.
@@ -30,8 +37,6 @@ private:
     ChunkManager& mgr;
     Collider collider;
 
-
     Vector3I getChunkPos(const Vector3F& pos) const;
-
 };
 

@@ -24,6 +24,11 @@ Vector3F WorldPhysics::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& b
     return pos;
 }
 
+Vector3F WorldPhysics::move(const Vector3F src, const Vector3F dst) const
+{
+    return dst;
+}
+
 Vector3F WorldPhysics::move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const
 {
     return dst;

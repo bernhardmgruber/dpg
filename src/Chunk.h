@@ -32,10 +32,6 @@ public:
 	using DensityType = float;
 	using IdType = uint64_t;
 
-	friend class ChunkSerializer;
-	friend class ChunkManager;
-	friend class ChunkCreator;
-
 	enum class VoxelType {
 		SOLID,
 		SURFACE,
@@ -43,39 +39,28 @@ public:
 	};
 
 	static constexpr float SIZE = 1.0; // The size of the chunk in world units.
-
-	/**
-	* The number of voxels along one axis.
-	* RESOLUTION + 1 is the edge length of the density cube (a cube of voxels).
-	*/
-	static constexpr unsigned int RESOLUTION = 16;
+	static constexpr unsigned int RESOLUTION = 16; // The number of voxels along one axis. RESOLUTION + 1 is the edge length of the density cube (a cube of voxels).
 
 	static IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord);
 	static glm::ivec3 IdToChunkGridCoordinate(IdType id);
 
-#pragma region coordinate_transformation_methods
-	/**
-	* Converts a voxel coordinate to a world coordinate.
-	*/
-	template<typename T>
-	glm::vec3 toWorld(T x, T y, T z) const {
-		glm::vec3 v;
+	Chunk() = default;
+	Chunk(IdType id);
+	Chunk(glm::ivec3 chunkGridCoord);
+	Chunk(const Chunk&) = delete;
+	Chunk& operator=(const Chunk&) = delete;
+	Chunk(Chunk&&) = default;
+	Chunk& operator=(Chunk&&) = default;
+	~Chunk();
+
+	// Converts a voxel coordinate to a world coordinate.
+	glm::vec3 toWorld(glm::vec3 voxel) const {
 		float blockLength = SIZE / RESOLUTION;
-		v.x = blockLength * ((float)x - 1.0f);
-		v.y = blockLength * ((float)y - 1.0f);
-		v.z = blockLength * ((float)z - 1.0f);
+		glm::vec3 v = blockLength * (voxel - 1.0f);
 		return getWorldPosition() + v;
 	}
 
-	/**
-	* Converts a voxel coordinate to a world coordinate.
-	*/
-	glm::vec3 toWorld(glm::vec3 v) const {
-		return toWorld(v.x, v.y, v.z);
-	}
-
 	glm::uvec3 toVoxelCoord(const glm::vec3& v) const;
-#pragma endregion
 
 	const IdType getId() const;
 
@@ -109,30 +94,18 @@ public:
 	*/
 	const ChunkMemoryFootprint getMemoryFootprint() const;
 
-	Chunk() = default;
-	Chunk(IdType id);
-	Chunk(glm::ivec3 chunkGridCoord);
-	Chunk(const Chunk&) = delete;
-	Chunk& operator=(const Chunk&) = delete;
-	Chunk(Chunk&&) = default;
-	Chunk& operator=(Chunk&&) = default;
-	~Chunk();
-
-private:
-	IdType id{};
-	glm::ivec3 position;
+	DensityType voxelAt(unsigned int x, unsigned int y, unsigned int z) const;
+	std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
+	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 
 	std::vector<DensityType> densities;
 	std::vector<glm::uvec3> triangles;
 	std::vector<Vertex> vertices;
 
+private:
+	IdType id{};
+	glm::ivec3 position;
+
 	std::optional<gl::Buffer> vertexBuffer;
 	std::optional<gl::Buffer> indexBuffer;
-
-	/*
-	* Helper functions
-	*/
-	DensityType voxelAt(unsigned int x, unsigned int y, unsigned int z) const;
-	std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
-	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 };

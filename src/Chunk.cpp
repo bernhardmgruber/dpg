@@ -130,8 +130,8 @@ float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const {
 	return densities[x * (RESOLUTION + 1 + 2) * (RESOLUTION + 1 + 2) + y * (RESOLUTION + 1 + 2) + z];
 }
 
-array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const {
-	array<DensityType, 8> values;
+std::array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const {
+	std::array<DensityType, 8> values;
 	values[0] = voxelAt(x, y, z);
 	values[1] = voxelAt(x, y, z + 1);
 	values[2] = voxelAt(x + 1, y, z + 1);
@@ -143,7 +143,7 @@ array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, 
 	return values;
 }
 
-unsigned int Chunk::caseIndexFromVoxel(array<DensityType, 8> values) const {
+unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const {
 	unsigned int caseIndex = 0;
 
 	if (values[0] > 0) caseIndex |= 0x01;

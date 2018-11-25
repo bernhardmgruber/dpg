@@ -36,7 +36,7 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 				glm::vec3 world = c.toWorld(x, y, z);
 				c.densities[x * size * size + y * size + z] =
 					//(Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
-					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, 6, 0, 0, 0);
+					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, global::noise::octaves, 0, 0, 0);
 			}
 		}
 	}

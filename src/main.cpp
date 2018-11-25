@@ -1,5 +1,8 @@
 #include "gl.h"
 #include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -98,6 +101,10 @@ void update(double interval) {
 }
 
 void render() {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
 	// clear
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -116,7 +123,7 @@ void render() {
 
 	// render coordinate system
 	if (global::coords) {
-		glUseProgram(0);
+		//glUseProgram(0);
 
 		const int coordLength = 1000;
 
@@ -154,9 +161,24 @@ void render() {
 		world.render();
 		shaderProgram.use();
 	}
+
+	// hud
+	ImGui::Checkbox("coords", &global::coords);
+	ImGui::Checkbox("polygons", &global::polygonmode);
+	if (global::polygonmode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	ImGui::Checkbox("normals", &global::normals);
+	ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void onMouseButton(GLFWwindow*, int button, int action, int modifiers) {
+	ImGui_ImplGlfw_MouseButtonCallback(mainwindow, button, action, modifiers);
+
 	if (action == GLFW_PRESS) {
 		switch (button) {
 			case GLFW_MOUSE_BUTTON_RIGHT:
@@ -177,11 +199,21 @@ void onMouseButton(GLFWwindow*, int button, int action, int modifiers) {
 	}
 }
 
+void onMouseWheel(GLFWwindow*, double xOffset, double yOffset) {
+	ImGui_ImplGlfw_ScrollCallback(mainwindow, xOffset, yOffset);
+}
+
 void onKey(GLFWwindow*, int key, int scancode, int action, int mods) {
+	ImGui_ImplGlfw_KeyCallback(mainwindow, key, scancode, action, mods);
+
 	if (action == GLFW_PRESS) {
 		switch (key) {
 		}
 	}
+}
+
+void onChar(GLFWwindow*, unsigned int codepoint) {
+	ImGui_ImplGlfw_CharCallback(mainwindow, codepoint);
 }
 
 bool createSDLWindow(int width, int height) {
@@ -209,7 +241,9 @@ bool createSDLWindow(int width, int height) {
 
 	glfwSetWindowSizeCallback(mainwindow, resizeGLScene);
 	glfwSetMouseButtonCallback(mainwindow, onMouseButton);
+	glfwSetScrollCallback(mainwindow, onMouseWheel);
 	glfwSetKeyCallback(mainwindow, onKey);
+	glfwSetCharCallback(mainwindow, onChar);
 
 	// GLEW
 	GLenum error = glewInit();
@@ -218,10 +252,19 @@ bool createSDLWindow(int width, int height) {
 		return false;
 	}
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_Init(mainwindow, false, GlfwClientApi_Unknown);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
 	return true;
 }
 
 void destroySDLWindow() {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwDestroyWindow(mainwindow);
 	glfwTerminate();
 }
@@ -253,8 +296,6 @@ int main(int argc, char** argv) try {
 
 	ThreadedCommandConsole console;
 	console.addCommand("polygons", regex("polygons (true|false)"), &showPolygons);
-	console.addCommand("coords", regex("coords (true|false)"), &showCoordinateSystem);
-	console.addCommand("normals", regex("normals (true|false)"), &showNormals);
 
 	while (true) {
 		glfwPollEvents();

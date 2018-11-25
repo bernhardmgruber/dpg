@@ -7,4 +7,8 @@ namespace global {
 	inline bool enableChunkCache = false;
 
 	inline float gravity = 1.0f;
+
+	namespace noise {
+		inline int octaves = 6;
+	}
 }

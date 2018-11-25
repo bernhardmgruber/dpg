@@ -6,11 +6,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # find packages
+find_package(Boost REQUIRED COMPONENTS system filesystem)
+include_directories(${Boost_INCLUDE_DIRS})
+
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
 
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
+
+find_package(imgui CONFIG REQUIRED)
+set_target_properties(imgui::imgui PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
 
 if (MSVC)
 	find_package(glfw3 REQUIRED)
@@ -28,14 +34,17 @@ else()
 	include_directories(${GLM_INCLUDE_DIR})
 endif()
 
+include_directories(thirdparty)
+
 # executable
-file(GLOB_RECURSE source_files src/*.cpp src/*.h src/*.vert src/*.frag src/*.geom)
+file(GLOB_RECURSE source_files src/*.cpp src/*.h src/*.vert src/*.frag src/*.geom thirdparty/*.cpp thirdparty/*.h)
 add_executable(${PROJECT_NAME} ${source_files})
 source_group("" FILES ${source_files})
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${source_files})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	GLEW::GLEW
+	imgui::imgui
 	${Boost_LIBRARIES}
 )
 if(MSVC)
@@ -55,6 +64,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 	-DGLFW_INCLUDE_NONE
 	-DGLM_ENABLE_EXPERIMENTAL
 	-DGLM_FORCE_RADIANS
+	-DIMGUI_IMPL_OPENGL_LOADER_GLEW
 )
 
 if(MSVC)

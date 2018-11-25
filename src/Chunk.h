@@ -141,7 +141,7 @@ private:
 	/*
 	* Helper functions
 	*/
-	inline DensityType voxelAt(unsigned int x, unsigned int y, unsigned int z) const;
-	inline std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
-	inline unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
+	DensityType voxelAt(unsigned int x, unsigned int y, unsigned int z) const;
+	std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
+	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 };

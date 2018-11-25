@@ -1,7 +1,5 @@
 #include "gl.h"
 #include <GLFW/glfw3.h>
-#include <CL/CL.h>
-#include <CL/cl_gl.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -42,11 +40,6 @@ GLint uViewMatrixLocation;
 Timer timer;
 World world;
 
-cl_command_queue cmdqueue;
-cl_kernel kernel;
-cl_program program;
-cl_context context;
-
 mat4 projectionMatrix;
 
 void resizeGLScene(GLFWwindow*, int width, int height)
@@ -79,14 +72,14 @@ bool initGL()
 	// Shaders
 	swap(shaderProgram, gl::Program(
 	{
-		gl::Shader(GL_VERTEX_SHADER, "shaders/main.vert"),
-		gl::Shader(GL_FRAGMENT_SHADER, "shaders/main.frag")
+		gl::Shader(GL_VERTEX_SHADER, "../src/shaders/main.vert"),
+		gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/main.frag")
 	}));
 	swap(normalDebuggingProgram, gl::Program(
 	{
-		gl::Shader(GL_VERTEX_SHADER, "shaders/normals.vert"),
-		gl::Shader(GL_GEOMETRY_SHADER, "shaders/normals.geom"),
-		gl::Shader(GL_FRAGMENT_SHADER, "shaders/normals.frag")
+		gl::Shader(GL_VERTEX_SHADER, "../src/shaders/normals.vert"),
+		gl::Shader(GL_GEOMETRY_SHADER, "../src/shaders/normals.geom"),
+		gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/normals.frag")
 	}));
 
 	uViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uViewProjectionMatrix");

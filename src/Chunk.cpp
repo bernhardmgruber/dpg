@@ -158,7 +158,7 @@ void Chunk::createBuffers()
 }
 
 
-inline float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const
+float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const
 {
     assert(x < (Chunk::RESOLUTION + 1 + 2));
     assert(y < (Chunk::RESOLUTION + 1 + 2));
@@ -180,7 +180,7 @@ array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, 
     return values;
 }
 
-inline unsigned int Chunk::caseIndexFromVoxel(array<DensityType, 8> values) const
+unsigned int Chunk::caseIndexFromVoxel(array<DensityType, 8> values) const
 {
     int caseIndex = 0;
 

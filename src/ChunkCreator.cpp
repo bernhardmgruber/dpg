@@ -18,7 +18,7 @@ const unsigned int CHUNK_TRIANGLE_MAP_INITIAL_SIZE = 3000;
 ChunkCreator::ChunkCreator(unsigned int loaderThreads)
 	: AsyncChunkSource(loaderThreads) {}
 
-ChunkCreator::~ChunkCreator() {}
+ChunkCreator::~ChunkCreator() = default;
 
 Chunk* ChunkCreator::getChunk(const glm::ivec3& chunkPos) {
 	Chunk* c = new Chunk(chunkPos);

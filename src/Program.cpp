@@ -21,7 +21,7 @@ namespace gl {
 		if (status == GL_FALSE) {
 			GLint length;
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-			char* infoLog = new char[length];
+			auto* infoLog = new char[length];
 			glGetProgramInfoLog(program, length, nullptr, infoLog);
 
 			string log(infoLog);

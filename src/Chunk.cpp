@@ -116,7 +116,7 @@ void Chunk::render() const {
 }
 
 const ChunkMemoryFootprint Chunk::getMemoryFootprint() const {
-	ChunkMemoryFootprint mem;
+	ChunkMemoryFootprint mem{};
 
 	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 

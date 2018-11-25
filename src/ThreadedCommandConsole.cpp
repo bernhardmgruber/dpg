@@ -11,10 +11,9 @@ ThreadedCommandConsole::ThreadedCommandConsole() {
 	consoleThread.detach();
 }
 
-ThreadedCommandConsole::~ThreadedCommandConsole() {
-}
+ThreadedCommandConsole::~ThreadedCommandConsole() = default;
 
-void ThreadedCommandConsole::addCommand(string name, regex expr, Handler func) {
+void ThreadedCommandConsole::addCommand(const string& name, regex expr, Handler func) {
 	lock_guard<mutex> lock(handlersMutex);
 	handlers[name] = make_tuple(expr, func);
 }

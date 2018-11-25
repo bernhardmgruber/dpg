@@ -117,7 +117,7 @@ public:
 	~Chunk();
 
 private:
-	IdType id;
+	IdType id{};
 	glm::ivec3 position;
 
 	DensityType* densities;
@@ -125,8 +125,8 @@ private:
 	std::vector<Vertex> vertices;
 
 	bool buffersInitialized;
-	GLuint vertexBuffer;
-	GLuint indexBuffer;
+	GLuint vertexBuffer{};
+	GLuint indexBuffer{};
 
 	/**
 	* ctor is private, only allow ChunkCreator and ChunkSerializer to construct chunks via friends

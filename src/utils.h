@@ -12,7 +12,7 @@ bool readFile(const std::string& fileName, std::string& buffer);
 
 template<typename T>
 std::string toHexString(T val) {
-	stringstream ss;
-	ss << hex << val;
+	std::stringstream ss;
+	ss << std::hex << val;
 	return ss.str();
 }

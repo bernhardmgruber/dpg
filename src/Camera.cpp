@@ -35,7 +35,7 @@ void Camera::update(double t, float xDelta, float yDelta, uint8_t directions) {
 	if (directions & Down)
 		position.z -= fTmpMoveSens;
 
-	// TODO: If strafing and moving reduce speed to keep total move per frame constant
+	// TODO(bernh): If strafing and moving reduce speed to keep total move per frame constant
 	if (directions & Forward) {
 		position.x += std::cos(degToRad(yaw)) * fTmpMoveSens;
 		position.y += std::sin(degToRad(yaw)) * fTmpMoveSens;

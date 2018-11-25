@@ -18,7 +18,7 @@ namespace gl {
 		if (!readFile(file, buffer))
 			throw exception(("Could not read file " + file).c_str());
 		const char* source = buffer.c_str();
-		glShaderSource(shader, 1, (const char**)&source, nullptr);
+		glShaderSource(shader, 1, &source, nullptr);
 
 		// compile
 		glCompileShader(shader);
@@ -30,7 +30,7 @@ namespace gl {
 			GLint length;
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-			char* infoLog = new char[length];
+			auto* infoLog = new char[length];
 			glGetShaderInfoLog(shader, length, nullptr, infoLog);
 
 			string log(infoLog);

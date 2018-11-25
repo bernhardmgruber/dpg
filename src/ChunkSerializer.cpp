@@ -5,12 +5,13 @@
 #include "utils.h"
 #include <fstream>
 #include <string>
+#include <utility>
 
 #include "ChunkSerializer.h"
 
 
 ChunkSerializer::ChunkSerializer(string chunkDir)
-	: chunkDir(chunkDir) {
+	: chunkDir(std::move(chunkDir)) {
 #ifdef _WIN32
 	WIN32_FIND_DATA findData;
 	HANDLE hFind = FindFirstFile((chunkDir + "*").c_str(), &findData);
@@ -37,7 +38,7 @@ ChunkSerializer::ChunkSerializer(string chunkDir)
 #endif
 }
 
-ChunkSerializer::~ChunkSerializer() {}
+ChunkSerializer::~ChunkSerializer() = default;
 
 bool ChunkSerializer::hasChunk(const glm::ivec3& chunkPos) {
 	return availableChunks.find(Chunk::ChunkGridCoordinateToId(chunkPos)) != availableChunks.end();
@@ -51,10 +52,10 @@ void ChunkSerializer::storeChunk(const Chunk* chunk) {
 
 	// write chunk to disk
 	ofstream file(chunkDir + toHexString(chunk->getId()), ios::binary);
-	file.write((char*)chunk->densities, size * size * size * sizeof(Chunk::DensityType));
-	file << (size_t)chunk->vertices.size();
+	file.write(reinterpret_cast<char*>(chunk->densities), size * size * size * sizeof(Chunk::DensityType));
+	file << static_cast<size_t>(chunk->vertices.size());
 	file.write((char*)chunk->vertices.data(), chunk->vertices.size() * sizeof(Vertex));
-	file << (size_t)chunk->triangles.size();
+	file << static_cast<size_t>(chunk->triangles.size());
 	file.write((char*)chunk->triangles.data(), chunk->triangles.size() * sizeof(glm::uvec3));
 	file.close();
 
@@ -68,25 +69,25 @@ Chunk* ChunkSerializer::getChunk(const glm::ivec3& chunkPos) {
 		return nullptr; // this chunk is not available in the chunk directory
 
 	// read chunk from disk
-	Chunk* c = new Chunk(chunkId);
+	auto* c = new Chunk(chunkId);
 	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 
 	ifstream file(chunkDir + toHexString(chunkId), ios::binary);
 	if (!file)
 		throw runtime_error("could not open chunk file " + chunkDir + to_string(chunkId));
 	c->densities = new Chunk::DensityType[size * size * size];
-	file.read((char*)c->densities, size * size * size * sizeof(Chunk::DensityType));
+	file.read(reinterpret_cast<char*>(c->densities), size * size * size * sizeof(Chunk::DensityType));
 	size_t verticesCount = 0;
 	file >> verticesCount;
 	if (verticesCount > 0) {
 		c->vertices.resize(verticesCount);
-		file.read((char*)c->vertices.data(), verticesCount * sizeof(Vertex));
+		file.read(reinterpret_cast<char*>(c->vertices.data()), verticesCount * sizeof(Vertex));
 	}
 	size_t trianglesCount = 0;
 	file >> trianglesCount;
 	if (trianglesCount > 0) {
 		c->triangles.resize(trianglesCount);
-		file.read((char*)c->triangles.data(), trianglesCount * sizeof(Vertex));
+		file.read(reinterpret_cast<char*>(c->triangles.data()), trianglesCount * sizeof(Vertex));
 	}
 	file.close();
 

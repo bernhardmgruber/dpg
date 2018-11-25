@@ -11,7 +11,7 @@ protected:
 	virtual Chunk* getChunk(const glm::ivec3& chunkPos) override;
 
 private:
-	inline void marchChunk(Chunk* block);
+	inline void marchChunk(Chunk* c);
 	inline glm::vec3 getNormal(Chunk* c, const glm::uvec3& v) const;
 
 	inline glm::vec3 interpolate(float da, float db, glm::vec3 va, glm::vec3 vb) const {

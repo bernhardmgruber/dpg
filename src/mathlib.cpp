@@ -105,23 +105,17 @@ glm::vec3 crossProduct(glm::vec3 v1, glm::vec3 v2) {
 	return perpendicularVector;
 }
 
-bool pointInBox(glm::vec3 vPoint, short vMin[3], short vMax[3]) {
-	if (((float)vMin[0] <= vPoint.x && vPoint.x <= (float)vMax[0] &&
+bool pointInBox(glm::vec3 vPoint, const short vMin[3], const short vMax[3]) {
+	return ((float)vMin[0] <= vPoint.x && vPoint.x <= (float)vMax[0] &&
 			(float)vMin[1] <= vPoint.y && vPoint.y <= (float)vMax[1] &&
 			(float)vMin[2] <= vPoint.z && vPoint.z <= (float)vMax[2]) ||
 		((float)vMin[0] >= vPoint.x && vPoint.x >= (float)vMax[0] &&
 			(float)vMin[1] >= vPoint.y && vPoint.y >= (float)vMax[1] &&
-			(float)vMin[2] >= vPoint.z && vPoint.z >= (float)vMax[2]))
-		return true;
-	else
-		return false;
+			(float)vMin[2] >= vPoint.z && vPoint.z >= (float)vMax[2]);
 }
 
 bool pointInPlane(glm::vec3 vPoint, glm::vec3 vNormal, float fDist) {
-	if (fabs(dotProduct(vPoint, vNormal) - fDist) < EPSILON)
-		return true;
-	else
-		return false;
+	return fabs(dotProduct(vPoint, vNormal) - fDist) < EPSILON;
 }
 
 glm::vec3 rotateX(float a, glm::vec3 v) {

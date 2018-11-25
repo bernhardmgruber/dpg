@@ -31,7 +31,7 @@ private:
 	std::mutex loadedChunksMutex;
 	std::condition_variable loadingChunkCV;
 
-	bool shutdown;
+	bool shutdown = false;
 
 	void loaderThreadMain();
 };

@@ -18,7 +18,7 @@ public:
 
 	~ThreadedCommandConsole();
 
-	void addCommand(std::string name, std::regex expr, Handler func);
+	void addCommand(const std::string& name, std::regex expr, Handler func);
 
 	void runHandlers();
 

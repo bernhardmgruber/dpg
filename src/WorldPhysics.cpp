@@ -7,7 +7,7 @@ WorldPhysics::WorldPhysics(ChunkManager& mgr)
 	: mgr(mgr), collider(mgr) {}
 
 
-WorldPhysics::~WorldPhysics() {}
+WorldPhysics::~WorldPhysics() = default;
 
 Chunk::VoxelType WorldPhysics::categorizeWorldPosition(const glm::vec3& pos) const {
 	const glm::ivec3 chunkPos = getChunkPos(pos);

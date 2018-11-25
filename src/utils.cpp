@@ -24,7 +24,7 @@ string sizeToString(size_t size) {
 }
 
 int roundToInt(float f) {
-	return (int)(f + 0.5f);
+	return static_cast<int>(f + 0.5f);
 }
 
 bool readFile(const std::string& fileName, string& buffer) {

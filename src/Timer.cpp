@@ -1,5 +1,5 @@
 #include "timer.h"
-#include <time.h>
+#include <ctime>
 
 #define TPS_UPDATE_INTERVAL 0.2f
 
@@ -23,7 +23,7 @@ void Timer::tick() {
 	tickCounter++;
 
 	if (currentTime - lastTimeFPSUpdate > TPS_UPDATE_INTERVAL) {
-		tps = (float)((double)tickCounter / (currentTime - lastTimeFPSUpdate));
+		tps = static_cast<float>(static_cast<double>(tickCounter) / (currentTime - lastTimeFPSUpdate));
 
 		lastTimeFPSUpdate = currentTime;
 		tickCounter = 0;
@@ -37,5 +37,5 @@ double Timer::getTime() {
 		QueryPerformanceCounter(&PerformanceCounter);
 		return (double)PerformanceCounter.QuadPart / (double)frequency.QuadPart;
 	} else
-		return (double)clock() / (double)CLOCKS_PER_SEC;
+		return static_cast<double>(clock()) / static_cast<double>CLOCKS_PER_SEC;
 }

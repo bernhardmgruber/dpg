@@ -13,8 +13,7 @@ World::World()
 	: physics(loader), renderListComplete(false) {
 }
 
-World::~World() {
-}
+World::~World() = default;
 
 #define CAMERA_CHUNK_RADIUS 5
 

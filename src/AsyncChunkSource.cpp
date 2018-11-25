@@ -5,7 +5,7 @@ using namespace std;
 AsyncChunkSource::AsyncChunkSource(unsigned int loaderThreads) {
 	// create pool threads
 	for (unsigned int i = 0; i < loaderThreads; i++)
-		loaderThreadPool.push_back(thread(&AsyncChunkSource::loaderThreadMain, this));
+		loaderThreadPool.emplace_back(&AsyncChunkSource::loaderThreadMain, this);
 }
 
 AsyncChunkSource::~AsyncChunkSource() {
@@ -58,7 +58,7 @@ void AsyncChunkSource::loaderThreadMain() {
 		{
 			unique_lock<mutex> lock(loadedChunksMutex);
 
-			while (enqueuedChunksSet.size() == 0 && !shutdown) {
+			while (enqueuedChunksSet.empty() && !shutdown) {
 				//cout << "Loader thread #" << std::this_thread::get_id() << " is ready" << endl;
 				loadingChunkCV.wait(lock);
 				//cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;

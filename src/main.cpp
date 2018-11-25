@@ -1,19 +1,19 @@
 #include "gl.h"
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
 #include <string>
 
-#include "Shader.h"
-#include "Program.h"
-#include "ThreadedCommandConsole.h"
 #include "Camera.h"
+#include "Program.h"
+#include "Shader.h"
+#include "ThreadedCommandConsole.h"
 #include "Timer.h"
 #include "World.h"
-#include "utils.h"
 #include "globals.h"
+#include "utils.h"
 
 #undef main
 
@@ -42,8 +42,7 @@ World world;
 
 mat4 projectionMatrix;
 
-void resizeGLScene(GLFWwindow*, int width, int height)
-{
+void resizeGLScene(GLFWwindow*, int width, int height) {
 	cout << "Resize " << width << "x" << height << endl;
 
 	if (height <= 0)
@@ -60,8 +59,7 @@ void resizeGLScene(GLFWwindow*, int width, int height)
 	glLoadIdentity();
 }
 
-bool initGL()
-{
+bool initGL() {
 	glClearColor(0.3f, 0.5f, 0.7f, 1.0f);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -71,16 +69,12 @@ bool initGL()
 
 	// Shaders
 	swap(shaderProgram, gl::Program(
-	{
-		gl::Shader(GL_VERTEX_SHADER, "../src/shaders/main.vert"),
-		gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/main.frag")
-	}));
+							{gl::Shader(GL_VERTEX_SHADER, "../src/shaders/main.vert"),
+								gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/main.frag")}));
 	swap(normalDebuggingProgram, gl::Program(
-	{
-		gl::Shader(GL_VERTEX_SHADER, "../src/shaders/normals.vert"),
-		gl::Shader(GL_GEOMETRY_SHADER, "../src/shaders/normals.geom"),
-		gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/normals.frag")
-	}));
+									 {gl::Shader(GL_VERTEX_SHADER, "../src/shaders/normals.vert"),
+										 gl::Shader(GL_GEOMETRY_SHADER, "../src/shaders/normals.geom"),
+										 gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/normals.frag")}));
 
 	uViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uViewProjectionMatrix");
 	uViewMatrixLocation = shaderProgram.getUniformLocation("uViewMatrix");
@@ -91,14 +85,13 @@ bool initGL()
 	return true;
 }
 
-void update(double interval)
-{
+void update(double interval) {
 	stringstream caption;
 	caption << windowCaption << " @ " << fixed << setprecision(1) << timer.tps << " FPS";
 	glfwSetWindowTitle(mainwindow, caption.str().c_str());
 
 	// camera
-	glm::dvec2 delta{ 0, 0 };
+	glm::dvec2 delta{0, 0};
 	if (captureMouse) {
 		glm::dvec2 pos;
 		glfwGetCursorPos(mainwindow, &pos.x, &pos.y);
@@ -119,8 +112,7 @@ void update(double interval)
 	world.update();
 }
 
-void render()
-{
+void render() {
 	// clear
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -135,8 +127,7 @@ void render()
 	world.render();
 
 	// render coordinate system
-	if (global::coords)
-	{
+	if (global::coords) {
 		const int coordLength = 1000;
 
 		glLineWidth(3.0f);
@@ -167,8 +158,7 @@ void render()
 	}
 
 	// render normals
-	if (global::normals)
-	{
+	if (global::normals) {
 		normalDebuggingProgram.use();
 		glUniformMatrix4fv(uViewProjectionMatrixLocationNormalDebuggingProgram, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
 		world.render();
@@ -179,20 +169,20 @@ void render()
 void onMouseButton(GLFWwindow*, int button, int action, int modifiers) {
 	if (action == GLFW_PRESS) {
 		switch (button) {
-		case GLFW_MOUSE_BUTTON_RIGHT:
-			captureMouse = true;
-			glfwGetCursorPos(mainwindow, &mouseDownPos.x, &mouseDownPos.y);
-			glfwSetInputMode(mainwindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-			break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				captureMouse = true;
+				glfwGetCursorPos(mainwindow, &mouseDownPos.x, &mouseDownPos.y);
+				glfwSetInputMode(mainwindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				break;
 		}
 	}
 
 	if (action == GLFW_RELEASE) {
 		switch (button) {
-		case GLFW_MOUSE_BUTTON_RIGHT:
-			captureMouse = false;
-			glfwSetInputMode(mainwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			break;
+			case GLFW_MOUSE_BUTTON_RIGHT:
+				captureMouse = false;
+				glfwSetInputMode(mainwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				break;
 		}
 	}
 }
@@ -200,13 +190,11 @@ void onMouseButton(GLFWwindow*, int button, int action, int modifiers) {
 void onKey(GLFWwindow*, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
 		switch (key) {
-
 		}
 	}
 }
 
-bool createSDLWindow(int width, int height)
-{
+bool createSDLWindow(int width, int height) {
 	if (!glfwInit())
 		return false;
 
@@ -222,8 +210,7 @@ bool createSDLWindow(int width, int height)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 	mainwindow = glfwCreateWindow(width, height, windowCaption.c_str(), nullptr, nullptr);
-	if (mainwindow == nullptr)
-	{
+	if (mainwindow == nullptr) {
 		cerr << "Unable to create window" << endl;
 		return false;
 	}
@@ -236,8 +223,7 @@ bool createSDLWindow(int width, int height)
 
 	// GLEW
 	GLenum error = glewInit();
-	if (error != GLEW_OK)
-	{
+	if (error != GLEW_OK) {
 		cerr << "Could not initialize GLEW." << endl;
 		return false;
 	}
@@ -245,14 +231,12 @@ bool createSDLWindow(int width, int height)
 	return true;
 }
 
-void destroySDLWindow()
-{
+void destroySDLWindow() {
 	glfwDestroyWindow(mainwindow);
 	glfwTerminate();
 }
 
-void showPolygons(vector<string> args)
-{
+void showPolygons(vector<string> args) {
 	global::polygonmode = args[1] == "true";
 	if (global::polygonmode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -260,18 +244,15 @@ void showPolygons(vector<string> args)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void showCoordinateSystem(vector<string> args)
-{
+void showCoordinateSystem(vector<string> args) {
 	global::coords = args[1] == "true";
 }
 
-void showNormals(vector<string> args)
-{
+void showNormals(vector<string> args) {
 	global::normals = args[1] == "true";
 }
 
-int main(int argc, char **argv) try
-{
+int main(int argc, char** argv) try {
 	if (!createSDLWindow(initialWindowWidth, initialWindowHeight))
 		return -1;
 
@@ -306,13 +287,10 @@ int main(int argc, char **argv) try
 	destroySDLWindow();
 
 	return 0;
-}
-catch (const std::exception& e)
-{
+} catch (const std::exception& e) {
 	cerr << e.what() << endl;
 	return -2;
-}
-catch (...) {
+} catch (...) {
 	cerr << "Unknown exception" << endl;
 	return -2;
 }

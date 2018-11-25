@@ -64,7 +64,7 @@ else()
 endif()
 
 # clang-format
-find_program(CLANG_FORMAT NAMES "clang-tidy")
+find_program(CLANG_FORMAT NAMES "clang-format")
 if(NOT CLANG_FORMAT)
 	message("clang-format not found")
 else()

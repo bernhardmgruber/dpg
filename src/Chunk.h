@@ -1,9 +1,9 @@
 #pragma once
 
 #include "gl.h"
-#include <vector>
 #include <array>
 #include <stdint.h>
+#include <vector>
 
 #include "mathlib.h"
 
@@ -26,8 +26,7 @@ struct ChunkMemoryFootprint final {
 	}
 };
 
-class Chunk final
-{
+class Chunk final {
 public:
 	typedef float DensityType;
 	typedef uint64_t IdType;
@@ -36,8 +35,7 @@ public:
 	friend class ChunkManager;
 	friend class ChunkCreator;
 
-	enum class VoxelType
-	{
+	enum class VoxelType {
 		SOLID,
 		SURFACE,
 		AIR
@@ -62,8 +60,7 @@ public:
 	* Converts a voxel coordinate to a world coordinate.
 	*/
 	template<typename T>
-	glm::vec3 toWorld(T x, T y, T z) const
-	{
+	glm::vec3 toWorld(T x, T y, T z) const {
 		glm::vec3 v;
 		float blockLength = SIZE / RESOLUTION;
 		v.x = blockLength * ((float)x - 1.0f);
@@ -75,11 +72,10 @@ public:
 	/**
 	* Converts a voxel coordinate to a world coordinate.
 	*/
-	glm::vec3 toWorld(glm::vec3 v) const
-	{
+	glm::vec3 toWorld(glm::vec3 v) const {
 		return toWorld(v.x, v.y, v.z);
 	}
-	
+
 	glm::uvec3 toVoxelCoord(const glm::vec3& v) const;
 #pragma endregion
 

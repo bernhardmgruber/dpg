@@ -1,25 +1,23 @@
 #pragma once
 
-#include <initializer_list>
-#include "gl.h"
 #include "Shader.h"
+#include "gl.h"
+#include <initializer_list>
 
-namespace gl
-{
-    class Program
-    {
-    public:
-        Program();
-        Program(std::initializer_list<const Shader> shaders);
-        ~Program();
+namespace gl {
+	class Program {
+	public:
+		Program();
+		Program(std::initializer_list<const Shader> shaders);
+		~Program();
 
-        GLuint get() const;
+		GLuint get() const;
 
-        GLint getUniformLocation(const std::string& name) const;
+		GLint getUniformLocation(const std::string& name) const;
 
-        void use() const;
+		void use() const;
 
-    private:
-        GLuint program;
-    };
+	private:
+		GLuint program;
+	};
 }

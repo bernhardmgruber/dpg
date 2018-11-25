@@ -1,38 +1,36 @@
 #pragma once
 
-#include <string>
 #include <functional>
-#include <vector>
 #include <map>
-#include <queue>
-#include <thread>
 #include <mutex>
+#include <queue>
 #include <regex>
+#include <string>
+#include <thread>
 #include <tuple>
+#include <vector>
 
-class ThreadedCommandConsole
-{
+class ThreadedCommandConsole {
 public:
-    typedef std::function<void(std::vector<std::string>)> Handler;
+	typedef std::function<void(std::vector<std::string>)> Handler;
 
-    ThreadedCommandConsole();
+	ThreadedCommandConsole();
 
-    ~ThreadedCommandConsole();
+	~ThreadedCommandConsole();
 
-    void addCommand(std::string name, std::regex expr, Handler func);
+	void addCommand(std::string name, std::regex expr, Handler func);
 
-    void runHandlers();
+	void runHandlers();
 
 private:
-    std::thread consoleThread;
+	std::thread consoleThread;
 
-    std::map<std::string, std::tuple<std::regex,Handler>> handlers;
+	std::map<std::string, std::tuple<std::regex, Handler>> handlers;
 
-    std::queue<std::function<void()>> pendingHandlers;
+	std::queue<std::function<void()>> pendingHandlers;
 
-    std::mutex handlersMutex;
-    std::mutex pendingHandlersMutex;
+	std::mutex handlersMutex;
+	std::mutex pendingHandlersMutex;
 
-    void runConsoleLoop();
+	void runConsoleLoop();
 };
-

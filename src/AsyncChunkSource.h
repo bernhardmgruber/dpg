@@ -1,40 +1,37 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <queue>
 
 #include "Chunk.h"
 
-class AsyncChunkSource
-{
+class AsyncChunkSource {
 public:
-    AsyncChunkSource(unsigned int loaderThreads = 1);
-    virtual ~AsyncChunkSource();
+	AsyncChunkSource(unsigned int loaderThreads = 1);
+	virtual ~AsyncChunkSource();
 
-    Chunk* get(const glm::ivec3& chunkPos);
+	Chunk* get(const glm::ivec3& chunkPos);
 
 protected:
-    virtual Chunk* getChunk(const glm::ivec3& chunkPos) = 0;
+	virtual Chunk* getChunk(const glm::ivec3& chunkPos) = 0;
 
 private:
+	/// loaded chunks, missing OpenGL initialization
+	std::unordered_map<glm::ivec3, Chunk*> loadedChunks;
+	std::unordered_set<glm::ivec3> enqueuedChunksSet;
+	std::queue<glm::ivec3> enqueuedChunksQueue;
 
-    /// loaded chunks, missing OpenGL initialization
-    std::unordered_map<glm::ivec3, Chunk*> loadedChunks;
-    std::unordered_set<glm::ivec3> enqueuedChunksSet;
-    std::queue<glm::ivec3> enqueuedChunksQueue;
+	/// A thread pool providing threads for loading
+	std::vector<std::thread> loaderThreadPool;
 
-    /// A thread pool providing threads for loading
-    std::vector<std::thread> loaderThreadPool;
+	std::mutex loadedChunksMutex;
+	std::condition_variable loadingChunkCV;
 
-    std::mutex loadedChunksMutex;
-    std::condition_variable loadingChunkCV;
+	bool shutdown;
 
-    bool shutdown;
-
-    void loaderThreadMain();
+	void loaderThreadMain();
 };
-

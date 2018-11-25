@@ -3,21 +3,16 @@
 #include "gl.h"
 #include <string>
 
-namespace gl
-{
-    class Shader
-    {
-    public:
-        Shader();
-        Shader(GLenum shaderType, const std::string& file);
-        ~Shader();
+namespace gl {
+	class Shader {
+	public:
+		Shader();
+		Shader(GLenum shaderType, const std::string& file);
+		~Shader();
 
-        GLuint get() const;
+		GLuint get() const;
 
-    private:
-        GLuint shader;
-    };
+	private:
+		GLuint shader;
+	};
 }
-
-
-

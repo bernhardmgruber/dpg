@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 auto Camera::viewVector() const -> glm::vec3 {
 	glm::vec3 v;
@@ -12,7 +12,7 @@ auto Camera::viewVector() const -> glm::vec3 {
 	v.z = 0;
 
 	// rotate pitch along -y
-	v = glm::rotateY(v , degToRad(-pitch));
+	v = glm::rotateY(v, degToRad(-pitch));
 
 	// rotate yaw along z
 	v = glm::rotateZ(v, degToRad(yaw));

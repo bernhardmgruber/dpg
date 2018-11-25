@@ -12,8 +12,7 @@ const vec4 materialDiffuse = vec4(0.3, 0.3, 0.3, 1.0);
 const vec4 materialSpecular = vec4(0.3, 0.3, 0.3, 1.0);
 const float shininess = 1.0;
 
-void main()
-{
+void main() {
 	//vec3 L = normalize(lightPos - vVertex);
 	vec3 L = invLightDir;
 	vec3 E = normalize(-vVertex); // we are in Eye Coordinates, so EyePos is (0,0,0)

@@ -8,8 +8,7 @@ layout(location = 1) in vec3 aNormal;
 out vec3 vVertex;
 out vec3 vNormal;
 
-void main()
-{
-    vVertex = aVertex;
-    vNormal = aNormal;
+void main() {
+	vVertex = aVertex;
+	vNormal = aNormal;
 }

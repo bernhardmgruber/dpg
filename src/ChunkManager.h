@@ -1,20 +1,19 @@
 #pragma once
 
-#include <vector>
-#include <queue>
+#include <condition_variable>
 #include <mutex>
+#include <queue>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include <condition_variable>
-#include <thread>
+#include <vector>
 
 #include "Chunk.h"
 #include "ChunkCreator.h"
 #include "ChunkSerializer.h"
 #include "mathlib.h"
 
-class ChunkManager final
-{
+class ChunkManager final {
 public:
 	ChunkManager();
 	ChunkManager(const ChunkManager& mgr) = delete;

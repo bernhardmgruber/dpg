@@ -1,17 +1,15 @@
 #pragma once
 
-#include "mathlib.h"
 #include "ChunkManager.h"
+#include "mathlib.h"
 
-class Collider final
-{
+class Collider final {
 public:
-    Collider(ChunkManager& mgr);
-    ~Collider();
+	Collider(ChunkManager& mgr);
+	~Collider();
 
-    glm::vec3 traceOnVoxels(glm::vec3 startPos, glm::vec3 endPos);
+	glm::vec3 traceOnVoxels(glm::vec3 startPos, glm::vec3 endPos);
 
 private:
-    ChunkManager& mgr;
+	ChunkManager& mgr;
 };
-

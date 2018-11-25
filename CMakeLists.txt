@@ -5,15 +5,21 @@ project(dpg)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# executable
+file(GLOB_RECURSE source_files src/*.cpp src/*.h src/*.vert src/*.frag src/*.geom thirdparty/*.cpp thirdparty/*.h)
+add_executable(${PROJECT_NAME} ${source_files})
+source_group("" FILES ${source_files})
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${source_files})
+
 # find packages
 find_package(Boost REQUIRED COMPONENTS system filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR})
 
 find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
 
 find_package(imgui CONFIG REQUIRED)
 set_target_properties(imgui::imgui PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
@@ -24,23 +30,17 @@ else()
 	find_package(PkgConfig REQUIRED)
 	pkg_search_module(GLFW REQUIRED glfw3)
 endif()
-include_directories(${GLFW3_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLFW3_INCLUDE_DIRS})
 
 find_package(glm)
 if (glm_FOUND)
-	include_directories(${glm_INCLUDE_DIR})
+	target_include_directories(${PROJECT_NAME} PUBLIC ${glm_INCLUDE_DIR})
 else()
 	find_package(GLM) # older versions
-	include_directories(${GLM_INCLUDE_DIR})
+	target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIR})
 endif()
 
-include_directories(thirdparty)
-
-# executable
-file(GLOB_RECURSE source_files src/*.cpp src/*.h src/*.vert src/*.frag src/*.geom thirdparty/*.cpp thirdparty/*.h)
-add_executable(${PROJECT_NAME} ${source_files})
-source_group("" FILES ${source_files})
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${source_files})
+target_include_directories(${PROJECT_NAME} PUBLIC thirdparty)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	GLEW::GLEW
@@ -79,6 +79,9 @@ if(NOT CLANG_FORMAT)
 	message("clang-format not found")
 else()
 	message("clang-format found: ${CLANG_FORMAT}")
+	if(EXISTS .clang-format)
+		configure_file(.clang-format .clang-format COPYONLY)
+	endif()
 	add_custom_target(clang-format COMMAND ${CLANG_FORMAT} -style=file -i ${source_files})
 endif()
 
@@ -92,4 +95,6 @@ else()
 	if(EXISTS .clang-tidy)
 		configure_file(.clang-tidy .clang-tidy COPYONLY)
 	endif()
+	get_target_property(ALL_INCLUDES ${PROJECT_NAME} INCLUDE_DIRECTORIES)
+	add_custom_target(clang-tidy COMMAND ${CLANG_TIDY} ${source_files} -- ${ALL_INCLUDES})
 endif()

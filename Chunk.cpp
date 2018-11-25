@@ -11,24 +11,24 @@ using namespace std;
 const float Chunk::SIZE = 1.0;
 const unsigned int Chunk::RESOLUTION = 16;
 
-Chunk::IdType Chunk::ChunkGridCoordinateToId(Vector3I chunkGridCoord)
+Chunk::IdType Chunk::ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord)
 {
     uint32_t mask = 0x001FFFFF; // 21 bit
 
     return (((IdType)(chunkGridCoord.x & mask)) << 42) | (((IdType)(chunkGridCoord.y & mask)) << 21) | (((IdType)(chunkGridCoord.z & mask)) << 0);
 }
 
-Vector3I Chunk::IdToChunkGridCoordinate(IdType id)
+glm::ivec3 Chunk::IdToChunkGridCoordinate(IdType id)
 {
     uint32_t mask = 0x001FFFFF; // 21 bit
-    return Vector3I((id >> 42) & mask, (id >> 21) & mask, (id >> 0) & mask);
+    return glm::ivec3((id >> 42) & mask, (id >> 21) & mask, (id >> 0) & mask);
 }
 
 Chunk::Chunk(IdType id)
 : id(id), position(IdToChunkGridCoordinate(id)), buffersInitialized(false), densities(nullptr)
 {}
 
-Chunk::Chunk(Vector3I chunkGridCoord)
+Chunk::Chunk(glm::ivec3 chunkGridCoord)
 : id(ChunkGridCoordinateToId(chunkGridCoord)), position(chunkGridCoord), buffersInitialized(false), densities(nullptr)
 {}
 
@@ -45,11 +45,11 @@ Chunk::~Chunk()
 }
 
 
-Vector3UI Chunk::toVoxelCoord(const Vector3F& v) const
+glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const
 {
-    Vector3F rel = (v - getWorldPosition()) / SIZE * (float)RESOLUTION;
+    glm::vec3 rel = (v - getWorldPosition()) / SIZE * (float)RESOLUTION;
 
-    Vector3UI blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
+    glm::uvec3 blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
 
     assert(rel.x > 0 && rel.x < 16);
     assert(rel.y > 0 && rel.y < 16);
@@ -63,23 +63,23 @@ const Chunk::IdType Chunk::getId() const
     return id;
 }
 
-const Vector3I Chunk::getChunkGridPositon() const
+const glm::ivec3 Chunk::getChunkGridPositon() const
 {
     return position;
 }
 
-const Vector3F Chunk::getWorldPosition() const
+const glm::vec3 Chunk::getWorldPosition() const
 {
-    Vector3F v;
+    glm::vec3 v;
     v.x = position.x * SIZE - SIZE / 2.0f;
     v.y = position.y * SIZE - SIZE / 2.0f;
     v.z = position.z * SIZE - SIZE / 2.0f;
     return v;
 }
 
-Chunk::VoxelType Chunk::categorizeWorldPosition(const Vector3F& pos) const
+Chunk::VoxelType Chunk::categorizeWorldPosition(const glm::vec3& pos) const
 {
-    const Vector3UI blockCoord = toVoxelCoord(pos);
+    const glm::uvec3 blockCoord = toVoxelCoord(pos);
     unsigned int caseIndex = caseIndexFromVoxel(voxelCubeAt(blockCoord.x, blockCoord.y, blockCoord.z));
 
     if (caseIndex == 255)
@@ -94,8 +94,8 @@ void Chunk::render() const
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(Vector3F), (const GLvoid*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(Vector3F), (const GLvoid*)sizeof(Vector3F));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)sizeof(glm::vec3));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -117,8 +117,8 @@ void Chunk::render() const
             for (int i = 0; i < 3; i++)
             {
                 Vertex vert = vertices[t[i]];
-                Vector3F pos = vert.position;
-                Vector3F normal = vert.normal;
+                glm::vec3 pos = vert.position;
+                glm::vec3 normal = vert.normal;
 
 
                 glVertex3fv((float*)&pos);

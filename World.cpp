@@ -25,7 +25,7 @@ World::~World()
 void World::update()
 {
 	// Get camera position
-	Vector3I cameraChunkPos = physics.getChunkPos(camera.position);
+	glm::ivec3 cameraChunkPos = physics.getChunkPos(camera.position);
 
 	//cout << "camera at " << setprecision(2) << camera.position << " = chunk " << cameraChunkPos << endl;
 
@@ -39,7 +39,7 @@ void World::render()
 		c->render();
 }
 
-void World::buildRenderList(const Vector3I& cameraChunkPos)
+void World::buildRenderList(const glm::ivec3& cameraChunkPos)
 {
 	if(lastCameraChunk == cameraChunkPos && renderListComplete)
 		return; // the camera chunk has not changed, no need to rebuild the render list
@@ -53,8 +53,8 @@ void World::buildRenderList(const Vector3I& cameraChunkPos)
 		for(int y = cameraChunkPos.y - CAMERA_CHUNK_RADIUS; y <= cameraChunkPos.y + CAMERA_CHUNK_RADIUS; y++)
 			for(int z = cameraChunkPos.z - CAMERA_CHUNK_RADIUS; z <= cameraChunkPos.z + CAMERA_CHUNK_RADIUS; z++)
 			{
-				Vector3I chunkPos(x, y, z);
-				if(distance(Vector3F(chunkPos), Vector3F(cameraChunkPos)) > CAMERA_CHUNK_RADIUS)
+				glm::ivec3 chunkPos(x, y, z);
+				if(distance(glm::vec3(chunkPos), glm::vec3(cameraChunkPos)) > CAMERA_CHUNK_RADIUS)
 					continue;
 
 				Chunk* c = loader.get(chunkPos);

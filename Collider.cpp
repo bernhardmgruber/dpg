@@ -7,7 +7,7 @@ Collider::Collider(ChunkManager& mgr)
 Collider::~Collider()
 {}
 
-Vector3F Collider::traceOnVoxels(Vector3F startPos, Vector3F endPos)
+glm::vec3 Collider::traceOnVoxels(glm::vec3 startPos, glm::vec3 endPos)
 {
 	return endPos;
 }

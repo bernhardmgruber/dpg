@@ -25,7 +25,7 @@ AsyncChunkSource::~AsyncChunkSource()
         delete pair.second;
 }
 
-Chunk* AsyncChunkSource::get(const Vector3I& chunkPos)
+Chunk* AsyncChunkSource::get(const glm::ivec3& chunkPos)
 {
     {
         lock_guard<mutex> lock(loadedChunksMutex);
@@ -59,7 +59,7 @@ void AsyncChunkSource::loaderThreadMain()
     // influenced by: http://progsch.net/wordpress/?p=81
     while (true)
     {
-        Vector3I chunkPos;
+        glm::ivec3 chunkPos;
 
         // wait for
         {

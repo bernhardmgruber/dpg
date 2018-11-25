@@ -54,17 +54,17 @@ public:
 	*/
 	static const unsigned int RESOLUTION;
 
-	static IdType ChunkGridCoordinateToId(Vector3I chunkGridCoord);
-	static Vector3I IdToChunkGridCoordinate(IdType id);
+	static IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord);
+	static glm::ivec3 IdToChunkGridCoordinate(IdType id);
 
 #pragma region coordinate_transformation_methods
 	/**
 	* Converts a voxel coordinate to a world coordinate.
 	*/
 	template<typename T>
-	Vector3F toWorld(T x, T y, T z) const
+	glm::vec3 toWorld(T x, T y, T z) const
 	{
-		Vector3F v;
+		glm::vec3 v;
 		float blockLength = SIZE / RESOLUTION;
 		v.x = blockLength * ((float)x - 1.0f);
 		v.y = blockLength * ((float)y - 1.0f);
@@ -80,7 +80,7 @@ public:
 		return toWorld(v.x, v.y, v.z);
 	}
 	
-	Vector3UI toVoxelCoord(const Vector3F& v) const;
+	glm::uvec3 toVoxelCoord(const glm::vec3& v) const;
 #pragma endregion
 
 	const IdType getId() const;
@@ -88,17 +88,17 @@ public:
 	/**
 	* Gets the position of the chunk's center in the chunk grid.
 	*/
-	const Vector3I getChunkGridPositon() const;
+	const glm::ivec3 getChunkGridPositon() const;
 
 	/**
 	* Gets the position of the chunk's center in the world.
 	*/
-	const Vector3F getWorldPosition() const;
+	const glm::vec3 getWorldPosition() const;
 
 	/**
 	* Categorizes the given position in world coordinates.
 	*/
-	VoxelType categorizeWorldPosition(const Vector3F& pos) const;
+	VoxelType categorizeWorldPosition(const glm::vec3& pos) const;
 
 	/**
 	* Renders the chunk.
@@ -122,10 +122,10 @@ public:
 
 private:
 	IdType id;
-	Vector3I position;
+	glm::ivec3 position;
 
 	DensityType* densities;
-	std::vector<Vector3UI> triangles;
+	std::vector<glm::uvec3> triangles;
 	std::vector<Vertex> vertices;
 
 	bool buffersInitialized;
@@ -136,7 +136,7 @@ private:
 	* ctor is private, only allow ChunkCreator and ChunkSerializer to construct chunks via friends
 	*/
 	Chunk(IdType id);
-	Chunk(Vector3I chunkGridCoord);
+	Chunk(glm::ivec3 chunkGridCoord);
 
 	/*
 	* Helper functions

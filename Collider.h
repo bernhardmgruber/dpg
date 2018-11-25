@@ -9,7 +9,7 @@ public:
     Collider(ChunkManager& mgr);
     ~Collider();
 
-    Vector3F traceOnVoxels(Vector3F startPos, Vector3F endPos);
+    glm::vec3 traceOnVoxels(glm::vec3 startPos, glm::vec3 endPos);
 
 private:
     ChunkManager& mgr;

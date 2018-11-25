@@ -15,17 +15,17 @@ public:
     AsyncChunkSource(unsigned int loaderThreads = 1);
     virtual ~AsyncChunkSource();
 
-    Chunk* get(const Vector3I& chunkPos);
+    Chunk* get(const glm::ivec3& chunkPos);
 
 protected:
-    virtual Chunk* getChunk(const Vector3I& chunkPos) = 0;
+    virtual Chunk* getChunk(const glm::ivec3& chunkPos) = 0;
 
 private:
 
     /// loaded chunks, missing OpenGL initialization
-    std::unordered_map<Vector3I, Chunk*> loadedChunks;
-    std::unordered_set<Vector3I> enqueuedChunksSet;
-    std::queue<Vector3I> enqueuedChunksQueue;
+    std::unordered_map<glm::ivec3, Chunk*> loadedChunks;
+    std::unordered_set<glm::ivec3> enqueuedChunksSet;
+    std::queue<glm::ivec3> enqueuedChunksQueue;
 
     /// A thread pool providing threads for loading
     std::vector<std::thread> loaderThreadPool;

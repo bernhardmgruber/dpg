@@ -11,31 +11,31 @@ WorldPhysics::WorldPhysics(ChunkManager& mgr)
 WorldPhysics::~WorldPhysics()
 {}
 
-Chunk::VoxelType WorldPhysics::categorizeWorldPosition(const Vector3F& pos) const
+Chunk::VoxelType WorldPhysics::categorizeWorldPosition(const glm::vec3& pos) const
 {
-    const Vector3I chunkPos = getChunkPos(pos);
+    const glm::ivec3 chunkPos = getChunkPos(pos);
     const Chunk* chunk = mgr.get(chunkPos);
 
     return chunk->categorizeWorldPosition(pos);
 }
 
-Vector3F WorldPhysics::getNearestNonSolidPos(const Vector3F& pos, BoundingBox& box) const
+glm::vec3 WorldPhysics::getNearestNonSolidPos(const glm::vec3& pos, BoundingBox& box) const
 {
     return pos;
 }
 
-Vector3F WorldPhysics::move(const Vector3F src, const Vector3F dst) const
+glm::vec3 WorldPhysics::move(const glm::vec3 src, const glm::vec3 dst) const
 {
     return dst;
 }
 
-Vector3F WorldPhysics::move(const Vector3F src, const BoundingBox& box, const Vector3F dst) const
+glm::vec3 WorldPhysics::move(const glm::vec3 src, const BoundingBox& box, const glm::vec3 dst) const
 {
     return dst;
 }
 
-Vector3I WorldPhysics::getChunkPos(const Vector3F& pos) const
+glm::ivec3 WorldPhysics::getChunkPos(const glm::vec3& pos) const
 {
-    Vector3F chunkPos = pos / Chunk::SIZE;
-    return Vector3I(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
+    glm::vec3 chunkPos = pos / Chunk::SIZE;
+    return glm::ivec3(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
 }

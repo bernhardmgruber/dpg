@@ -5,55 +5,55 @@
 
 using namespace std;
 
-ostream& operator<<(ostream& os, Vector3F v)
+ostream& operator<<(ostream& os, glm::vec3 v)
 {
     os << "(" << setw(2) << v.x << ", " << v.y << ", " << v.z << ")";
 
     return os;
 }
 
-ostream& operator<<(ostream& os, Vector3I v)
+ostream& operator<<(ostream& os, glm::ivec3 v)
 {
     os << "(" << setw(2) << v.x << ", " << v.y << ", " << v.z << ")";
 
     return os;
 }
 
-ostream& operator<<(ostream& os, Vector2F v)
+ostream& operator<<(ostream& os, glm::vec2 v)
 {
     os << "(" << setw(2) << v.x << ", " << v.y << ")";
 
     return os;
 }
 
-Vector3F operator-(Vector3F v1, Vector3F v2)
+glm::vec3 operator-(glm::vec3 v1, glm::vec3 v2)
 {
-    Vector3F resultVector;
+    glm::vec3 resultVector;
     resultVector.x = v1.x - v2.x;
     resultVector.y = v1.y - v2.y;
     resultVector.z = v1.z - v2.z;
     return resultVector;
 }
 
-Vector3F operator+(Vector3F v1, Vector3F v2)
+glm::vec3 operator+(glm::vec3 v1, glm::vec3 v2)
 {
-    Vector3F resultVector;
+    glm::vec3 resultVector;
     resultVector.x = v1.x + v2.x;
     resultVector.y = v1.y + v2.y;
     resultVector.z = v1.z + v2.z;
     return resultVector;
 }
 
-Vector3I operator+(Vector3I v1, Vector3I v2)
+glm::ivec3 operator+(glm::ivec3 v1, glm::ivec3 v2)
 {
-    Vector3I resultVector;
+    glm::ivec3 resultVector;
     resultVector.x = v1.x + v2.x;
     resultVector.y = v1.y + v2.y;
     resultVector.z = v1.z + v2.z;
     return resultVector;
 }
 
-Vector3F operator*(float f, Vector3F v)
+glm::vec3 operator*(float f, glm::vec3 v)
 {
     v.x *= f;
     v.y *= f;
@@ -61,7 +61,7 @@ Vector3F operator*(float f, Vector3F v)
     return v;
 }
 
-Vector3F operator*(Vector3F v, float f)
+glm::vec3 operator*(glm::vec3 v, float f)
 {
     v.x *= f;
     v.y *= f;
@@ -69,7 +69,7 @@ Vector3F operator*(Vector3F v, float f)
     return v;
 }
 
-Vector3F operator/(Vector3F v, float f)
+glm::vec3 operator/(glm::vec3 v, float f)
 {
     v.x /= f;
     v.y /= f;
@@ -77,9 +77,9 @@ Vector3F operator/(Vector3F v, float f)
     return v;
 }
 
-bool operator==(Vector3F v1, Vector3F v2)
+bool operator==(glm::vec3 v1, glm::vec3 v2)
 {
-	Vector3F v = v1 - v2;
+	glm::vec3 v = v1 - v2;
 
     if(v.x != 0)
         return false;
@@ -91,36 +91,36 @@ bool operator==(Vector3F v1, Vector3F v2)
 	return true;
 }
 
-bool operator!=(Vector3F v1, Vector3F v2)
+bool operator!=(glm::vec3 v1, glm::vec3 v2)
 {
 	return !(v1 == v2);
 }
 
-float length(Vector3F v)
+float length(glm::vec3 v)
 {
     return sqrt((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
 }
 
-Vector3F normalize(Vector3F v)
+glm::vec3 normalize(glm::vec3 v)
 {
     return v / length(v);
 }
 
-float dotProduct(Vector3F v1, Vector3F v2)
+float dotProduct(glm::vec3 v1, glm::vec3 v2)
 {
     return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
 }
 
-Vector3F crossProduct(Vector3F v1, Vector3F v2)
+glm::vec3 crossProduct(glm::vec3 v1, glm::vec3 v2)
 {
-    Vector3F perpendicularVector;
+    glm::vec3 perpendicularVector;
     perpendicularVector.x = (v2.y * v1.z) - (v2.z * v1.y);
     perpendicularVector.y = (v2.z * v1.x) - (v2.x * v1.z);
     perpendicularVector.z = (v2.x * v1.y) - (v2.y * v1.x);
     return perpendicularVector;
 }
 
-bool pointInBox(Vector3F vPoint, short vMin[3], short vMax[3])
+bool pointInBox(glm::vec3 vPoint, short vMin[3], short vMax[3])
 {
     if(((float)vMin[0] <= vPoint.x && vPoint.x <= (float)vMax[0] &&
         (float)vMin[1] <= vPoint.y && vPoint.y <= (float)vMax[1] &&
@@ -133,7 +133,7 @@ bool pointInBox(Vector3F vPoint, short vMin[3], short vMax[3])
         return false;
 }
 
-bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist)
+bool pointInPlane(glm::vec3 vPoint, glm::vec3 vNormal, float fDist)
 {
     if(fabs(dotProduct(vPoint, vNormal) - fDist) < EPSILON)
         return true;
@@ -141,33 +141,33 @@ bool pointInPlane(Vector3F vPoint, Vector3F vNormal, float fDist)
         return false;
 }
 
-Vector3F rotateX(float a, Vector3F v)
+glm::vec3 rotateX(float a, glm::vec3 v)
 {
     a = degToRad(a);
 
-    Vector3F res;
+    glm::vec3 res;
     res.x = v.x;
     res.y = v.y * cos(a) + v.z * -sin(a);
     res.z = v.y * sin(a) + v.z *  cos(a);
     return res;
 }
 
-Vector3F rotateY(float a, Vector3F v)
+glm::vec3 rotateY(float a, glm::vec3 v)
 {
     a = degToRad(a);
 
-    Vector3F res;
+    glm::vec3 res;
     res.x = v.x *  cos(a) + v.z * sin(a);
     res.y = v.y;
     res.z = v.x * -sin(a) + v.z * cos(a);
     return res;
 }
 
-Vector3F rotateZ(float a, Vector3F v)
+glm::vec3 rotateZ(float a, glm::vec3 v)
 {
     a = degToRad(a);
 
-    Vector3F res;
+    glm::vec3 res;
     res.x = v.x * cos(a) + v.y * -sin(a);
     res.y = v.x * sin(a) + v.y *  cos(a);
     res.z = v.z;

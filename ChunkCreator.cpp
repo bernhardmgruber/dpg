@@ -22,7 +22,7 @@ ChunkCreator::ChunkCreator(unsigned int loaderThreads)
 ChunkCreator::~ChunkCreator()
 {}
 
-Chunk* ChunkCreator::getChunk(const Vector3I& chunkPos)
+Chunk* ChunkCreator::getChunk(const glm::ivec3& chunkPos)
 {
     Chunk* c = new Chunk(chunkPos);
 
@@ -42,7 +42,7 @@ Chunk* ChunkCreator::getChunk(const Vector3I& chunkPos)
         {
             for (unsigned int z = 0; z < size; z++)
             {
-                Vector3F world = c->toWorld(x, y, z);
+                glm::vec3 world = c->toWorld(x, y, z);
                 c->densities[x * size * size + y * size + z] =
 					//(Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
 					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, 6, 0, 0, 0);
@@ -66,7 +66,7 @@ Chunk* ChunkCreator::getChunk(const Vector3I& chunkPos)
 
 void ChunkCreator::marchChunk(Chunk* c)
 {
-    unordered_map<Vector3F, unsigned int> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
+    unordered_map<glm::vec3, unsigned int> vertexMap(CHUNK_TRIANGLE_MAP_INITIAL_SIZE);
 
     for (unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++)
     {
@@ -88,7 +88,7 @@ void ChunkCreator::marchChunk(Chunk* c)
                 // for each triangle of the cube
                 for (int t = 0; t < numTriangles; t++)
                 {
-                    Vector3I tri;
+                    glm::ivec3 tri;
 
                     // for each edge of the cube a triangle vertex is on
                     for (int e = 0; e < 3; e++)
@@ -97,30 +97,30 @@ void ChunkCreator::marchChunk(Chunk* c)
 
                         Chunk::DensityType value1;
                         Chunk::DensityType value2;
-                        Vector3I vec1;
-                        Vector3I vec2;
+                        glm::ivec3 vec1;
+                        glm::ivec3 vec2;
 
                         switch (edgeIndex)
                         {
-                            case 0:  value1 = values[0]; value2 = values[1]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y, z + 1); break;
-                            case 1:  value1 = values[1]; value2 = values[2]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x + 1, y, z + 1); break;
-                            case 2:  value1 = values[2]; value2 = values[3]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y, z); break;
-                            case 3:  value1 = values[3]; value2 = values[0]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x, y, z); break;
+                            case 0:  value1 = values[0]; value2 = values[1]; vec1 = glm::ivec3(x, y, z); vec2 = glm::ivec3(x, y, z + 1); break;
+                            case 1:  value1 = values[1]; value2 = values[2]; vec1 = glm::ivec3(x, y, z + 1); vec2 = glm::ivec3(x + 1, y, z + 1); break;
+                            case 2:  value1 = values[2]; value2 = values[3]; vec1 = glm::ivec3(x + 1, y, z + 1); vec2 = glm::ivec3(x + 1, y, z); break;
+                            case 3:  value1 = values[3]; value2 = values[0]; vec1 = glm::ivec3(x + 1, y, z); vec2 = glm::ivec3(x, y, z); break;
 
-                            case 4:  value1 = values[4]; value2 = values[5]; vec1 = Vector3I(x, y + 1, z); vec2 = Vector3I(x, y + 1, z + 1); break;
-                            case 5:  value1 = values[5]; value2 = values[6]; vec1 = Vector3I(x, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                            case 6:  value1 = values[6]; value2 = values[7]; vec1 = Vector3I(x + 1, y + 1, z + 1); vec2 = Vector3I(x + 1, y + 1, z); break;
-                            case 7:  value1 = values[7]; value2 = values[4]; vec1 = Vector3I(x + 1, y + 1, z); vec2 = Vector3I(x, y + 1, z); break;
+                            case 4:  value1 = values[4]; value2 = values[5]; vec1 = glm::ivec3(x, y + 1, z); vec2 = glm::ivec3(x, y + 1, z + 1); break;
+                            case 5:  value1 = values[5]; value2 = values[6]; vec1 = glm::ivec3(x, y + 1, z + 1); vec2 = glm::ivec3(x + 1, y + 1, z + 1); break;
+                            case 6:  value1 = values[6]; value2 = values[7]; vec1 = glm::ivec3(x + 1, y + 1, z + 1); vec2 = glm::ivec3(x + 1, y + 1, z); break;
+                            case 7:  value1 = values[7]; value2 = values[4]; vec1 = glm::ivec3(x + 1, y + 1, z); vec2 = glm::ivec3(x, y + 1, z); break;
 
-                            case 8:  value1 = values[0]; value2 = values[4]; vec1 = Vector3I(x, y, z); vec2 = Vector3I(x, y + 1, z); break;
-                            case 9:  value1 = values[1]; value2 = values[5]; vec1 = Vector3I(x, y, z + 1); vec2 = Vector3I(x, y + 1, z + 1); break;
-                            case 10: value1 = values[2]; value2 = values[6]; vec1 = Vector3I(x + 1, y, z + 1); vec2 = Vector3I(x + 1, y + 1, z + 1); break;
-                            case 11: value1 = values[3]; value2 = values[7]; vec1 = Vector3I(x + 1, y, z); vec2 = Vector3I(x + 1, y + 1, z); break;
+                            case 8:  value1 = values[0]; value2 = values[4]; vec1 = glm::ivec3(x, y, z); vec2 = glm::ivec3(x, y + 1, z); break;
+                            case 9:  value1 = values[1]; value2 = values[5]; vec1 = glm::ivec3(x, y, z + 1); vec2 = glm::ivec3(x, y + 1, z + 1); break;
+                            case 10: value1 = values[2]; value2 = values[6]; vec1 = glm::ivec3(x + 1, y, z + 1); vec2 = glm::ivec3(x + 1, y + 1, z + 1); break;
+                            case 11: value1 = values[3]; value2 = values[7]; vec1 = glm::ivec3(x + 1, y, z); vec2 = glm::ivec3(x + 1, y + 1, z); break;
 
                             default: cerr << "Invalid edge index: " << edgeIndex << endl; break;
                         }
 
-                        Vector3F vertex = interpolate(value1, value2, vec1, vec2);
+                        glm::vec3 vertex = interpolate(value1, value2, vec1, vec2);
 
                         // lookup this vertex
                         auto it = vertexMap.find(vertex);
@@ -132,8 +132,8 @@ void ChunkCreator::marchChunk(Chunk* c)
                             Vertex v;
                             v.position = c->toWorld(vertex);
 
-                            Vector3F normal1 = getNormal(c, vec1);
-                            Vector3F normal2 = getNormal(c, vec2);
+                            glm::vec3 normal1 = getNormal(c, vec1);
+                            glm::vec3 normal2 = getNormal(c, vec2);
                             v.normal = normalize(interpolate(value1, value2, normal1, normal2));
 
                             tri[e] = (unsigned int)c->vertices.size();
@@ -152,9 +152,9 @@ void ChunkCreator::marchChunk(Chunk* c)
     //cout << "Vertex map size " << vertexMap.size() << endl;
 }
 
-Vector3F ChunkCreator::getNormal(Chunk* c, const Vector3UI& v) const
+glm::vec3 ChunkCreator::getNormal(Chunk* c, const glm::uvec3& v) const
 {
-    Vector3F grad;
+    glm::vec3 grad;
     grad.x = c->voxelAt(v.x + 1, v.y, v.z) - c->voxelAt(v.x - 1, v.y, v.z);
     grad.y = c->voxelAt(v.x, v.y + 1, v.z) - c->voxelAt(v.x, v.y - 1, v.z);
     grad.z = c->voxelAt(v.x, v.y, v.z + 1) - c->voxelAt(v.x, v.y, v.z - 1);

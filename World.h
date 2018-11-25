@@ -27,8 +27,8 @@ class World
 		/** Holds all chunks that need to be rendered. This list is generated during Update() and used by Render(). */
 		std::vector<Chunk*> renderList;
 
-		Vector3I lastCameraChunk;
+		glm::ivec3 lastCameraChunk;
 		bool renderListComplete;
 
-		void buildRenderList(const Vector3I& cameraChunkPos);
+		void buildRenderList(const glm::ivec3& cameraChunkPos);
 };

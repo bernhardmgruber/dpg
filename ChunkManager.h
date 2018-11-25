@@ -20,14 +20,14 @@ public:
 	ChunkManager(const ChunkManager& mgr) = delete;
 	~ChunkManager();
 
-	Chunk* get(const Vector3I& pos);
+	Chunk* get(const glm::ivec3& pos);
 
 private:
 	ChunkCreator creator;
 	ChunkSerializer serializer;
 
 	/// fully loaded chunks
-	std::unordered_map<Vector3I, Chunk*> chunks;
+	std::unordered_map<glm::ivec3, Chunk*> chunks;
 
 	const ChunkMemoryFootprint getMemoryFootprint() const;
 };

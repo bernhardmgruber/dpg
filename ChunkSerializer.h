@@ -10,11 +10,11 @@ public:
     ChunkSerializer(string chunkDir);
     virtual ~ChunkSerializer();
 
-    bool hasChunk(const Vector3I& chunkPos);
+    bool hasChunk(const glm::ivec3& chunkPos);
     void storeChunk(const Chunk* chunk);
 
 protected:
-    virtual Chunk* getChunk(const Vector3I& chunkPos) override;
+    virtual Chunk* getChunk(const glm::ivec3& chunkPos) override;
 
 private:
     std::string chunkDir;

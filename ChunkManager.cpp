@@ -21,7 +21,7 @@ ChunkManager::~ChunkManager()
     }
 }
 
-Chunk* ChunkManager::get(const Vector3I& pos)
+Chunk* ChunkManager::get(const glm::ivec3& pos)
 {
     // check if chunk is available
     auto it = chunks.find(pos);

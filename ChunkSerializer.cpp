@@ -45,7 +45,7 @@ ChunkSerializer::ChunkSerializer(string chunkDir)
 ChunkSerializer::~ChunkSerializer()
 {}
 
-bool ChunkSerializer::hasChunk(const Vector3I& chunkPos)
+bool ChunkSerializer::hasChunk(const glm::ivec3& chunkPos)
 {
     return availableChunks.find(Chunk::ChunkGridCoordinateToId(chunkPos)) != availableChunks.end();
 }
@@ -63,13 +63,13 @@ void ChunkSerializer::storeChunk(const Chunk* chunk)
     file << (size_t)chunk->vertices.size();
     file.write((char*)chunk->vertices.data(), chunk->vertices.size() * sizeof(Vertex));
     file << (size_t)chunk->triangles.size();
-    file.write((char*)chunk->triangles.data(), chunk->triangles.size() * sizeof(Vector3UI));
+    file.write((char*)chunk->triangles.data(), chunk->triangles.size() * sizeof(glm::uvec3));
     file.close();
 
     cout << "Wrote chunk from disk: " << chunk->getChunkGridPositon() << endl;
 }
 
-Chunk* ChunkSerializer::getChunk(const Vector3I& chunkPos)
+Chunk* ChunkSerializer::getChunk(const glm::ivec3& chunkPos)
 {
     Chunk::IdType chunkId = Chunk::ChunkGridCoordinateToId(chunkPos);
 

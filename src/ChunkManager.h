@@ -15,6 +15,8 @@ public:
 
 	auto get(const glm::ivec3& pos) -> Chunk*;
 
+	void clear();
+
 private:
 	ChunkMemoryFootprint getMemoryFootprint() const;
 

@@ -4,6 +4,7 @@
 
 #include "Camera.h"
 #include "utils.h"
+#include "globals.h"
 
 #include "World.h"
 
@@ -12,8 +13,6 @@ using namespace std;
 World::World()
 	: physics(chunks), renderListComplete(false) {
 }
-
-const auto CAMERA_CHUNK_RADIUS = 5;
 
 void World::update() {
 	// Get camera position
@@ -28,6 +27,10 @@ void World::render() {
 		c->render();
 }
 
+void World::clearChunks() {
+	chunks.clear();
+}
+
 void World::buildRenderList(const glm::ivec3& cameraChunkPos) {
 	if (lastCameraChunk == cameraChunkPos && renderListComplete)
 		return; // the camera chunk has not changed, no need to rebuild the render list
@@ -37,11 +40,11 @@ void World::buildRenderList(const glm::ivec3& cameraChunkPos) {
 	renderListComplete = true;
 
 	// iterate a cube around the camera and check the chunk's distance to camera chunk to get a sphere around the camera
-	for (int x = cameraChunkPos.x - CAMERA_CHUNK_RADIUS; x <= cameraChunkPos.x + CAMERA_CHUNK_RADIUS; x++)
-		for (int y = cameraChunkPos.y - CAMERA_CHUNK_RADIUS; y <= cameraChunkPos.y + CAMERA_CHUNK_RADIUS; y++)
-			for (int z = cameraChunkPos.z - CAMERA_CHUNK_RADIUS; z <= cameraChunkPos.z + CAMERA_CHUNK_RADIUS; z++) {
+	for (int x = cameraChunkPos.x - global::CAMERA_CHUNK_RADIUS; x <= cameraChunkPos.x + global::CAMERA_CHUNK_RADIUS; x++)
+		for (int y = cameraChunkPos.y - global::CAMERA_CHUNK_RADIUS; y <= cameraChunkPos.y + global::CAMERA_CHUNK_RADIUS; y++)
+			for (int z = cameraChunkPos.z - global::CAMERA_CHUNK_RADIUS; z <= cameraChunkPos.z + global::CAMERA_CHUNK_RADIUS; z++) {
 				glm::ivec3 chunkPos(x, y, z);
-				if (distance(glm::vec3(chunkPos), glm::vec3(cameraChunkPos)) > CAMERA_CHUNK_RADIUS)
+				if (distance(glm::vec3(chunkPos), glm::vec3(cameraChunkPos)) > global::CAMERA_CHUNK_RADIUS)
 					continue;
 
 				if (Chunk* c = chunks.get(chunkPos))

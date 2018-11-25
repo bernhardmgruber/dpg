@@ -15,6 +15,8 @@ public:
 	void update();
 	void render();
 
+	void clearChunks();
+
 	ChunkMemoryFootprint getMemoryFootprint() const;
 
 private:

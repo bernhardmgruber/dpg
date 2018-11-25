@@ -5,6 +5,7 @@ namespace global {
 	inline bool polygonmode = false;
 	inline bool normals = false;
 	inline bool enableChunkCache = false;
+	inline int CAMERA_CHUNK_RADIUS = 2;
 
 	inline float gravity = 1.0f;
 

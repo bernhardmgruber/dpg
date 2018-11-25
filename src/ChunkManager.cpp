@@ -33,6 +33,12 @@ Chunk* ChunkManager::get(const glm::ivec3& pos) {
 		return nullptr;
 }
 
+void ChunkManager::clear() {
+	loadedChunks.clear();
+	serializer.clear();
+	creator.clear();
+}
+
 ChunkMemoryFootprint ChunkManager::getMemoryFootprint() const {
 	ChunkMemoryFootprint mem{};
 

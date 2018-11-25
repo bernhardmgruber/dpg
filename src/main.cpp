@@ -10,7 +10,6 @@
 #include <string>
 
 #include "Camera.h"
-#include "ThreadedCommandConsole.h"
 #include "Timer.h"
 #include "World.h"
 #include "globals.h"
@@ -108,6 +107,11 @@ void render() {
 	// clear
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (global::polygonmode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	// update shader states
 	const glm::mat4 viewMatrix = camera.viewMatrix();
 	const glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
@@ -165,12 +169,12 @@ void render() {
 	// hud
 	ImGui::Checkbox("coords", &global::coords);
 	ImGui::Checkbox("polygons", &global::polygonmode);
-	if (global::polygonmode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	ImGui::Checkbox("normals", &global::normals);
+	ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
 	ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
+
+	if (ImGui::Button("Regenerate"))
+		world.clearChunks();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -269,14 +273,6 @@ void destroySDLWindow() {
 	glfwTerminate();
 }
 
-void showPolygons(vector<string> args) {
-	global::polygonmode = args[1] == "true";
-	if (global::polygonmode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
 void showCoordinateSystem(vector<string> args) {
 	global::coords = args[1] == "true";
 }
@@ -293,10 +289,7 @@ int main(int argc, char** argv) try {
 		return -1;
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
-
-	ThreadedCommandConsole console;
-	console.addCommand("polygons", regex("polygons (true|false)"), &showPolygons);
-
+	\
 	while (true) {
 		glfwPollEvents();
 
@@ -308,7 +301,6 @@ int main(int argc, char** argv) try {
 			update(timer.interval);
 			render();
 			glfwSwapBuffers(mainwindow);
-			console.runHandlers();
 		}
 	}
 

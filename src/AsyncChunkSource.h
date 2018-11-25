@@ -13,6 +13,8 @@ public:
 
 	auto get(const glm::ivec3& chunkPos) -> std::optional<Chunk>;
 
+	void clear();
+
 protected:
 	virtual auto getChunk(const glm::ivec3& chunkPos) -> Chunk = 0;
 

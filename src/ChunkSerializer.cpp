@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <windows.h>
-#endif
 #include "globals.h"
 #include "utils.h"
 #include <fstream>
@@ -9,33 +6,23 @@
 
 #include "ChunkSerializer.h"
 
+ChunkSerializer::ChunkSerializer(std::filesystem::path chunkDir)
+	: m_chunkDir(std::move(chunkDir)) {
 
-ChunkSerializer::ChunkSerializer(string chunkDir)
-	: chunkDir(std::move(chunkDir)) {
-#ifdef _WIN32
-	WIN32_FIND_DATA findData;
-	HANDLE hFind = FindFirstFile((chunkDir + "*").c_str(), &findData);
-	if (hFind == INVALID_HANDLE_VALUE)
+	if (!exists(chunkDir))
 		return;
-	else {
-		do {
-			if (!strcmp(findData.cFileName, ".") || !strcmp(findData.cFileName, ".."))
-				continue;
+	for (auto& e : std::filesystem::directory_iterator{m_chunkDir}) {
+		const auto filename = e.path().string();
 
-			static_assert(is_same<uint64_t, Chunk::IdType>::value, "Chunk::IdType is assumed to be uint64_t");
-			char* p;
-			Chunk::IdType id = strtoull(findData.cFileName, &p, 16);
-			if (*p != '\0') {
-				cout << "Warning: " << findData.cFileName << " in chunk cache" << endl;
-				continue;
-			}
-
-			availableChunks.insert(id);
-		} while (FindNextFile(hFind, &findData));
-		FindClose(hFind);
+		static_assert(is_same<uint64_t, Chunk::IdType>::value, "Chunk::IdType is assumed to be uint64_t");
+		char* p = nullptr;
+		Chunk::IdType id = std::strtoll(filename.c_str(), &p, 16);
+		if (*p != filename.size()) {
+			cout << "Warning: " << filename << " in chunk cache" << endl;
+			continue;
+		}
+		availableChunks.insert(id);
 	}
-
-#endif
 }
 
 ChunkSerializer::~ChunkSerializer() = default;
@@ -51,7 +38,7 @@ void ChunkSerializer::storeChunk(const Chunk* chunk) {
 	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 
 	// write chunk to disk
-	ofstream file(chunkDir + toHexString(chunk->getId()), ios::binary);
+	ofstream file(m_chunkDir.string() + toHexString(chunk->getId()), ios::binary);
 	file.write(reinterpret_cast<char*>(chunk->densities), size * size * size * sizeof(Chunk::DensityType));
 	file << static_cast<size_t>(chunk->vertices.size());
 	file.write((char*)chunk->vertices.data(), chunk->vertices.size() * sizeof(Vertex));
@@ -72,9 +59,9 @@ Chunk* ChunkSerializer::getChunk(const glm::ivec3& chunkPos) {
 	auto* c = new Chunk(chunkId);
 	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 
-	ifstream file(chunkDir + toHexString(chunkId), ios::binary);
+	ifstream file(m_chunkDir.string() + toHexString(chunkId), ios::binary);
 	if (!file)
-		throw runtime_error("could not open chunk file " + chunkDir + to_string(chunkId));
+		throw runtime_error("could not open chunk file " + m_chunkDir.string() + to_string(chunkId));
 	c->densities = new Chunk::DensityType[size * size * size];
 	file.read(reinterpret_cast<char*>(c->densities), size * size * size * sizeof(Chunk::DensityType));
 	size_t verticesCount = 0;

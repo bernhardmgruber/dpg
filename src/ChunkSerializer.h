@@ -1,12 +1,14 @@
 #pragma once
 
+#include <filesystem>
+
 #include "AsyncChunkSource.h"
 
 using namespace std;
 
 class ChunkSerializer final : public AsyncChunkSource {
 public:
-	ChunkSerializer(string chunkDir);
+	ChunkSerializer(std::filesystem::path chunkDir);
 	virtual ~ChunkSerializer();
 
 	bool hasChunk(const glm::ivec3& chunkPos);
@@ -16,10 +18,10 @@ protected:
 	virtual Chunk* getChunk(const glm::ivec3& chunkPos) override;
 
 private:
-	std::string chunkDir;
+	std::filesystem::path m_chunkDir;
 
 	/**
-    * All available chunks in the chunk directory
-    */
+	* All available chunks in the chunk directory
+	*/
 	unordered_set<Chunk::IdType> availableChunks;
 };

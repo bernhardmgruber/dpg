@@ -7,7 +7,7 @@
 using namespace std;
 
 ChunkManager::ChunkManager()
-	: serializer("chunks/") {
+	: serializer("chunks") {
 }
 
 ChunkManager::~ChunkManager() {

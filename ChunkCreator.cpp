@@ -1,4 +1,8 @@
-#include <noise/noise.h>
+//#include <noise/noise.h>
+
+#define STB_PERLIN_IMPLEMENTATION
+#include <stb_perlin.h>
+
 #include <unordered_map>
 #include <mutex>
 
@@ -22,9 +26,10 @@ Chunk* ChunkCreator::getChunk(const Vector3I& chunkPos)
 {
     Chunk* c = new Chunk(chunkPos);
 
-    noise::module::Perlin perlin;
-    perlin.SetOctaveCount(5);
-    perlin.SetFrequency(0.3);
+    //noise::module::Perlin perlin;
+    //perlin.SetOctaveCount(5);
+    //perlin.SetFrequency(0.3);
+	
 
     const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
     c->densities = new Chunk::DensityType[size * size * size];
@@ -38,7 +43,9 @@ Chunk* ChunkCreator::getChunk(const Vector3I& chunkPos)
             for (unsigned int z = 0; z < size; z++)
             {
                 Vector3F world = c->toWorld(x, y, z);
-                c->densities[x * size * size + y * size + z] = (Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
+                c->densities[x * size * size + y * size + z] =
+					//(Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
+					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, 6, 0, 0, 0);
             }
         }
     }

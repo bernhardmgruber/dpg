@@ -1,36 +1,10 @@
 #pragma once
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
-template<typename T>
-struct Vector2
-{
-    T x, y;
-
-    Vector2()
-    {};
-
-    Vector2(T x, T y)
-        : x(x), y(y)
-    {};
-
-    template<typename U>
-    Vector2(Vector2<U> v)
-        : x(v.x), y(v.y)
-    {};
-
-    T& operator[](int index)
-    {
-        switch(index)
-        {
-        case 0: return x;
-        case 1: return y;
-        default: throw std::out_of_range("invalid index");
-        }
-    }
-};
-
-typedef Vector2<float> Vector2F;
-typedef Vector2<int> Vector2I;
+using Vector2F = glm::vec2;
+using Vector2I = glm::ivec2;
 
 template<typename T>
 struct Vector3
@@ -61,9 +35,9 @@ struct Vector3
     }
 };
 
-typedef Vector3<float> Vector3F;
-typedef Vector3<int> Vector3I;
-typedef Vector3<unsigned int> Vector3UI;
+using Vector3F = glm::vec3;
+using Vector3I = glm::ivec3;
+using Vector3UI = glm::uvec3;
 
 struct Vertex
 {

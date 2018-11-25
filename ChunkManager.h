@@ -16,15 +16,15 @@
 class ChunkManager final
 {
 public:
-    ChunkManager();
-    ChunkManager(const ChunkManager& mgr) = delete;
-    ~ChunkManager();
+	ChunkManager();
+	ChunkManager(const ChunkManager& mgr) = delete;
+	~ChunkManager();
 
 	Chunk* get(const Vector3I& pos);
 
 private:
-    ChunkCreator creator;
-    ChunkSerializer serializer;
+	ChunkCreator creator;
+	ChunkSerializer serializer;
 
 	/// fully loaded chunks
 	std::unordered_map<Vector3I, Chunk*> chunks;

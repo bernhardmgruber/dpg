@@ -12,7 +12,7 @@ in vec3 vNormal[];
 
 void main()
 {
-    for(int i = 0; i < gl_VerticesIn; i++)
+    for(int i = 0; i < gl_in.length (); i++)
     {
         gl_Position = uViewProjectionMatrix * vec4(vVertex[i], 1.0f);
         EmitVertex();

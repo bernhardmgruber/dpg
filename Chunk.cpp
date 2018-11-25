@@ -47,7 +47,7 @@ Chunk::~Chunk()
 
 Vector3UI Chunk::toVoxelCoord(const Vector3F& v) const
 {
-    Vector3F rel = (v - getWorldPosition()) / SIZE * RESOLUTION;
+    Vector3F rel = (v - getWorldPosition()) / SIZE * (float)RESOLUTION;
 
     Vector3UI blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
 

@@ -9,5 +9,5 @@ Collider::~Collider()
 
 Vector3F Collider::traceOnVoxels(Vector3F startPos, Vector3F endPos)
 {
-    mgr.
+	return endPos;
 }

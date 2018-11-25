@@ -10,25 +10,25 @@
 
 class World
 {
-    public:
-        World();
-        virtual ~World();
+	public:
+		World();
+		virtual ~World();
 
-        void update();
-        void render();
+		void update();
+		void render();
 
 		const ChunkMemoryFootprint getMemoryFootprint() const;
 
-    private:
+	private:
 		mutable ChunkManager loader;
-        mutable WorldPhysics physics;
+		mutable WorldPhysics physics;
 
 
-        /** Holds all chunks that need to be rendered. This list is generated during Update() and used by Render(). */
-        std::vector<Chunk*> renderList;
+		/** Holds all chunks that need to be rendered. This list is generated during Update() and used by Render(). */
+		std::vector<Chunk*> renderList;
 
 		Vector3I lastCameraChunk;
 		bool renderListComplete;
 
-        void buildRenderList(const Vector3I& cameraChunkPos);
+		void buildRenderList(const Vector3I& cameraChunkPos);
 };

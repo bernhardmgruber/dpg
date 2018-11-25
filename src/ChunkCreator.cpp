@@ -24,6 +24,11 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	//perlin.SetOctaveCount(5);
 	//perlin.SetFrequency(0.3);
 
+	auto noise = [](glm::vec3 pos) {
+		// return (Chunk::DensityType)perlin.GetValue(pos.x, pos.y, pos.z);
+		return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
+		//return stb_perlin_turbulence_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
+	};
 
 	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 	c.densities.resize(size * size * size);
@@ -34,9 +39,7 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 		for (unsigned int y = 0; y < size; y++) {
 			for (unsigned int z = 0; z < size; z++) {
 				glm::vec3 world = c.toWorld(x, y, z);
-				c.densities[x * size * size + y * size + z] =
-					//(Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
-					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, global::noise::octaves, 0, 0, 0);
+				c.densities[x * size * size + y * size + z] = noise(world);
 			}
 		}
 	}

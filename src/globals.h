@@ -1,6 +1,7 @@
 #pragma once
 
 namespace global {
+	inline bool showHud = false;
 	inline bool coords = false;
 	inline bool polygonmode = false;
 	inline bool normals = false;

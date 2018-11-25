@@ -6,7 +6,7 @@
 #include "mathlib.h"
 
 namespace {
-	constexpr auto CAMERA_MOVE_SENS = 5.0f;
+	constexpr auto CAMERA_MOVE_SENS = 2.0f;
 	constexpr auto CAMERA_LOOK_SENS = 0.15f;
 
 	enum Directions {

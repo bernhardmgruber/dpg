@@ -21,8 +21,6 @@ const static unsigned int initialWindowWidth = 1024;
 const static unsigned int initialWindowHeight = 768;
 const static string windowCaption = "noise";
 
-static bool g_active = true;
-static bool g_fullscreen = false;
 bool captureMouse = false;
 glm::dvec2 mouseDownPos;
 
@@ -30,6 +28,7 @@ GLFWwindow* mainwindow;
 
 gl::Program shaderProgram;
 gl::Program normalDebuggingProgram;
+gl::Program coordsProgram;
 
 Timer timer;
 World world;
@@ -37,20 +36,10 @@ World world;
 glm::mat4 projectionMatrix;
 
 void resizeGLScene(GLFWwindow*, int width, int height) {
-	cout << "Resize " << width << "x" << height << endl;
-
 	if (height <= 0)
 		height = 1;
-
+	projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
 	glViewport(0, 0, width, height);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 100.0f);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 }
 
 bool initGL() {
@@ -65,9 +54,15 @@ bool initGL() {
 	shaderProgram = gl::Program{
 		gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/main.vert"}),
 		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/main.frag"})};
+
 	normalDebuggingProgram = gl::Program{gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/normals.vert"}),
 		gl::Shader(GL_GEOMETRY_SHADER, fs::path{"../src/shaders/normals.geom"}),
 		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/normals.frag"})};
+
+	coordsProgram = gl::Program{
+			gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/coords.vert"}),
+			gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/coords.frag"}),
+	};
 
 	return true;
 }
@@ -100,9 +95,11 @@ void update(double interval) {
 }
 
 void render() {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+	if (global::showHud) {
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+	}
 
 	// clear
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -127,35 +124,9 @@ void render() {
 
 	// render coordinate system
 	if (global::coords) {
-		//glUseProgram(0);
-
-		const int coordLength = 1000;
-
-		glLineWidth(3.0f);
-		glBegin(GL_LINES);
-		glColor3f(1.0f, 0.0f, 0.0f); //red X+
-		glVertex3i(coordLength, 0, 0);
-		glVertex3i(0, 0, 0);
-		glColor3f(0.0f, 1.0f, 0.0f); //green Y+
-		glVertex3i(0, coordLength, 0);
-		glVertex3i(0, 0, 0);
-		glColor3f(0.0f, 0.0f, 1.0f); //blue Z+
-		glVertex3i(0, 0, coordLength);
-		glVertex3i(0, 0, 0);
-		glEnd();
-
-		glLineWidth(1.0f);
-		glBegin(GL_LINES);
-		glColor3f(0.0f, 0.4f, 0.0f); //green Y-
-		glVertex3i(0, 0, 0);
-		glVertex3i(0, -coordLength, 0);
-		glColor3f(0.4f, 0.0f, 0.0f); //red X-
-		glVertex3i(0, 0, 0);
-		glVertex3i(-coordLength, 0, 0);
-		glColor3f(0.0f, 0.0f, 0.4f); //blue Z-
-		glVertex3i(0, 0, 0);
-		glVertex3i(0, 0, -coordLength);
-		glEnd();
+		coordsProgram.use();
+		glUniformMatrix4fv(coordsProgram.uniformLocation("matrix"), 1, false, glm::value_ptr(viewProjectionMatrix));
+		glDrawArrays(GL_LINES, 0, 12);
 	}
 
 	// render normals
@@ -167,17 +138,19 @@ void render() {
 	}
 
 	// hud
-	ImGui::Checkbox("coords", &global::coords);
-	ImGui::Checkbox("polygons", &global::polygonmode);
-	ImGui::Checkbox("normals", &global::normals);
-	ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
-	ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
+	if (global::showHud) {
+		ImGui::Checkbox("coords", &global::coords);
+		ImGui::Checkbox("polygons", &global::polygonmode);
+		ImGui::Checkbox("normals", &global::normals);
+		ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
+		ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
 
-	if (ImGui::Button("Regenerate"))
-		world.clearChunks();
+		if (ImGui::Button("Regenerate"))
+			world.clearChunks();
 
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
 }
 
 void onMouseButton(GLFWwindow*, int button, int action, int modifiers) {
@@ -212,6 +185,8 @@ void onKey(GLFWwindow*, int key, int scancode, int action, int mods) {
 
 	if (action == GLFW_PRESS) {
 		switch (key) {
+		case GLFW_KEY_H:
+			global::showHud = !global::showHud;
 		}
 	}
 }
@@ -289,19 +264,17 @@ int main(int argc, char** argv) try {
 		return -1;
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
-	\
+
 	while (true) {
 		glfwPollEvents();
 
 		if (glfwGetKey(mainwindow, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(mainwindow))
 			break;
 
-		if (g_active) {
-			timer.tick();
-			update(timer.interval);
-			render();
-			glfwSwapBuffers(mainwindow);
-		}
+		timer.tick();
+		update(timer.interval);
+		render();
+		glfwSwapBuffers(mainwindow);
 	}
 
 	destroySDLWindow();

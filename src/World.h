@@ -11,15 +11,14 @@
 class World {
 public:
 	World();
-	virtual ~World();
 
 	void update();
 	void render();
 
-	const ChunkMemoryFootprint getMemoryFootprint() const;
+	ChunkMemoryFootprint getMemoryFootprint() const;
 
 private:
-	mutable ChunkManager loader;
+	mutable ChunkManager chunks;
 	mutable WorldPhysics physics;
 
 

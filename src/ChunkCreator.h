@@ -4,11 +4,11 @@
 
 class ChunkCreator final : public AsyncChunkSource {
 public:
-	ChunkCreator(unsigned int loaderThreads = 1);
-	~ChunkCreator();
+	ChunkCreator() = default;
+	~ChunkCreator() = default;
 
 protected:
-	virtual Chunk* getChunk(const glm::ivec3& chunkPos) override;
+	virtual auto getChunk(const glm::ivec3& chunkPos) -> Chunk override;
 
 private:
 	inline void marchChunk(Chunk* c);

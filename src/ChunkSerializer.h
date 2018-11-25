@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_set>
 
 #include "AsyncChunkSource.h"
 
@@ -12,10 +13,10 @@ public:
 	virtual ~ChunkSerializer();
 
 	bool hasChunk(const glm::ivec3& chunkPos);
-	void storeChunk(const Chunk* chunk);
+	void storeChunk(const Chunk& chunk);
 
 protected:
-	virtual Chunk* getChunk(const glm::ivec3& chunkPos) override;
+	virtual auto getChunk(const glm::ivec3& chunkPos) -> Chunk override;
 
 private:
 	std::filesystem::path m_chunkDir;
@@ -23,5 +24,5 @@ private:
 	/**
 	* All available chunks in the chunk directory
 	*/
-	unordered_set<Chunk::IdType> availableChunks;
+	std::unordered_set<Chunk::IdType> availableChunks;
 };

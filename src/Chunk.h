@@ -1,11 +1,12 @@
 #pragma once
 
-#include "gl.h"
 #include <array>
 #include <stdint.h>
 #include <vector>
+#include <optional>
 
 #include "mathlib.h"
+#include "opengl/Buffer.h"
 
 struct ChunkMemoryFootprint final {
 	size_t densityValues;
@@ -28,8 +29,8 @@ struct ChunkMemoryFootprint final {
 
 class Chunk final {
 public:
-	typedef float DensityType;
-	typedef uint64_t IdType;
+	using DensityType = float;
+	using IdType = uint64_t;
 
 	friend class ChunkSerializer;
 	friend class ChunkManager;
@@ -41,16 +42,13 @@ public:
 		AIR
 	};
 
-	/**
-	* The size of the chunk in world units.
-	*/
-	static const float SIZE;
+	static constexpr float SIZE = 1.0; // The size of the chunk in world units.
 
 	/**
 	* The number of voxels along one axis.
 	* RESOLUTION + 1 is the edge length of the density cube (a cube of voxels).
 	*/
-	static const unsigned int RESOLUTION;
+	static constexpr unsigned int RESOLUTION = 16;
 
 	static IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord);
 	static glm::ivec3 IdToChunkGridCoordinate(IdType id);
@@ -111,28 +109,25 @@ public:
 	*/
 	const ChunkMemoryFootprint getMemoryFootprint() const;
 
-	/**
-	* dtor
-	*/
+	Chunk() = default;
+	Chunk(IdType id);
+	Chunk(glm::ivec3 chunkGridCoord);
+	Chunk(const Chunk&) = delete;
+	Chunk& operator=(const Chunk&) = delete;
+	Chunk(Chunk&&) = default;
+	Chunk& operator=(Chunk&&) = default;
 	~Chunk();
 
 private:
 	IdType id{};
 	glm::ivec3 position;
 
-	DensityType* densities;
+	std::vector<DensityType> densities;
 	std::vector<glm::uvec3> triangles;
 	std::vector<Vertex> vertices;
 
-	bool buffersInitialized;
-	GLuint vertexBuffer{};
-	GLuint indexBuffer{};
-
-	/**
-	* ctor is private, only allow ChunkCreator and ChunkSerializer to construct chunks via friends
-	*/
-	Chunk(IdType id);
-	Chunk(glm::ivec3 chunkGridCoord);
+	std::optional<gl::Buffer> vertexBuffer;
+	std::optional<gl::Buffer> indexBuffer;
 
 	/*
 	* Helper functions

@@ -4,45 +4,40 @@
 
 #include "ChunkManager.h"
 
-using namespace std;
-
 ChunkManager::ChunkManager()
 	: serializer("chunks") {
 }
 
 ChunkManager::~ChunkManager() {
-	for (auto& pair : chunks) {
-		serializer.storeChunk(pair.second);
-		delete pair.second;
-	}
+	for (const auto& [i, chunk] : loadedChunks)
+		serializer.storeChunk(chunk);
 }
 
 Chunk* ChunkManager::get(const glm::ivec3& pos) {
 	// check if chunk is available
-	auto it = chunks.find(pos);
-	if (it != chunks.end())
-		return it->second;
+	if (const auto it = loadedChunks.find(pos); it != loadedChunks.end())
+		return &it->second;
 
 	// chunk was not found, ask the cache on disk
-	if (serializer.hasChunk(pos)) {
-		Chunk* c = serializer.get(pos);
-		if (c != nullptr)
-			chunks[pos] = c;
-		return c;
+	if (global::enableChunkCache && serializer.hasChunk(pos)) {
+		if (auto c = serializer.get(pos))
+			return &(loadedChunks[pos] = std::move(*c));
+		else
+			return nullptr;
 	}
 
 	// not found on disk, create it
-	Chunk* c = creator.get(pos);
-	if (c != nullptr)
-		chunks[pos] = c;
-	return c;
+	if (auto c = creator.get(pos))
+		return &(loadedChunks[pos] = std::move(*c));
+	else
+		return nullptr;
 }
 
-const ChunkMemoryFootprint ChunkManager::getMemoryFootprint() const {
-	ChunkMemoryFootprint mem = {0};
+ChunkMemoryFootprint ChunkManager::getMemoryFootprint() const {
+	ChunkMemoryFootprint mem{};
 
-	for (const auto& pair : chunks) {
-		const ChunkMemoryFootprint& cmem = pair.second->getMemoryFootprint();
+	for (const auto& [i, chunk] : loadedChunks) {
+		const auto& cmem = chunk.getMemoryFootprint();
 		mem.densityValues += cmem.densityValues;
 		mem.densityValueSize = cmem.densityValueSize;
 		mem.triangles += cmem.triangles;

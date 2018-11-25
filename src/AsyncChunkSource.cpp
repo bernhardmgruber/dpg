@@ -1,89 +1,20 @@
 #include "AsyncChunkSource.h"
 
-using namespace std;
+auto AsyncChunkSource::get(const glm::ivec3& chunkPos) -> std::optional<Chunk> {
+	// try to find in loaded chunks
+	const auto it = loadedChunks.find(chunkPos);
+	if (it != loadedChunks.end() && it->second._Is_ready()) {
+		Chunk c = it->second.get();
+		loadedChunks.erase(it);
 
-AsyncChunkSource::AsyncChunkSource(unsigned int loaderThreads) {
-	// create pool threads
-	for (unsigned int i = 0; i < loaderThreads; i++)
-		loaderThreadPool.emplace_back(&AsyncChunkSource::loaderThreadMain, this);
-}
-
-AsyncChunkSource::~AsyncChunkSource() {
-	// join
-	{
-		unique_lock<mutex> lock(loadedChunksMutex);
-		shutdown = true;
-		loadingChunkCV.notify_all();
+		// init chunk before returning it
+		c.createBuffers();
+		return c;
 	}
 
-	for (thread& t : loaderThreadPool)
-		t.join();
+	loadedChunks[chunkPos] = std::async(std::launch::async, [=] {
+		return getChunk(chunkPos);
+	});
 
-	for (auto& pair : loadedChunks)
-		delete pair.second;
-}
-
-Chunk* AsyncChunkSource::get(const glm::ivec3& chunkPos) {
-	{
-		lock_guard<mutex> lock(loadedChunksMutex);
-
-		// try to find in loaded chunks
-		auto it = loadedChunks.find(chunkPos);
-		if (it != loadedChunks.end()) {
-			Chunk* c = it->second;
-			loadedChunks.erase(it);
-
-			// init chunk before returning it
-			c->createBuffers();
-			return c;
-		}
-
-		// add to chunks which should be loaded if it has not already been added
-		if (enqueuedChunksSet.find(chunkPos) == enqueuedChunksSet.end()) {
-			enqueuedChunksQueue.push(chunkPos);
-			enqueuedChunksSet.insert(chunkPos);
-			loadingChunkCV.notify_one();
-		}
-
-		return nullptr;
-	}
-}
-
-void AsyncChunkSource::loaderThreadMain() {
-	// influenced by: http://progsch.net/wordpress/?p=81
-	while (true) {
-		glm::ivec3 chunkPos;
-
-		// wait for
-		{
-			unique_lock<mutex> lock(loadedChunksMutex);
-
-			while (enqueuedChunksSet.empty() && !shutdown) {
-				//cout << "Loader thread #" << std::this_thread::get_id() << " is ready" << endl;
-				loadingChunkCV.wait(lock);
-				//cout << "Loader thread #" << std::this_thread::get_id() << " notified" << endl;
-			}
-
-			// check for shutdown
-			if (shutdown) {
-				//cout << "Loader thread #" << std::this_thread::get_id() << " exited" << endl;
-				return;
-			}
-
-			// dequeue load request
-			chunkPos = enqueuedChunksQueue.front();
-			enqueuedChunksQueue.pop();
-			//cout << "Loader thread #" << std::this_thread::get_id() << " starts loading chunk " << chunkPos << endl;
-		}
-
-		// do load
-		Chunk* c = getChunk(chunkPos);
-
-		{
-			lock_guard<mutex> lock(loadedChunksMutex);
-			loadedChunks[c->getChunkGridPositon()] = c;
-			enqueuedChunksSet.erase(enqueuedChunksSet.find(chunkPos));
-			//cout << "Loader thread #" << std::this_thread::get_id() << " finished loading chunk " << chunkPos << endl;
-		}
-	}
+	return {};
 }

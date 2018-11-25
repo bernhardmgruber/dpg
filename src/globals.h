@@ -1,15 +1,10 @@
 #pragma once
 
 namespace global {
-	extern bool coords;
-	extern bool polygonmode;
-	extern bool normals;
-	extern bool enableChunkCache;
+	inline bool coords = false;
+	inline bool polygonmode = false;
+	inline bool normals = false;
+	inline bool enableChunkCache = false;
 
-	//
-	// physics
-	//
-
-	/// downward acceleration
-	extern float gravity;
+	inline float gravity = 1.0f;
 }

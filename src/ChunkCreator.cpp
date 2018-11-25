@@ -3,6 +3,8 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
+#include <glm/glm.hpp>
+
 #include <mutex>
 #include <unordered_map>
 
@@ -15,13 +17,8 @@ using namespace std;
 
 const unsigned int CHUNK_TRIANGLE_MAP_INITIAL_SIZE = 3000;
 
-ChunkCreator::ChunkCreator(unsigned int loaderThreads)
-	: AsyncChunkSource(loaderThreads) {}
-
-ChunkCreator::~ChunkCreator() = default;
-
-Chunk* ChunkCreator::getChunk(const glm::ivec3& chunkPos) {
-	Chunk* c = new Chunk(chunkPos);
+auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
+	Chunk c(chunkPos);
 
 	//noise::module::Perlin perlin;
 	//perlin.SetOctaveCount(5);
@@ -29,15 +26,15 @@ Chunk* ChunkCreator::getChunk(const glm::ivec3& chunkPos) {
 
 
 	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
-	c->densities = new Chunk::DensityType[size * size * size];
+	c.densities.resize(size * size * size);
 
 	//Timer timer;
 
 	for (unsigned int x = 0; x < size; x++) {
 		for (unsigned int y = 0; y < size; y++) {
 			for (unsigned int z = 0; z < size; z++) {
-				glm::vec3 world = c->toWorld(x, y, z);
-				c->densities[x * size * size + y * size + z] =
+				glm::vec3 world = c.toWorld(x, y, z);
+				c.densities[x * size * size + y * size + z] =
 					//(Chunk::DensityType)perlin.GetValue(world.x, world.y, world.z);
 					stb_perlin_fbm_noise3(world.x, world.y, world.z, 1, 1, 6, 0, 0, 0);
 			}
@@ -48,7 +45,7 @@ Chunk* ChunkCreator::getChunk(const glm::ivec3& chunkPos) {
 	//cout << "Noise took " << timer.interval << " seconds" << endl;
 
 	// create geometry using marching cubes
-	marchChunk(c);
+	marchChunk(&c);
 
 	//timer.tick();
 	//cout << "Marching took " << timer.interval << " seconds" << endl;

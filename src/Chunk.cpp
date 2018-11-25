@@ -8,9 +8,6 @@
 
 using namespace std;
 
-const float Chunk::SIZE = 1.0;
-const unsigned int Chunk::RESOLUTION = 16;
-
 Chunk::IdType Chunk::ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord) {
 	uint32_t mask = 0x001FFFFF; // 21 bit
 
@@ -23,21 +20,12 @@ glm::ivec3 Chunk::IdToChunkGridCoordinate(IdType id) {
 }
 
 Chunk::Chunk(IdType id)
-	: id(id), position(IdToChunkGridCoordinate(id)), buffersInitialized(false), densities(nullptr) {}
+	: id(id), position(IdToChunkGridCoordinate(id)) {}
 
 Chunk::Chunk(glm::ivec3 chunkGridCoord)
-	: id(ChunkGridCoordinateToId(chunkGridCoord)), position(chunkGridCoord), buffersInitialized(false), densities(nullptr) {}
+	: id(ChunkGridCoordinateToId(chunkGridCoord)), position(chunkGridCoord) {}
 
-Chunk::~Chunk() {
-	if (densities)
-		delete[] densities;
-
-	if (buffersInitialized) {
-		glDeleteBuffers(1, &vertexBuffer);
-		glDeleteBuffers(1, &indexBuffer);
-	}
-}
-
+Chunk::~Chunk() = default;
 
 glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
 	glm::vec3 rel = (v - getWorldPosition()) / SIZE * (float)RESOLUTION;
@@ -71,16 +59,14 @@ Chunk::VoxelType Chunk::categorizeWorldPosition(const glm::vec3& pos) const {
 	const glm::uvec3 blockCoord = toVoxelCoord(pos);
 	unsigned int caseIndex = caseIndexFromVoxel(voxelCubeAt(blockCoord.x, blockCoord.y, blockCoord.z));
 
-	if (caseIndex == 255)
-		return VoxelType::SOLID;
-	if (caseIndex == 0)
-		return VoxelType::AIR;
+	if (caseIndex == 255) return VoxelType::SOLID;
+	if (caseIndex == 0) return VoxelType::AIR;
 	return VoxelType::SURFACE;
 }
 
 void Chunk::render() const {
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.value().id());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.value().id());
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)sizeof(glm::vec3));
@@ -116,36 +102,32 @@ void Chunk::render() const {
 }
 
 const ChunkMemoryFootprint Chunk::getMemoryFootprint() const {
-	ChunkMemoryFootprint mem{};
-
 	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
 
+	ChunkMemoryFootprint mem{};
 	mem.densityValues = size * size * size;
 	mem.densityValueSize = sizeof(DensityType);
 	mem.triangles = triangles.size();
 	mem.triangleSize = sizeof(Triangle);
-
 	return mem;
 }
 
 void Chunk::createBuffers() {
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	vertexBuffer.emplace();
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.value().id());
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	indexBuffer.emplace();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.value().id());
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(triangles[0]), triangles.data(), GL_STATIC_DRAW);
-
-	buffersInitialized = true;
 }
 
 
 float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const {
-	assert(x < (Chunk::RESOLUTION + 1 + 2));
-	assert(y < (Chunk::RESOLUTION + 1 + 2));
-	assert(z < (Chunk::RESOLUTION + 1 + 2));
-	return (*(densities + (x) * (Chunk::RESOLUTION + 1 + 2) * (Chunk::RESOLUTION + 1 + 2) + (y) * (Chunk::RESOLUTION + 1 + 2) + (z)));
+	assert(x < (RESOLUTION + 1 + 2));
+	assert(y < (RESOLUTION + 1 + 2));
+	assert(z < (RESOLUTION + 1 + 2));
+	return densities[x * (RESOLUTION + 1 + 2) * (RESOLUTION + 1 + 2) + y * (RESOLUTION + 1 + 2) + z];
 }
 
 array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const {
@@ -162,7 +144,7 @@ array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, 
 }
 
 unsigned int Chunk::caseIndexFromVoxel(array<DensityType, 8> values) const {
-	int caseIndex = 0;
+	unsigned int caseIndex = 0;
 
 	if (values[0] > 0) caseIndex |= 0x01;
 	if (values[1] > 0) caseIndex |= 0x02;

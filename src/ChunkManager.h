@@ -1,12 +1,6 @@
 #pragma once
 
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <thread>
 #include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include "Chunk.h"
 #include "ChunkCreator.h"
@@ -19,14 +13,13 @@ public:
 	ChunkManager(const ChunkManager& mgr) = delete;
 	~ChunkManager();
 
-	Chunk* get(const glm::ivec3& pos);
+	auto get(const glm::ivec3& pos) -> Chunk*;
 
 private:
+	ChunkMemoryFootprint getMemoryFootprint() const;
+
 	ChunkCreator creator;
 	ChunkSerializer serializer;
 
-	/// fully loaded chunks
-	std::unordered_map<glm::ivec3, Chunk*> chunks;
-
-	const ChunkMemoryFootprint getMemoryFootprint() const;
+	std::unordered_map<glm::ivec3, Chunk> loadedChunks;
 };

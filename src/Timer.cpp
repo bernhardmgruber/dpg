@@ -37,5 +37,5 @@ double Timer::getTime() {
 		QueryPerformanceCounter(&PerformanceCounter);
 		return (double)PerformanceCounter.QuadPart / (double)frequency.QuadPart;
 	} else
-		return static_cast<double>(clock()) / static_cast<double>CLOCKS_PER_SEC;
+		return static_cast<double>(clock()) / static_cast<double> CLOCKS_PER_SEC;
 }

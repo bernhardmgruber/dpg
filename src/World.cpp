@@ -10,18 +10,14 @@
 using namespace std;
 
 World::World()
-	: physics(loader), renderListComplete(false) {
+	: physics(chunks), renderListComplete(false) {
 }
 
-World::~World() = default;
-
-#define CAMERA_CHUNK_RADIUS 5
+const auto CAMERA_CHUNK_RADIUS = 5;
 
 void World::update() {
 	// Get camera position
 	glm::ivec3 cameraChunkPos = physics.getChunkPos(camera.position);
-
-	//cout << "camera at " << setprecision(2) << camera.position << " = chunk " << cameraChunkPos << endl;
 
 	// Check for chunks to load, unload, generate and build renderList
 	buildRenderList(cameraChunkPos);
@@ -48,8 +44,7 @@ void World::buildRenderList(const glm::ivec3& cameraChunkPos) {
 				if (distance(glm::vec3(chunkPos), glm::vec3(cameraChunkPos)) > CAMERA_CHUNK_RADIUS)
 					continue;
 
-				Chunk* c = loader.get(chunkPos);
-				if (c)
+				if (Chunk* c = chunks.get(chunkPos))
 					renderList.push_back(c);
 				else
 					renderListComplete = false;

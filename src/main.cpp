@@ -7,18 +7,13 @@
 #include <string>
 
 #include "Camera.h"
-#include "Program.h"
-#include "Shader.h"
 #include "ThreadedCommandConsole.h"
 #include "Timer.h"
 #include "World.h"
 #include "globals.h"
+#include "opengl/Program.h"
+#include "opengl/Shader.h"
 #include "utils.h"
-
-#undef main
-
-using namespace std;
-using namespace glm;
 
 const static unsigned int initialWindowWidth = 1024;
 const static unsigned int initialWindowHeight = 768;
@@ -33,14 +28,11 @@ GLFWwindow* mainwindow;
 
 gl::Program shaderProgram;
 gl::Program normalDebuggingProgram;
-GLint uViewProjectionMatrixLocation;
-GLint uViewProjectionMatrixLocationNormalDebuggingProgram;
-GLint uViewMatrixLocation;
 
 Timer timer;
 World world;
 
-mat4 projectionMatrix;
+glm::mat4 projectionMatrix;
 
 void resizeGLScene(GLFWwindow*, int width, int height) {
 	cout << "Resize " << width << "x" << height << endl;
@@ -68,19 +60,12 @@ bool initGL() {
 	glEnable(GL_MULTISAMPLE);
 
 	// Shaders
-	swap(shaderProgram, gl::Program(
-							{gl::Shader(GL_VERTEX_SHADER, "../src/shaders/main.vert"),
-								gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/main.frag")}));
-	swap(normalDebuggingProgram, gl::Program(
-									 {gl::Shader(GL_VERTEX_SHADER, "../src/shaders/normals.vert"),
-										 gl::Shader(GL_GEOMETRY_SHADER, "../src/shaders/normals.geom"),
-										 gl::Shader(GL_FRAGMENT_SHADER, "../src/shaders/normals.frag")}));
-
-	uViewProjectionMatrixLocation = shaderProgram.getUniformLocation("uViewProjectionMatrix");
-	uViewMatrixLocation = shaderProgram.getUniformLocation("uViewMatrix");
-	uViewProjectionMatrixLocationNormalDebuggingProgram = normalDebuggingProgram.getUniformLocation("uViewProjectionMatrix");
-
-	shaderProgram.use();
+	shaderProgram = gl::Program{
+		gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/main.vert"}),
+		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/main.frag"})};
+	normalDebuggingProgram = gl::Program{gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/normals.vert"}),
+		gl::Shader(GL_GEOMETRY_SHADER, fs::path{"../src/shaders/normals.geom"}),
+		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/normals.frag"})};
 
 	return true;
 }
@@ -117,17 +102,22 @@ void render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// update shader states
-	mat4 viewMatrix = camera.viewMatrix();
-	mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+	const glm::mat4 viewMatrix = camera.viewMatrix();
+	const glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+	const glm::mat4 normalMatrix = transpose(inverse(viewMatrix));
 
-	glUniformMatrix4fv(uViewProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
-	glUniformMatrix4fv(uViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	shaderProgram.use();
+	glUniformMatrix4fv(shaderProgram.uniformLocation("uViewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
+	glUniformMatrix4fv(shaderProgram.uniformLocation("uViewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(shaderProgram.uniformLocation("uNormalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
 
 	// render the world
 	world.render();
 
 	// render coordinate system
 	if (global::coords) {
+		glUseProgram(0);
+
 		const int coordLength = 1000;
 
 		glLineWidth(3.0f);
@@ -160,7 +150,7 @@ void render() {
 	// render normals
 	if (global::normals) {
 		normalDebuggingProgram.use();
-		glUniformMatrix4fv(uViewProjectionMatrixLocationNormalDebuggingProgram, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
+		glUniformMatrix4fv(normalDebuggingProgram.uniformLocation("uViewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
 		world.render();
 		shaderProgram.use();
 	}
@@ -258,9 +248,6 @@ int main(int argc, char** argv) try {
 
 	if (!initGL())
 		return -1;
-
-	//if(!initCL())
-	//	return -1;
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
 

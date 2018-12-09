@@ -69,7 +69,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 
 if(MSVC)
-	target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+	target_compile_options(${PROJECT_NAME} PRIVATE /W4 /MP)
 else()
 	target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 endif()

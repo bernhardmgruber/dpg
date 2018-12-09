@@ -1,7 +1,7 @@
 #include "Player.h"
 
-#include "World.h"
 #include "Camera.h"
+#include "World.h"
 
 void Player::update(double t, float xDelta, float yDelta, uint8_t directions, const World& world, Camera& camera) {
 	const auto oldPos = camera.position;

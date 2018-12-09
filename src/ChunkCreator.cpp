@@ -60,82 +60,82 @@ namespace {
 							glm::ivec3 vec2;
 
 							switch (edgeIndex) {
-							case 0:
-								value1 = values[0];
-								value2 = values[1];
-								vec1 = glm::ivec3(x, y, z);
-								vec2 = glm::ivec3(x, y, z + 1);
-								break;
-							case 1:
-								value1 = values[1];
-								value2 = values[2];
-								vec1 = glm::ivec3(x, y, z + 1);
-								vec2 = glm::ivec3(x + 1, y, z + 1);
-								break;
-							case 2:
-								value1 = values[2];
-								value2 = values[3];
-								vec1 = glm::ivec3(x + 1, y, z + 1);
-								vec2 = glm::ivec3(x + 1, y, z);
-								break;
-							case 3:
-								value1 = values[3];
-								value2 = values[0];
-								vec1 = glm::ivec3(x + 1, y, z);
-								vec2 = glm::ivec3(x, y, z);
-								break;
+								case 0:
+									value1 = values[0];
+									value2 = values[1];
+									vec1 = glm::ivec3(x, y, z);
+									vec2 = glm::ivec3(x, y, z + 1);
+									break;
+								case 1:
+									value1 = values[1];
+									value2 = values[2];
+									vec1 = glm::ivec3(x, y, z + 1);
+									vec2 = glm::ivec3(x + 1, y, z + 1);
+									break;
+								case 2:
+									value1 = values[2];
+									value2 = values[3];
+									vec1 = glm::ivec3(x + 1, y, z + 1);
+									vec2 = glm::ivec3(x + 1, y, z);
+									break;
+								case 3:
+									value1 = values[3];
+									value2 = values[0];
+									vec1 = glm::ivec3(x + 1, y, z);
+									vec2 = glm::ivec3(x, y, z);
+									break;
 
-							case 4:
-								value1 = values[4];
-								value2 = values[5];
-								vec1 = glm::ivec3(x, y + 1, z);
-								vec2 = glm::ivec3(x, y + 1, z + 1);
-								break;
-							case 5:
-								value1 = values[5];
-								value2 = values[6];
-								vec1 = glm::ivec3(x, y + 1, z + 1);
-								vec2 = glm::ivec3(x + 1, y + 1, z + 1);
-								break;
-							case 6:
-								value1 = values[6];
-								value2 = values[7];
-								vec1 = glm::ivec3(x + 1, y + 1, z + 1);
-								vec2 = glm::ivec3(x + 1, y + 1, z);
-								break;
-							case 7:
-								value1 = values[7];
-								value2 = values[4];
-								vec1 = glm::ivec3(x + 1, y + 1, z);
-								vec2 = glm::ivec3(x, y + 1, z);
-								break;
+								case 4:
+									value1 = values[4];
+									value2 = values[5];
+									vec1 = glm::ivec3(x, y + 1, z);
+									vec2 = glm::ivec3(x, y + 1, z + 1);
+									break;
+								case 5:
+									value1 = values[5];
+									value2 = values[6];
+									vec1 = glm::ivec3(x, y + 1, z + 1);
+									vec2 = glm::ivec3(x + 1, y + 1, z + 1);
+									break;
+								case 6:
+									value1 = values[6];
+									value2 = values[7];
+									vec1 = glm::ivec3(x + 1, y + 1, z + 1);
+									vec2 = glm::ivec3(x + 1, y + 1, z);
+									break;
+								case 7:
+									value1 = values[7];
+									value2 = values[4];
+									vec1 = glm::ivec3(x + 1, y + 1, z);
+									vec2 = glm::ivec3(x, y + 1, z);
+									break;
 
-							case 8:
-								value1 = values[0];
-								value2 = values[4];
-								vec1 = glm::ivec3(x, y, z);
-								vec2 = glm::ivec3(x, y + 1, z);
-								break;
-							case 9:
-								value1 = values[1];
-								value2 = values[5];
-								vec1 = glm::ivec3(x, y, z + 1);
-								vec2 = glm::ivec3(x, y + 1, z + 1);
-								break;
-							case 10:
-								value1 = values[2];
-								value2 = values[6];
-								vec1 = glm::ivec3(x + 1, y, z + 1);
-								vec2 = glm::ivec3(x + 1, y + 1, z + 1);
-								break;
-							case 11:
-								value1 = values[3];
-								value2 = values[7];
-								vec1 = glm::ivec3(x + 1, y, z);
-								vec2 = glm::ivec3(x + 1, y + 1, z);
-								break;
+								case 8:
+									value1 = values[0];
+									value2 = values[4];
+									vec1 = glm::ivec3(x, y, z);
+									vec2 = glm::ivec3(x, y + 1, z);
+									break;
+								case 9:
+									value1 = values[1];
+									value2 = values[5];
+									vec1 = glm::ivec3(x, y, z + 1);
+									vec2 = glm::ivec3(x, y + 1, z + 1);
+									break;
+								case 10:
+									value1 = values[2];
+									value2 = values[6];
+									vec1 = glm::ivec3(x + 1, y, z + 1);
+									vec2 = glm::ivec3(x + 1, y + 1, z + 1);
+									break;
+								case 11:
+									value1 = values[3];
+									value2 = values[7];
+									vec1 = glm::ivec3(x + 1, y, z);
+									vec2 = glm::ivec3(x + 1, y + 1, z);
+									break;
 
-							default: std::terminate();
+								default: std::terminate();
 							}
 
 							glm::vec3 vertex = interpolate(value1, value2, vec1, vec2);

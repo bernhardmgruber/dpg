@@ -110,44 +110,54 @@ void Chunk::render() const {
 		glEnd();
 	}
 
-	if ( true || global::showChunks) {
+	if (true || global::showChunks) {
 		const auto p = glm::vec3{position} * chunkSize;
-		std::array<glm::vec3, 8> corners = { {
-			p,
+		std::array<glm::vec3, 8> corners = {{p,
 			p + glm::vec3{0, 0, chunkSize},
 			p + glm::vec3{chunkSize, 0, chunkSize},
 			p + glm::vec3{chunkSize, 0, 0},
 			p + glm::vec3{0, chunkSize, 0},
 			p + glm::vec3{0, chunkSize, chunkSize},
 			p + glm::vec3{chunkSize, chunkSize, chunkSize},
-			p + glm::vec3{chunkSize, chunkSize, 0}
-		} };
+			p + glm::vec3{chunkSize, chunkSize, 0}}};
 
 		glColor3f(1.0, 0.0, 0.0);
 		glBegin(GL_LINES);
-		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[1]));
+		glVertex3fv(glm::value_ptr(corners[0]));
+		glVertex3fv(glm::value_ptr(corners[1]));
 
-		glVertex3fv(glm::value_ptr(corners[1])); glVertex3fv(glm::value_ptr(corners[2]));
+		glVertex3fv(glm::value_ptr(corners[1]));
+		glVertex3fv(glm::value_ptr(corners[2]));
 
-		glVertex3fv(glm::value_ptr(corners[2])); glVertex3fv(glm::value_ptr(corners[3]));
+		glVertex3fv(glm::value_ptr(corners[2]));
+		glVertex3fv(glm::value_ptr(corners[3]));
 
-		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[3]));
+		glVertex3fv(glm::value_ptr(corners[0]));
+		glVertex3fv(glm::value_ptr(corners[3]));
 
-		glVertex3fv(glm::value_ptr(corners[4])); glVertex3fv(glm::value_ptr(corners[5]));
+		glVertex3fv(glm::value_ptr(corners[4]));
+		glVertex3fv(glm::value_ptr(corners[5]));
 
-		glVertex3fv(glm::value_ptr(corners[5])); glVertex3fv(glm::value_ptr(corners[6]));
+		glVertex3fv(glm::value_ptr(corners[5]));
+		glVertex3fv(glm::value_ptr(corners[6]));
 
-		glVertex3fv(glm::value_ptr(corners[6])); glVertex3fv(glm::value_ptr(corners[7]));
+		glVertex3fv(glm::value_ptr(corners[6]));
+		glVertex3fv(glm::value_ptr(corners[7]));
 
-		glVertex3fv(glm::value_ptr(corners[4])); glVertex3fv(glm::value_ptr(corners[7]));
+		glVertex3fv(glm::value_ptr(corners[4]));
+		glVertex3fv(glm::value_ptr(corners[7]));
 
-		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[4]));
+		glVertex3fv(glm::value_ptr(corners[0]));
+		glVertex3fv(glm::value_ptr(corners[4]));
 
-		glVertex3fv(glm::value_ptr(corners[1])); glVertex3fv(glm::value_ptr(corners[5]));
+		glVertex3fv(glm::value_ptr(corners[1]));
+		glVertex3fv(glm::value_ptr(corners[5]));
 
-		glVertex3fv(glm::value_ptr(corners[2])); glVertex3fv(glm::value_ptr(corners[6]));
+		glVertex3fv(glm::value_ptr(corners[2]));
+		glVertex3fv(glm::value_ptr(corners[6]));
 
-		glVertex3fv(glm::value_ptr(corners[3])); glVertex3fv(glm::value_ptr(corners[7]));
+		glVertex3fv(glm::value_ptr(corners[3]));
+		glVertex3fv(glm::value_ptr(corners[7]));
 		glEnd();
 	}
 }
@@ -215,9 +225,7 @@ auto Chunk::fullTriangles() const -> std::vector<Triangle> {
 		result.emplace_back(
 			vertices[t.x].position,
 			vertices[t.y].position,
-			vertices[t.z].position
-		);
+			vertices[t.z].position);
 	}
 	return result;
 }
-

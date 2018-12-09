@@ -12,7 +12,7 @@ class Triangle {
 public:
 	Triangle() = default;
 	Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c)
-		: values{ {a, b, c} } {}
+		: values{{a, b, c}} {}
 
 	auto operator[](std::size_t i) -> glm::vec3& {
 		return values[i];
@@ -67,8 +67,8 @@ inline auto intersect(Ray ray, Triangle triangle) -> std::optional<glm::vec3> {
 
 	static auto i = 0;
 	i++;
-	dump("intersect/" + std::to_string(i) + "_triangles.ply", { triangle });
-	dump("intersect/" + std::to_string(i) + "_ray.ply", { ray.origin, ray.origin + ray.direction * 100.0f });
+	dump("intersect/" + std::to_string(i) + "_triangles.ply", {triangle});
+	dump("intersect/" + std::to_string(i) + "_ray.ply", {ray.origin, ray.origin + ray.direction * 100.0f});
 
 	return ray.origin + ray.direction * *t;
 }
@@ -85,7 +85,7 @@ inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::o
 	static auto i = 0;
 	i++;
 	dump("intersectV/" + std::to_string(i) + "_triangles.ply", triangles);
-	dump("intersectV/" + std::to_string(i) + "_ray.ply", { Triangle{ ray.origin, ray.origin, ray.origin + ray.direction * 100.0f } });
+	dump("intersectV/" + std::to_string(i) + "_ray.ply", {Triangle{ray.origin, ray.origin, ray.origin + ray.direction * 100.0f}});
 
 	return ray.origin + ray.direction * minD;
 }

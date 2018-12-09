@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -63,8 +64,8 @@ bool initGL() {
 		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/normals.frag"})};
 
 	coordsProgram = gl::Program{
-			gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/coords.vert"}),
-			gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/coords.frag"}),
+		gl::Shader(GL_VERTEX_SHADER, fs::path{"../src/shaders/coords.vert"}),
+		gl::Shader(GL_FRAGMENT_SHADER, fs::path{"../src/shaders/coords.frag"}),
 	};
 
 	return true;
@@ -195,8 +196,8 @@ void onKey(GLFWwindow*, int key, int scancode, int action, int mods) {
 
 	if (action == GLFW_PRESS) {
 		switch (key) {
-		case GLFW_KEY_H:
-			global::showHud = !global::showHud;
+			case GLFW_KEY_H:
+				global::showHud = !global::showHud;
 		}
 	}
 }

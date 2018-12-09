@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "Camera.h"
-#include "utils.h"
-#include "globals.h"
 #include "geometry.h"
+#include "globals.h"
+#include "utils.h"
 
 #include "World.h"
 
@@ -15,7 +15,6 @@ namespace {
 	public:
 		CellTraverser(const World& world, Ray ray)
 			: world(world) {
-		
 			cellIndex = floor(ray.origin / blockLength);
 
 			for (auto i = 0; i < 3; i++) {
@@ -41,7 +40,7 @@ namespace {
 						return 2;
 				}
 			}();
-			
+
 			t = ts[smallestIndex];
 			ts[smallestIndex] += delta[smallestIndex];
 			cellIndex[smallestIndex] += step[smallestIndex];
@@ -86,12 +85,12 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 	const auto startPos = getVoxelPos(start);
 	const auto endPos = getVoxelPos(start);
 
-	const auto ray = Ray{ start, normalize(end - start) };
+	const auto ray = Ray{start, normalize(end - start)};
 
 	std::cout << "Tracing from " << start << " (" << startPos << ") to " << end << " (" << endPos << ")\n";
 
-	CellTraverser t{*this, ray };
-	while(true) {
+	CellTraverser t{*this, ray};
+	while (true) {
 		const glm::ivec3 blockIndex = t.nextIndex();
 		std::cout << "    at block " << blockIndex << "\n";
 

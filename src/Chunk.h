@@ -1,12 +1,12 @@
 #pragma once
 
 #include <array>
+#include <optional>
 #include <stdint.h>
 #include <vector>
-#include <optional>
 
-#include "mathlib.h"
 #include "geometry.h"
+#include "mathlib.h"
 #include "opengl/Buffer.h"
 
 struct ChunkMemoryFootprint final {
@@ -29,7 +29,7 @@ struct ChunkMemoryFootprint final {
 };
 
 inline constexpr auto blockLength = 1.0f;
-inline constexpr auto chunkResolution = 16u; // The number of voxels along one axis. chunkResolution + 1 is the edge length of the density cube (a cube of voxels).
+inline constexpr auto chunkResolution = 16u;                     // The number of voxels along one axis. chunkResolution + 1 is the edge length of the density cube (a cube of voxels).
 inline constexpr auto chunkSize = blockLength * chunkResolution; // The size of the chunk in world units.
 
 using IdType = uint64_t;

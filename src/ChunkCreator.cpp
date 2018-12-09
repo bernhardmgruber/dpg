@@ -21,30 +21,30 @@ namespace {
 		return va + (vb - va) * part;
 	}
 
-	glm::vec3 getNormal(Chunk& c, const glm::uvec3& v) {
+	glm::vec3 getNormal(Chunk& c, glm::ivec3 v) {
 		glm::vec3 grad;
-		grad.x = c.voxelAt(v.x + 1, v.y, v.z) - c.voxelAt(v.x - 1, v.y, v.z);
-		grad.y = c.voxelAt(v.x, v.y + 1, v.z) - c.voxelAt(v.x, v.y - 1, v.z);
-		grad.z = c.voxelAt(v.x, v.y, v.z + 1) - c.voxelAt(v.x, v.y, v.z - 1);
+		grad.x = c.densityAt(v + glm::ivec3{1, 0, 0}) - c.densityAt(v - glm::ivec3{1, 0, 0});
+		grad.y = c.densityAt(v + glm::ivec3{0, 1, 0}) - c.densityAt(v - glm::ivec3{0, 1, 0});
+		grad.z = c.densityAt(v + glm::ivec3{0, 0, 1}) - c.densityAt(v - glm::ivec3{0, 0, 1});
 		return normalize(grad);
 	}
 
 	void marchChunk(Chunk& c) {
 		std::unordered_map<glm::vec3, unsigned int> vertexMap(initialTriangleMapSize);
 
-		for (unsigned int x = 1; x < chunkResolution + 1; x++) {
-			for (unsigned int y = 1; y < chunkResolution + 1; y++) {
-				for (unsigned int z = 1; z < chunkResolution + 1; z++) {
-					const std::array<Chunk::DensityType, 8> values = c.voxelCubeAt(x, y, z);
+		glm::ivec3 bi;
+		for (bi.x = 0; bi.x < chunkResolution; bi.x++) {
+			for (bi.y = 0; bi.y < chunkResolution; bi.y++) {
+				for (bi.z = 0; bi.z < chunkResolution; bi.z++) {
+					const std::array<Chunk::DensityType, 8> values = c.densityCubeAt(bi);
 
-					unsigned int caseIndex = c.caseIndexFromVoxel(values);
-
+					const auto caseIndex = c.caseIndexFromVoxel(values);
 					if (caseIndex == 255)
 						continue; // solid block
 					if (caseIndex == 0)
 						continue; // air block
 
-					int numTriangles = case_to_numpolys[caseIndex];
+					const int numTriangles = case_to_numpolys[caseIndex];
 
 					// for each triangle of the cube
 					for (int t = 0; t < numTriangles; t++) {
@@ -52,93 +52,27 @@ namespace {
 
 						// for each edge of the cube a triangle vertex is on
 						for (int e = 0; e < 3; e++) {
-							int edgeIndex = edge_connect_list[caseIndex][t][e];
+							const int edgeIndex = edge_connect_list[caseIndex][t][e];
 
-							Chunk::DensityType value1;
-							Chunk::DensityType value2;
-							glm::ivec3 vec1;
-							glm::ivec3 vec2;
+							auto[value1, value2, vec1, vec2] = [&]() -> std::tuple<Chunk::DensityType, Chunk::DensityType, glm::ivec3, glm::ivec3> {
+								switch (edgeIndex) {
+									case 0 : return { values[0], values[1], bi + glm::ivec3(0, 0, 0), bi + glm::ivec3(0, 0, 1) };
+									case 1 : return { values[1], values[2], bi + glm::ivec3(0, 0, 1), bi + glm::ivec3(1, 0, 1) };
+									case 2 : return { values[2], values[3], bi + glm::ivec3(1, 0, 1), bi + glm::ivec3(1, 0, 0) };
+									case 3 : return { values[3], values[0], bi + glm::ivec3(1, 0, 0), bi + glm::ivec3(0, 0, 0) };
+									case 4 : return { values[4], values[5], bi + glm::ivec3(0, 1, 0), bi + glm::ivec3(0, 1, 1) };
+									case 5 : return { values[5], values[6], bi + glm::ivec3(0, 1, 1), bi + glm::ivec3(1, 1, 1) };
+									case 6 : return { values[6], values[7], bi + glm::ivec3(1, 1, 1), bi + glm::ivec3(1, 1, 0) };
+									case 7 : return { values[7], values[4], bi + glm::ivec3(1, 1, 0), bi + glm::ivec3(0, 1, 0) };
+									case 8 : return { values[0], values[4], bi + glm::ivec3(0, 0, 0), bi + glm::ivec3(0, 1, 0) };
+									case 9 : return { values[1], values[5], bi + glm::ivec3(0, 0, 1), bi + glm::ivec3(0, 1, 1) };
+									case 10: return { values[2], values[6], bi + glm::ivec3(1, 0, 1), bi + glm::ivec3(1, 1, 1) };
+									case 11: return { values[3], values[7], bi + glm::ivec3(1, 0, 0), bi + glm::ivec3(1, 1, 0) };
+									default: std::terminate();
+								}
+							}();
 
-							switch (edgeIndex) {
-								case 0:
-									value1 = values[0];
-									value2 = values[1];
-									vec1 = glm::ivec3(x, y, z);
-									vec2 = glm::ivec3(x, y, z + 1);
-									break;
-								case 1:
-									value1 = values[1];
-									value2 = values[2];
-									vec1 = glm::ivec3(x, y, z + 1);
-									vec2 = glm::ivec3(x + 1, y, z + 1);
-									break;
-								case 2:
-									value1 = values[2];
-									value2 = values[3];
-									vec1 = glm::ivec3(x + 1, y, z + 1);
-									vec2 = glm::ivec3(x + 1, y, z);
-									break;
-								case 3:
-									value1 = values[3];
-									value2 = values[0];
-									vec1 = glm::ivec3(x + 1, y, z);
-									vec2 = glm::ivec3(x, y, z);
-									break;
-
-								case 4:
-									value1 = values[4];
-									value2 = values[5];
-									vec1 = glm::ivec3(x, y + 1, z);
-									vec2 = glm::ivec3(x, y + 1, z + 1);
-									break;
-								case 5:
-									value1 = values[5];
-									value2 = values[6];
-									vec1 = glm::ivec3(x, y + 1, z + 1);
-									vec2 = glm::ivec3(x + 1, y + 1, z + 1);
-									break;
-								case 6:
-									value1 = values[6];
-									value2 = values[7];
-									vec1 = glm::ivec3(x + 1, y + 1, z + 1);
-									vec2 = glm::ivec3(x + 1, y + 1, z);
-									break;
-								case 7:
-									value1 = values[7];
-									value2 = values[4];
-									vec1 = glm::ivec3(x + 1, y + 1, z);
-									vec2 = glm::ivec3(x, y + 1, z);
-									break;
-
-								case 8:
-									value1 = values[0];
-									value2 = values[4];
-									vec1 = glm::ivec3(x, y, z);
-									vec2 = glm::ivec3(x, y + 1, z);
-									break;
-								case 9:
-									value1 = values[1];
-									value2 = values[5];
-									vec1 = glm::ivec3(x, y, z + 1);
-									vec2 = glm::ivec3(x, y + 1, z + 1);
-									break;
-								case 10:
-									value1 = values[2];
-									value2 = values[6];
-									vec1 = glm::ivec3(x + 1, y, z + 1);
-									vec2 = glm::ivec3(x + 1, y + 1, z + 1);
-									break;
-								case 11:
-									value1 = values[3];
-									value2 = values[7];
-									vec1 = glm::ivec3(x + 1, y, z);
-									vec2 = glm::ivec3(x + 1, y + 1, z);
-									break;
-
-								default: std::terminate();
-							}
-
-							glm::vec3 vertex = interpolate(value1, value2, vec1, vec2);
+							const glm::vec3 vertex = interpolate(value1, value2, vec1, vec2);
 
 							// lookup this vertex
 							if (auto it = vertexMap.find(vertex); it != vertexMap.end())
@@ -148,8 +82,8 @@ namespace {
 								RVertex v;
 								v.position = c.toWorld(vertex);
 
-								glm::vec3 normal1 = getNormal(c, vec1);
-								glm::vec3 normal2 = getNormal(c, vec2);
+								const glm::vec3 normal1 = getNormal(c, vec1);
+								const glm::vec3 normal2 = getNormal(c, vec2);
 								v.normal = normalize(interpolate(value1, value2, normal1, normal2));
 
 								tri[e] = (unsigned int)c.vertices.size();
@@ -206,6 +140,11 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	//cout << "Marching took " << timer.interval << " seconds" << endl;
 
 	std::cout << "Created chunk:         " << chunkPos << '\n';
+
+	dump("chunks/" + std::to_string(c.getId()) + "_triangles.ply", c.fullTriangles());
+
+	const auto edges = boxEdges(c.aabb());
+	dump("chunks/" + std::to_string(c.getId()) + "_aabb.ply", std::vector(begin(edges), end(edges)));
 
 	return c;
 }

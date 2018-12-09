@@ -29,7 +29,7 @@ struct ChunkMemoryFootprint final {
 };
 
 inline constexpr auto blockLength = 1.0f;
-inline constexpr auto chunkResolution = 16u;                     // The number of voxels along one axis. chunkResolution + 1 is the edge length of the density cube (a cube of voxels).
+inline constexpr auto chunkResolution = 16;                      // The number of voxels along one axis. chunkResolution + 1 is the edge length of the density cube (a cube of voxels).
 inline constexpr auto chunkSize = blockLength * chunkResolution; // The size of the chunk in world units.
 
 using IdType = uint64_t;
@@ -58,7 +58,7 @@ public:
 
 	// Converts a voxel coordinate to a world coordinate.
 	glm::vec3 toWorld(glm::vec3 voxel) const;
-	glm::uvec3 toVoxelCoord(const glm::vec3& v) const;
+	glm::ivec3 toVoxelCoord(const glm::vec3& v) const;
 
 	IdType getId() const;
 
@@ -87,8 +87,8 @@ public:
 	*/
 	ChunkMemoryFootprint getMemoryFootprint() const;
 
-	DensityType voxelAt(unsigned int x, unsigned int y, unsigned int z) const;
-	std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
+	DensityType densityAt(glm::ivec3 localIndex) const;
+	std::array<DensityType, 8> densityCubeAt(glm::ivec3 localIndex) const;
 	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 
 	auto aabb() const -> BoundingBox;

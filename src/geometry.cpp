@@ -24,6 +24,13 @@ void dump(const std::filesystem::path & path, const std::vector<Triangle>& trian
 	f.close();
 }
 
+void dump(const std::filesystem::path& path, const std::vector<Line>& lines) {
+	std::vector<Triangle> triangles(lines.size());
+	for (const auto& l : lines)
+		triangles.emplace_back(l[0], l[0], l[1]);
+	dump(path, triangles);
+}
+
 void dump(const std::filesystem::path& path, const std::vector<glm::vec3>& points) {
 	auto f = openFileOut(path, std::ios::binary);
 	f

@@ -59,7 +59,13 @@ struct Ray {
 	glm::vec3 direction;
 };
 
+struct BoundingBox {
+	glm::vec3 lower;
+	glm::vec3 upper;
+};
+
 void dump(const std::filesystem::path& path, const std::vector<Triangle>& triangles);
+void dump(const std::filesystem::path& path, const std::vector<Line>& lines);
 void dump(const std::filesystem::path& path, const std::vector<glm::vec3>& points);
 
 inline auto intersectForDistance(Ray ray, Triangle triangle) -> std::optional<float> {
@@ -118,4 +124,68 @@ inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::o
 	//dump("intersectV/" + std::to_string(i) + "_ray.ply", {Triangle{ray.origin, ray.origin, ray.origin + ray.direction * 100.0f}});
 
 	return ray.origin + ray.direction * *t;
+}
+
+inline auto boxVertices(BoundingBox box) -> std::array<glm::vec3, 8> {
+	const auto& l = box.lower;
+	const auto& u = box.upper;
+
+	const auto vertices = std::array<glm::vec3, 8>{
+		glm::vec3{ l[0], l[1], l[2] },
+		glm::vec3{ l[0], l[1], u[2] },
+		glm::vec3{ l[0], u[1], l[2] },
+		glm::vec3{ l[0], u[1], u[2] },
+		glm::vec3{ u[0], l[1], l[2] },
+		glm::vec3{ u[0], l[1], u[2] },
+		glm::vec3{ u[0], u[1], l[2] },
+		glm::vec3{ u[0], u[1], u[2] }
+	};
+
+	return vertices;
+}
+
+inline auto boxTriangles(BoundingBox box) -> std::array<Triangle, 12> {
+	const auto v = boxVertices(box);
+
+	const auto triangles = std::array<Triangle, 12>{
+		Triangle{ v[2], v[6], v[0] },
+		Triangle{ v[0], v[6], v[4] },
+		Triangle{ v[6], v[5], v[4] },
+		Triangle{ v[4], v[5], v[0] },
+
+		Triangle{ v[5], v[1], v[0] },
+		Triangle{ v[0], v[1], v[2] },
+		Triangle{ v[1], v[3], v[2] },
+		Triangle{ v[2], v[3], v[6] },
+
+		Triangle{ v[3], v[7], v[6] },
+		Triangle{ v[6], v[7], v[5] },
+		Triangle{ v[7], v[3], v[5] },
+		Triangle{ v[5], v[3], v[1] }
+	};
+
+	return triangles;
+}
+
+inline auto boxEdges(BoundingBox box) -> std::array<Line, 12> {
+	const auto v = boxVertices(box);
+
+	const auto triangles = std::array<Line, 12>{
+		Line{ v[0], v[1] },
+		Line{ v[0], v[2] },
+		Line{ v[1], v[3] },
+		Line{ v[2], v[3] },
+
+		Line{ v[4], v[5] },
+		Line{ v[4], v[6] },
+		Line{ v[5], v[7] },
+		Line{ v[6], v[7] },
+
+		Line{ v[0], v[4] },
+		Line{ v[1], v[5] },
+		Line{ v[2], v[6] },
+		Line{ v[3], v[7] }
+	};
+
+	return triangles;
 }

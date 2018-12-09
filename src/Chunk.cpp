@@ -11,70 +11,6 @@
 using namespace std;
 
 namespace {
-	auto boxVertices(BoundingBox box) -> std::array<glm::vec3, 8> {
-		const auto& l = box.lower;
-		const auto& u = box.upper;
-
-		const auto vertices = std::array<glm::vec3, 8>{
-			glm::vec3{ l[0], l[1], l[2] },
-			glm::vec3{ l[0], l[1], u[2] },
-			glm::vec3{ l[0], u[1], l[2] },
-			glm::vec3{ l[0], u[1], u[2] },
-			glm::vec3{ u[0], l[1], l[2] },
-			glm::vec3{ u[0], l[1], u[2] },
-			glm::vec3{ u[0], u[1], l[2] },
-			glm::vec3{ u[0], u[1], u[2] }
-		};
-
-		return vertices;
-	}
-
-	auto boxTriangles(BoundingBox box) -> std::array<Triangle, 12> {
-		const auto v = boxVertices(box);
-
-		const auto triangles = std::array<Triangle, 12>{
-			Triangle{ v[2], v[6], v[0] },
-			Triangle{ v[0], v[6], v[4] },
-			Triangle{ v[6], v[5], v[4] },
-			Triangle{ v[4], v[5], v[0] },
-
-			Triangle{ v[5], v[1], v[0] },
-			Triangle{ v[0], v[1], v[2] },
-			Triangle{ v[1], v[3], v[2] },
-			Triangle{ v[2], v[3], v[6] },
-
-			Triangle{ v[3], v[7], v[6] },
-			Triangle{ v[6], v[7], v[5] },
-			Triangle{ v[7], v[3], v[5] },
-			Triangle{ v[5], v[3], v[1] }
-		};
-
-		return triangles;
-	}
-
-	auto boxEdges(BoundingBox box)->std::array<Line, 12> {
-		const auto v = boxVertices(box);
-
-		const auto triangles = std::array<Line, 12>{
-			Line{ v[0], v[1] },
-			Line{ v[0], v[2] },
-			Line{ v[1], v[3] },
-			Line{ v[2], v[3] },
-
-			Line{ v[4], v[5] },
-			Line{ v[4], v[6] },
-			Line{ v[5], v[7] },
-			Line{ v[6], v[7] },
-
-			Line{ v[0], v[4] },
-			Line{ v[1], v[5] },
-			Line{ v[2], v[6] },
-			Line{ v[3], v[7] }
-		};
-
-		return triangles;
-	}
-
 	void drawBoxEdges(BoundingBox box) {
 		const auto edges = boxEdges(box);
 
@@ -105,18 +41,17 @@ Chunk::Chunk(glm::ivec3 index)
 Chunk::~Chunk() = default;
 
 glm::vec3 Chunk::toWorld(glm::vec3 voxel) const {
-	glm::vec3 v = blockLength * (voxel - 1.0f);
-	return lower() + v;
+	return lower() + blockLength * (voxel - 1.0f);
 }
 
-glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
+glm::ivec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
 	glm::vec3 rel = (v - lower()) / chunkSize * (float)chunkResolution;
 
-	glm::uvec3 blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
+	glm::ivec3 blockCoord(rel);
 
-	assert(rel.x > 0 && rel.x < 16);
-	assert(rel.y > 0 && rel.y < 16);
-	assert(rel.z > 0 && rel.z < 16);
+	assert(rel.x >= 0 && rel.x < 16);
+	assert(rel.y >= 0 && rel.y < 16);
+	assert(rel.z >= 0 && rel.z < 16);
 
 	return blockCoord;
 }
@@ -142,7 +77,7 @@ Chunk::VoxelType Chunk::categorizeVoxel(glm::ivec3 pos) const {
 	assert(pos.y >= 0 && pos.y < chunkResolution);
 	assert(pos.z >= 0 && pos.z < chunkResolution);
 
-	const auto caseIndex = caseIndexFromVoxel(voxelCubeAt(pos.x, pos.y, pos.z));
+	const auto caseIndex = caseIndexFromVoxel(densityCubeAt(pos));
 
 	if (caseIndex == 255) return VoxelType::SOLID;
 	if (caseIndex == 0) return VoxelType::AIR;
@@ -237,24 +172,27 @@ void Chunk::createBuffers() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(triangles[0]), triangles.data(), GL_STATIC_DRAW);
 }
 
+float Chunk::densityAt(glm::ivec3 localIndex) const {
+	// -1 and chunkResolution access border densities from neighboring chunks
+	assert(localIndex.x >= -1 && localIndex.x <= chunkResolution + 1);
+	assert(localIndex.y >= -1 && localIndex.y <= chunkResolution + 1);
+	assert(localIndex.z >= -1 && localIndex.z <= chunkResolution + 1);
+	localIndex += 1;
 
-float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const {
-	assert(x < (chunkResolution + 1 + 2));
-	assert(y < (chunkResolution + 1 + 2));
-	assert(z < (chunkResolution + 1 + 2));
-	return densities[x * (chunkResolution + 1 + 2) * (chunkResolution + 1 + 2) + y * (chunkResolution + 1 + 2) + z];
+	constexpr auto side = chunkResolution + 1 + 2;
+	return densities[localIndex.x * side * side + localIndex.y * side + localIndex.z];
 }
 
-std::array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const {
+std::array<Chunk::DensityType, 8> Chunk::densityCubeAt(glm::ivec3 localIndex) const {
 	std::array<DensityType, 8> values;
-	values[0] = voxelAt(x, y, z);
-	values[1] = voxelAt(x, y, z + 1);
-	values[2] = voxelAt(x + 1, y, z + 1);
-	values[3] = voxelAt(x + 1, y, z);
-	values[4] = voxelAt(x, y + 1, z);
-	values[5] = voxelAt(x, y + 1, z + 1);
-	values[6] = voxelAt(x + 1, y + 1, z + 1);
-	values[7] = voxelAt(x + 1, y + 1, z);
+	values[0] = densityAt(localIndex + glm::ivec3{ 0, 0, 0 });
+	values[1] = densityAt(localIndex + glm::ivec3{ 0, 0, 1 });
+	values[2] = densityAt(localIndex + glm::ivec3{ 1, 0, 1 });
+	values[3] = densityAt(localIndex + glm::ivec3{ 1, 0, 0 });
+	values[4] = densityAt(localIndex + glm::ivec3{ 0, 1, 0 });
+	values[5] = densityAt(localIndex + glm::ivec3{ 0, 1, 1 });
+	values[6] = densityAt(localIndex + glm::ivec3{ 1, 1, 1 });
+	values[7] = densityAt(localIndex + glm::ivec3{ 1, 1, 0 });
 	return values;
 }
 

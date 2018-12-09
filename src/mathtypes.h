@@ -12,11 +12,6 @@ struct RTriangle {
 	RVertex vertices[3];
 };
 
-struct BoundingBox {
-	glm::vec3 lower;
-	glm::vec3 upper;
-};
-
 namespace std {
 	template<>
 	struct hash<glm::uvec3> {

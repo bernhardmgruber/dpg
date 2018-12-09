@@ -10,6 +10,7 @@
 #include <string>
 
 #include "Camera.h"
+#include "Player.h"
 #include "Timer.h"
 #include "World.h"
 #include "globals.h"
@@ -32,6 +33,8 @@ gl::Program coordsProgram;
 
 Timer timer;
 World world;
+Camera camera;
+Player player;
 
 glm::mat4 projectionMatrix;
 
@@ -68,7 +71,7 @@ bool initGL() {
 }
 
 void update(double interval) {
-	stringstream caption;
+	std::stringstream caption;
 	caption << windowCaption << " @ " << fixed << setprecision(1) << timer.tps << " FPS";
 	glfwSetWindowTitle(mainwindow, caption.str().c_str());
 
@@ -89,9 +92,12 @@ void update(double interval) {
 	if (glfwGetKey(mainwindow, GLFW_KEY_A) == GLFW_PRESS) moveFlags |= Left;
 	if (glfwGetKey(mainwindow, GLFW_KEY_D) == GLFW_PRESS) moveFlags |= Right;
 
-	camera.update(interval, delta.x, delta.y, moveFlags);
+	if (global::freeCamera)
+		camera.update(interval, delta.x, delta.y, moveFlags);
+	else
+		player.update(interval, delta.x, delta.y, moveFlags, world, camera);
 
-	world.update();
+	world.update(camera);
 }
 
 void render() {
@@ -147,6 +153,8 @@ void render() {
 
 		if (ImGui::Button("Regenerate"))
 			world.clearChunks();
+
+		ImGui::Checkbox("free camera", &global::freeCamera);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -264,6 +272,8 @@ int main(int argc, char** argv) try {
 		return -1;
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
+
+	camera.position -= 5;
 
 	while (true) {
 		glfwPollEvents();

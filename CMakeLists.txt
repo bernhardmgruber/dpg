@@ -61,6 +61,7 @@ else()
 endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE
+	-DNOMINMAX
 	-DGLFW_INCLUDE_NONE
 	-DGLM_ENABLE_EXPERIMENTAL
 	-DGLM_FORCE_RADIANS
@@ -96,5 +97,8 @@ else()
 		configure_file(.clang-tidy .clang-tidy COPYONLY)
 	endif()
 	get_target_property(ALL_INCLUDES ${PROJECT_NAME} INCLUDE_DIRECTORIES)
-	add_custom_target(clang-tidy COMMAND ${CLANG_TIDY} ${source_files} -- ${ALL_INCLUDES})
+	foreach(inc ${ALL_INCLUDES})
+		list(APPEND INCLUDES -I${inc})
+	endforeach()
+	add_custom_target(clang-tidy COMMAND ${CLANG_TIDY} ${source_files} -- -std=c++17  ${INCLUDES})
 endif()

@@ -5,6 +5,10 @@
 
 using namespace std;
 
+namespace {
+	constexpr auto pointInPlaneEpsilon = 0.0001f;
+}
+
 ostream& operator<<(ostream& os, glm::vec3 v) {
 	os << "(" << setw(2) << v.x << ", " << v.y << ", " << v.z << ")";
 
@@ -115,7 +119,7 @@ bool pointInBox(glm::vec3 vPoint, const short vMin[3], const short vMax[3]) {
 }
 
 bool pointInPlane(glm::vec3 vPoint, glm::vec3 vNormal, float fDist) {
-	return fabs(dotProduct(vPoint, vNormal) - fDist) < EPSILON;
+	return fabs(dotProduct(vPoint, vNormal) - fDist) < pointInPlaneEpsilon;
 }
 
 glm::vec3 rotateX(float a, glm::vec3 v) {

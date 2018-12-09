@@ -32,9 +32,9 @@ namespace {
 	void marchChunk(Chunk& c) {
 		std::unordered_map<glm::vec3, unsigned int> vertexMap(initialTriangleMapSize);
 
-		for (unsigned int x = 1; x < Chunk::RESOLUTION + 1; x++) {
-			for (unsigned int y = 1; y < Chunk::RESOLUTION + 1; y++) {
-				for (unsigned int z = 1; z < Chunk::RESOLUTION + 1; z++) {
+		for (unsigned int x = 1; x < chunkResolution + 1; x++) {
+			for (unsigned int y = 1; y < chunkResolution + 1; y++) {
+				for (unsigned int z = 1; z < chunkResolution + 1; z++) {
 					const std::array<Chunk::DensityType, 8> values = c.voxelCubeAt(x, y, z);
 
 					unsigned int caseIndex = c.caseIndexFromVoxel(values);
@@ -145,7 +145,7 @@ namespace {
 								tri[e] = it->second;
 							else {
 								// calculate a new one
-								Vertex v;
+								RVertex v;
 								v.position = c.toWorld(vertex);
 
 								glm::vec3 normal1 = getNormal(c, vec1);
@@ -175,12 +175,14 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	//perlin.SetFrequency(0.3);
 
 	auto noise = [](glm::vec3 pos) {
+		pos /= chunkResolution;
+
 		// return (Chunk::DensityType)perlin.GetValue(pos.x, pos.y, pos.z);
 		return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
 		//return stb_perlin_turbulence_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
 	};
 
-	const unsigned int size = Chunk::RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
+	const unsigned int size = chunkResolution + 1 + 2; // + 1 for corners and + 2 for marging
 	c.densities.resize(size * size * size);
 
 	//Timer timer;

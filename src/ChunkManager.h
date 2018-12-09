@@ -14,6 +14,7 @@ public:
 	~ChunkManager();
 
 	auto get(const glm::ivec3& pos) -> Chunk*;
+	auto get(const glm::ivec3& pos) const -> const Chunk*;
 
 	void clear();
 

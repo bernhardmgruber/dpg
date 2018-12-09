@@ -1,12 +1,11 @@
 #pragma once
 
+#include <boost/math/constants/constants.hpp>
+
 #include <cmath>
 #include <iostream>
 
 #include "mathtypes.h"
-
-#define EPSILON 0.0001
-#define PI 3.14159265
 
 std::ostream& operator<<(std::ostream& os, glm::vec3 v);
 std::ostream& operator<<(std::ostream& os, glm::ivec3 v);
@@ -17,10 +16,10 @@ bool pointInPlane(glm::vec3 vPoint, glm::vec3 vNormal, float fDist);
 
 template<typename T>
 T degToRad(T deg) {
-	return (deg / (T)180.0) * (T)PI;
+	return (deg / (T)180.0) * boost::math::constants::pi<T>();
 }
 
 template<typename T>
 T radToDeg(T rad) {
-	return (rad / (T)PI) * (T)180.0;
+	return (rad / boost::math::constants::pi<T>()) * (T)180.0;
 }

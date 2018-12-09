@@ -24,5 +24,5 @@ private:
 	/**
 	* All available chunks in the chunk directory
 	*/
-	std::unordered_set<Chunk::IdType> availableChunks;
+	std::unordered_set<IdType> availableChunks;
 };

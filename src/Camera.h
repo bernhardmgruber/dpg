@@ -25,17 +25,10 @@ public:
 	float pitch = 0; // up down rotation
 	float yaw = 0;   // side to side rotation
 
-	int viewportWidth = 0;
-	int viewportHeight = 0;
-	float fovy = 60;
-
 	float moveSensitivity = CAMERA_MOVE_SENS;
 	float lookSensitivity = CAMERA_LOOK_SENS;
 
 	auto viewVector() const -> glm::vec3;
 	auto viewMatrix() const -> glm::mat4;
-	auto projectionMatrix() const -> glm::mat4;
 	void update(double t, float xDelta, float yDelta, uint8_t directions);
 };
-
-inline Camera camera;

@@ -5,18 +5,66 @@
 #include "Camera.h"
 #include "utils.h"
 #include "globals.h"
+#include "geometry.h"
 
 #include "World.h"
 
-using namespace std;
+namespace {
+	// based on http://www.scratchapixel.com/lessons/3d-basic-lessons/lesson-12-introduction-to-acceleration-structures/grid/
+	class CellTraverser {
+	public:
+		CellTraverser(const World& world, Ray ray)
+			: world(world) {
+		
+			cellIndex = floor(ray.origin / blockLength);
 
-World::World()
-	: physics(chunks), renderListComplete(false) {
+			for (auto i = 0; i < 3; i++) {
+				step[i] = ray.direction[i] >= 0 ? 1 : -1;
+				delta[i] = (ray.direction[i] >= 0 ? blockLength : -blockLength) / ray.direction[i];
+				ts[i] = (ray.direction[i] >= 0 ? ((cellIndex[i] + 1) * blockLength - ray.origin[i]) : (ray.origin[i] - cellIndex[i] * blockLength)) / ray.direction[i];
+			}
+		}
+
+		auto nextIndex() -> glm::ivec3 {
+			const auto ci = cellIndex;
+
+			const auto smallestIndex = [&] {
+				if (ts.x < ts.y) {
+					if (ts.x < ts.z)
+						return 0;
+					else
+						return 2;
+				} else {
+					if (ts.y < ts.z)
+						return 1;
+					else
+						return 2;
+				}
+			}();
+			
+			t = ts[smallestIndex];
+			ts[smallestIndex] += delta[smallestIndex];
+			cellIndex[smallestIndex] += step[smallestIndex];
+
+			return ci;
+		}
+
+	private:
+		const World& world;
+
+		glm::ivec3 cellIndex;
+		glm::ivec3 step;
+		glm::vec3 delta;
+		glm::vec3 ts;
+		float t;
+	};
 }
 
-void World::update() {
+World::World() {}
+
+void World::update(Camera& camera) {
 	// Get camera position
-	glm::ivec3 cameraChunkPos = physics.getChunkPos(camera.position);
+	glm::ivec3 cameraChunkPos = getChunkPos(camera.position);
 
 	// Check for chunks to load, unload, generate and build renderList
 	buildRenderList(cameraChunkPos);
@@ -29,6 +77,83 @@ void World::render() {
 
 void World::clearChunks() {
 	chunks.clear();
+}
+
+auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
+	if (start == end)
+		return end;
+
+	const auto startPos = getVoxelPos(start);
+	const auto endPos = getVoxelPos(start);
+
+	const auto ray = Ray{ start, normalize(end - start) };
+
+	std::cout << "Tracing from " << start << " (" << startPos << ") to " << end << " (" << endPos << ")\n";
+
+	CellTraverser t{*this, ray };
+	while(true) {
+		const glm::ivec3 blockIndex = t.nextIndex();
+		std::cout << "    at block " << blockIndex << "\n";
+
+		auto chunkIndex = blockIndex;
+		chunkIndex.x /= (int)chunkResolution;
+		chunkIndex.y /= (int)chunkResolution;
+		chunkIndex.z /= (int)chunkResolution;
+
+		const Chunk* chunk = chunks.get(chunkIndex);
+		if (!chunk) {
+			std::cout << "        no chunk, we stay at " << start << "\n";
+			return start;
+		}
+
+		auto voxelIndex = blockIndex;
+		voxelIndex.x %= (int)chunkResolution;
+		voxelIndex.y %= (int)chunkResolution;
+		voxelIndex.z %= (int)chunkResolution;
+		if (voxelIndex.x < 0) voxelIndex.x += (int)chunkResolution;
+		if (voxelIndex.y < 0) voxelIndex.y += (int)chunkResolution;
+		if (voxelIndex.z < 0) voxelIndex.z += (int)chunkResolution;
+
+		const auto cat = chunk->categorizeVoxel(voxelIndex);
+		if (cat == Chunk::VoxelType::SOLID) {
+			std::cerr << "tracing inside solid block\n";
+			return start;
+		} else if (cat == Chunk::VoxelType::SURFACE) {
+			// TODO: super inefficient, only intersect against voxel triangles
+			if (const auto hit = intersect(ray, chunk->fullTriangles())) {
+				std::cout << "        surface intersection at " << *hit << "\n";
+				return *hit;
+			}
+		} else
+			assert(cat == Chunk::VoxelType::AIR);
+
+		if (blockIndex == endPos)
+			break;
+	}
+
+	std::cout << "        no intersection, reaching " << end << "\n";
+
+	return end;
+}
+
+auto World::categorizeWorldPosition(const glm::vec3& pos) const -> Chunk::VoxelType {
+	const glm::ivec3 chunkPos = getChunkPos(pos);
+	const Chunk* chunk = chunks.get(chunkPos);
+	return chunk->categorizeWorldPosition(pos);
+}
+
+glm::vec3 World::getNearestNonSolidPos(const glm::vec3& pos, BoundingBox& box) const {
+	return pos;
+}
+
+glm::ivec3 World::getChunkPos(const glm::vec3& pos) const {
+	glm::vec3 chunkPos = pos / chunkSize;
+	return glm::ivec3(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
+}
+
+glm::ivec3 World::getVoxelPos(const glm::vec3& pos) const {
+	glm::vec3 blockPos = pos / blockLength;
+	return glm::ivec3(floor(blockPos));
 }
 
 void World::buildRenderList(const glm::ivec3& cameraChunkPos) {

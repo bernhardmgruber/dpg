@@ -63,7 +63,3 @@ auto Camera::viewMatrix() const -> glm::mat4 {
 	mat = glm::translate(mat, -position); // move
 	return mat;
 }
-
-auto Camera::projectionMatrix() const -> glm::mat4 {
-	return glm::perspective(degToRad(fovy), static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight), 1.0f, 4000.0f);
-}

@@ -8,13 +8,12 @@
 
 using namespace std;
 
-Chunk::IdType Chunk::ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord) {
+IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord) {
 	uint32_t mask = 0x001FFFFF; // 21 bit
-
 	return (((IdType)(chunkGridCoord.x & mask)) << 42) | (((IdType)(chunkGridCoord.y & mask)) << 21) | (((IdType)(chunkGridCoord.z & mask)) << 0);
 }
 
-glm::ivec3 Chunk::IdToChunkGridCoordinate(IdType id) {
+glm::ivec3 IdToChunkGridCoordinate(IdType id) {
 	uint32_t mask = 0x001FFFFF; // 21 bit
 	return glm::ivec3((id >> 42) & mask, (id >> 21) & mask, (id >> 0) & mask);
 }
@@ -28,7 +27,7 @@ Chunk::Chunk(glm::ivec3 chunkGridCoord)
 Chunk::~Chunk() = default;
 
 glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
-	glm::vec3 rel = (v - getWorldPosition()) / SIZE * (float)RESOLUTION;
+	glm::vec3 rel = (v - getWorldPosition()) / chunkSize * (float)chunkResolution;
 
 	glm::uvec3 blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
 
@@ -39,25 +38,32 @@ glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
 	return blockCoord;
 }
 
-const Chunk::IdType Chunk::getId() const {
+IdType Chunk::getId() const {
 	return id;
 }
 
-const glm::ivec3 Chunk::getChunkGridPositon() const {
+glm::ivec3 Chunk::getChunkGridPositon() const {
 	return position;
 }
 
-const glm::vec3 Chunk::getWorldPosition() const {
+glm::vec3 Chunk::getWorldPosition() const {
 	glm::vec3 v;
-	v.x = position.x * SIZE - SIZE / 2.0f;
-	v.y = position.y * SIZE - SIZE / 2.0f;
-	v.z = position.z * SIZE - SIZE / 2.0f;
+	v.x = position.x * chunkSize - chunkSize / 2.0f;
+	v.y = position.y * chunkSize - chunkSize / 2.0f;
+	v.z = position.z * chunkSize - chunkSize / 2.0f;
 	return v;
 }
 
 Chunk::VoxelType Chunk::categorizeWorldPosition(const glm::vec3& pos) const {
-	const glm::uvec3 blockCoord = toVoxelCoord(pos);
-	unsigned int caseIndex = caseIndexFromVoxel(voxelCubeAt(blockCoord.x, blockCoord.y, blockCoord.z));
+	return categorizeVoxel(toVoxelCoord(pos));
+}
+
+Chunk::VoxelType Chunk::categorizeVoxel(glm::ivec3 pos) const {
+	assert(pos.x >= 0 && pos.x < chunkResolution);
+	assert(pos.y >= 0 && pos.y < chunkResolution);
+	assert(pos.z >= 0 && pos.z < chunkResolution);
+
+	const auto caseIndex = caseIndexFromVoxel(voxelCubeAt(pos.x, pos.y, pos.z));
 
 	if (caseIndex == 255) return VoxelType::SOLID;
 	if (caseIndex == 0) return VoxelType::AIR;
@@ -87,7 +93,7 @@ void Chunk::render() const {
 		glBegin(GL_LINES);
 		for (auto t : triangles) {
 			for (int i = 0; i < 3; i++) {
-				Vertex vert = vertices[t[i]];
+				RVertex vert = vertices[t[i]];
 				glm::vec3 pos = vert.position;
 				glm::vec3 normal = vert.normal;
 
@@ -101,8 +107,8 @@ void Chunk::render() const {
 	}
 }
 
-const ChunkMemoryFootprint Chunk::getMemoryFootprint() const {
-	const unsigned int size = RESOLUTION + 1 + 2; // + 1 for corners and + 2 for marging
+ChunkMemoryFootprint Chunk::getMemoryFootprint() const {
+	const unsigned int size = chunkResolution + 1 + 2; // + 1 for corners and + 2 for marging
 
 	ChunkMemoryFootprint mem{};
 	mem.densityValues = size * size * size;
@@ -124,10 +130,10 @@ void Chunk::createBuffers() {
 
 
 float Chunk::voxelAt(unsigned int x, unsigned int y, unsigned int z) const {
-	assert(x < (RESOLUTION + 1 + 2));
-	assert(y < (RESOLUTION + 1 + 2));
-	assert(z < (RESOLUTION + 1 + 2));
-	return densities[x * (RESOLUTION + 1 + 2) * (RESOLUTION + 1 + 2) + y * (RESOLUTION + 1 + 2) + z];
+	assert(x < (chunkResolution + 1 + 2));
+	assert(y < (chunkResolution + 1 + 2));
+	assert(z < (chunkResolution + 1 + 2));
+	return densities[x * (chunkResolution + 1 + 2) * (chunkResolution + 1 + 2) + y * (chunkResolution + 1 + 2) + z];
 }
 
 std::array<Chunk::DensityType, 8> Chunk::voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const {
@@ -157,3 +163,16 @@ unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const 
 
 	return caseIndex;
 }
+
+auto Chunk::fullTriangles() const -> std::vector<Triangle> {
+	std::vector<Triangle> result;
+	for (const auto& t : triangles) {
+		result.emplace_back(
+			vertices[t.x].position,
+			vertices[t.y].position,
+			vertices[t.z].position
+		);
+	}
+	return result;
+}
+

@@ -3,13 +3,13 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-struct Vertex {
+struct RVertex {
 	glm::vec3 position;
 	glm::vec3 normal;
 };
 
-struct Triangle {
-	Vertex vertices[3];
+struct RTriangle {
+	RVertex vertices[3];
 };
 
 struct BoundingBox {

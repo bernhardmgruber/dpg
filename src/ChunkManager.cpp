@@ -13,7 +13,7 @@ ChunkManager::~ChunkManager() {
 		serializer.storeChunk(chunk);
 }
 
-Chunk* ChunkManager::get(const glm::ivec3& pos) {
+auto ChunkManager::get(const glm::ivec3& pos) -> Chunk* {
 	// check if chunk is available
 	if (const auto it = loadedChunks.find(pos); it != loadedChunks.end())
 		return &it->second;
@@ -31,6 +31,10 @@ Chunk* ChunkManager::get(const glm::ivec3& pos) {
 		return &(loadedChunks[pos] = std::move(*c));
 	else
 		return nullptr;
+}
+
+auto ChunkManager::get(const glm::ivec3& pos) const -> const Chunk* {
+	return const_cast<ChunkManager&>(*this).get(pos);
 }
 
 void ChunkManager::clear() {

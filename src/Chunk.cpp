@@ -41,7 +41,7 @@ Chunk::Chunk(glm::ivec3 index)
 Chunk::~Chunk() = default;
 
 glm::vec3 Chunk::toWorld(glm::vec3 voxel) const {
-	return lower() + blockLength * (voxel - 1.0f);
+	return lower() + blockLength * voxel;
 }
 
 glm::ivec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
@@ -132,10 +132,11 @@ void Chunk::renderAuxiliary() const {
 	if (global::showVoxels) {
 		const auto chunkLower = lower();
 
-		for (unsigned int x = 0; x < chunkResolution; x++) {
-			for (unsigned int y = 0; y < chunkResolution; y++) {
-				for (unsigned int z = 0; z < chunkResolution; z++) {
-					const auto cat = categorizeVoxel({ x, y, z });
+		glm::ivec3 bi;
+		for (bi.x = 0; bi.x < chunkResolution; bi.x++) {
+			for (bi.y = 0; bi.y < chunkResolution; bi.y++) {
+				for (bi.z = 0; bi.z < chunkResolution; bi.z++) {
+					const auto cat = categorizeVoxel(bi);
 					if (cat == VoxelType::AIR)
 						glColor3f(0, 0, 1);
 					else if (cat == VoxelType::SURFACE)
@@ -143,7 +144,7 @@ void Chunk::renderAuxiliary() const {
 					else
 						continue;
 
-					const auto blockLower = chunkLower + glm::vec3{ x, y, z } * blockLength;
+					const auto blockLower = chunkLower + glm::vec3{bi} * blockLength;
 					drawBoxEdges({ blockLower, blockLower + blockLength });
 				}
 			}

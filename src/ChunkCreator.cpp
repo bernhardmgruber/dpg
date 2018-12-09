@@ -54,7 +54,7 @@ namespace {
 						for (int e = 0; e < 3; e++) {
 							const int edgeIndex = edge_connect_list[caseIndex][t][e];
 
-							auto[value1, value2, vec1, vec2] = [&]() -> std::tuple<Chunk::DensityType, Chunk::DensityType, glm::ivec3, glm::ivec3> {
+							const auto[value1, value2, vec1, vec2] = [&]() -> std::tuple<Chunk::DensityType, Chunk::DensityType, glm::ivec3, glm::ivec3> {
 								switch (edgeIndex) {
 									case 0 : return { values[0], values[1], bi + glm::ivec3(0, 0, 0), bi + glm::ivec3(0, 0, 1) };
 									case 1 : return { values[1], values[2], bi + glm::ivec3(0, 0, 1), bi + glm::ivec3(1, 0, 1) };

@@ -10,6 +10,82 @@
 
 using namespace std;
 
+namespace {
+	auto boxVertices(BoundingBox box) -> std::array<glm::vec3, 8> {
+		const auto& l = box.lower;
+		const auto& u = box.upper;
+
+		const auto vertices = std::array<glm::vec3, 8>{
+			glm::vec3{ l[0], l[1], l[2] },
+			glm::vec3{ l[0], l[1], u[2] },
+			glm::vec3{ l[0], u[1], l[2] },
+			glm::vec3{ l[0], u[1], u[2] },
+			glm::vec3{ u[0], l[1], l[2] },
+			glm::vec3{ u[0], l[1], u[2] },
+			glm::vec3{ u[0], u[1], l[2] },
+			glm::vec3{ u[0], u[1], u[2] }
+		};
+
+		return vertices;
+	}
+
+	auto boxTriangles(BoundingBox box) -> std::array<Triangle, 12> {
+		const auto v = boxVertices(box);
+
+		const auto triangles = std::array<Triangle, 12>{
+			Triangle{ v[2], v[6], v[0] },
+			Triangle{ v[0], v[6], v[4] },
+			Triangle{ v[6], v[5], v[4] },
+			Triangle{ v[4], v[5], v[0] },
+
+			Triangle{ v[5], v[1], v[0] },
+			Triangle{ v[0], v[1], v[2] },
+			Triangle{ v[1], v[3], v[2] },
+			Triangle{ v[2], v[3], v[6] },
+
+			Triangle{ v[3], v[7], v[6] },
+			Triangle{ v[6], v[7], v[5] },
+			Triangle{ v[7], v[3], v[5] },
+			Triangle{ v[5], v[3], v[1] }
+		};
+
+		return triangles;
+	}
+
+	auto boxEdges(BoundingBox box)->std::array<Line, 12> {
+		const auto v = boxVertices(box);
+
+		const auto triangles = std::array<Line, 12>{
+			Line{ v[0], v[1] },
+			Line{ v[0], v[2] },
+			Line{ v[1], v[3] },
+			Line{ v[2], v[3] },
+
+			Line{ v[4], v[5] },
+			Line{ v[4], v[6] },
+			Line{ v[5], v[7] },
+			Line{ v[6], v[7] },
+
+			Line{ v[0], v[4] },
+			Line{ v[1], v[5] },
+			Line{ v[2], v[6] },
+			Line{ v[3], v[7] }
+		};
+
+		return triangles;
+	}
+
+	void drawBoxEdges(BoundingBox box) {
+		const auto edges = boxEdges(box);
+
+		glBegin(GL_LINES);
+		for (const auto& e : edges)
+			for (const auto& v : e)
+				glVertex3fv(glm::value_ptr(v));
+		glEnd();
+	}
+}
+
 IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord) {
 	uint32_t mask = 0x001FFFFF; // 21 bit
 	return (((IdType)(chunkGridCoord.x & mask)) << 42) | (((IdType)(chunkGridCoord.y & mask)) << 21) | (((IdType)(chunkGridCoord.z & mask)) << 0);
@@ -91,7 +167,9 @@ void Chunk::render() const {
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 	}
+}
 
+void Chunk::renderAuxiliary() const {
 	if (global::showNormals) {
 		glColor3f(1.0, 0.0, 0.0);
 		glBegin(GL_LINES);
@@ -110,55 +188,30 @@ void Chunk::render() const {
 		glEnd();
 	}
 
-	if (true || global::showChunks) {
-		const auto p = glm::vec3{position} * chunkSize;
-		std::array<glm::vec3, 8> corners = {{p,
-			p + glm::vec3{0, 0, chunkSize},
-			p + glm::vec3{chunkSize, 0, chunkSize},
-			p + glm::vec3{chunkSize, 0, 0},
-			p + glm::vec3{0, chunkSize, 0},
-			p + glm::vec3{0, chunkSize, chunkSize},
-			p + glm::vec3{chunkSize, chunkSize, chunkSize},
-			p + glm::vec3{chunkSize, chunkSize, 0}}};
-
+	if (global::showChunks) {
 		glColor3f(1.0, 0.0, 0.0);
-		glBegin(GL_LINES);
-		glVertex3fv(glm::value_ptr(corners[0]));
-		glVertex3fv(glm::value_ptr(corners[1]));
+		drawBoxEdges(aabb());
+	}
 
-		glVertex3fv(glm::value_ptr(corners[1]));
-		glVertex3fv(glm::value_ptr(corners[2]));
+	if (global::showVoxels) {
+		const auto chunkLower = glm::vec3{ position } * chunkSize;
 
-		glVertex3fv(glm::value_ptr(corners[2]));
-		glVertex3fv(glm::value_ptr(corners[3]));
+		for (unsigned int x = 0; x < chunkResolution; x++) {
+			for (unsigned int y = 0; y < chunkResolution; y++) {
+				for (unsigned int z = 0; z < chunkResolution; z++) {
+					const auto cat = categorizeVoxel({ x, y, z });
+					if (cat == VoxelType::AIR)
+						glColor3f(0, 0, 1);
+					else if (cat == VoxelType::SURFACE)
+						glColor3f(1, 0, 0);
+					else
+						continue;
 
-		glVertex3fv(glm::value_ptr(corners[0]));
-		glVertex3fv(glm::value_ptr(corners[3]));
-
-		glVertex3fv(glm::value_ptr(corners[4]));
-		glVertex3fv(glm::value_ptr(corners[5]));
-
-		glVertex3fv(glm::value_ptr(corners[5]));
-		glVertex3fv(glm::value_ptr(corners[6]));
-
-		glVertex3fv(glm::value_ptr(corners[6]));
-		glVertex3fv(glm::value_ptr(corners[7]));
-
-		glVertex3fv(glm::value_ptr(corners[4]));
-		glVertex3fv(glm::value_ptr(corners[7]));
-
-		glVertex3fv(glm::value_ptr(corners[0]));
-		glVertex3fv(glm::value_ptr(corners[4]));
-
-		glVertex3fv(glm::value_ptr(corners[1]));
-		glVertex3fv(glm::value_ptr(corners[5]));
-
-		glVertex3fv(glm::value_ptr(corners[2]));
-		glVertex3fv(glm::value_ptr(corners[6]));
-
-		glVertex3fv(glm::value_ptr(corners[3]));
-		glVertex3fv(glm::value_ptr(corners[7]));
-		glEnd();
+					const auto blockLower = chunkLower + glm::vec3{ x, y, z } * blockLength;
+					drawBoxEdges({ blockLower, blockLower + blockLength });
+				}
+			}
+		}
 	}
 }
 
@@ -217,6 +270,12 @@ unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const 
 	if (values[7] > 0) caseIndex |= 0x80;
 
 	return caseIndex;
+}
+
+auto Chunk::aabb() const -> BoundingBox {
+	const auto l = glm::vec3{position} * chunkSize;
+	const auto u = l + chunkSize;
+	return { l, u };
 }
 
 auto Chunk::fullTriangles() const -> std::vector<Triangle> {

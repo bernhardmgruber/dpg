@@ -141,8 +141,14 @@ void render() {
 		normalDebuggingProgram.use();
 		glUniformMatrix4fv(normalDebuggingProgram.uniformLocation("uViewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
 		world.render();
-		shaderProgram.use();
 	}
+
+	glUseProgram(0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(glm::value_ptr(projectionMatrix));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(glm::value_ptr(viewMatrix));
+	world.renderAuxiliary();
 
 	// hud
 	if (global::showHud) {
@@ -151,6 +157,7 @@ void render() {
 		ImGui::Checkbox("show triangles", &global::showTriangles);
 		ImGui::Checkbox("show normals", &global::showNormals);
 		ImGui::Checkbox("show chunks", &global::showChunks);
+		ImGui::Checkbox("show voxels", &global::showVoxels);
 		ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
 		ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
 

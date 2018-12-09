@@ -8,11 +8,34 @@
 
 #include "IO.h"
 
+class Line {
+public:
+	Line() = default;
+	Line(glm::vec3 a, glm::vec3 b)
+		: values{a, b} {}
+
+	auto operator[](std::size_t i) -> glm::vec3& {
+		return values[i];
+	}
+
+	auto operator[](std::size_t i) const -> const glm::vec3& {
+		return values[i];
+	}
+
+	auto begin() { return values.begin(); }
+	auto begin() const { return values.begin(); }
+	auto end() { return values.end(); }
+	auto end() const { return values.end(); }
+
+private:
+	std::array<glm::vec3, 2> values;
+};
+
 class Triangle {
 public:
 	Triangle() = default;
 	Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c)
-		: values{{a, b, c}} {}
+		: values{a, b, c} {}
 
 	auto operator[](std::size_t i) -> glm::vec3& {
 		return values[i];
@@ -68,6 +91,7 @@ inline auto intersectForDistance(Ray ray, const std::vector<Triangle>& triangles
 				minD = *d;
 	if (minD == std::numeric_limits<float>::max())
 		return {};
+	return minD;
 }
 
 inline auto intersect(Ray ray, Triangle triangle) -> std::optional<glm::vec3> {

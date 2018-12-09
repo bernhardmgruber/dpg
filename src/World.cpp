@@ -74,6 +74,11 @@ void World::render() {
 		c->render();
 }
 
+void World::renderAuxiliary() {
+	for (Chunk* c : renderList)
+		c->renderAuxiliary();
+}
+
 void World::clearChunks() {
 	chunks.clear();
 }

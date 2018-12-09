@@ -87,6 +87,7 @@ public:
 	* Renders the chunk.
 	*/
 	void render() const;
+	void renderAuxiliary() const;
 
 	/**
 	* Called by ChunkManager
@@ -102,6 +103,7 @@ public:
 	std::array<DensityType, 8> voxelCubeAt(unsigned int x, unsigned int y, unsigned int z) const;
 	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 
+	auto aabb() const -> BoundingBox;
 	auto fullTriangles() const -> std::vector<Triangle>;
 
 	std::vector<DensityType> densities;

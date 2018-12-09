@@ -7,6 +7,7 @@ namespace global {
 	inline bool showTriangles = true;
 	inline bool showNormals = false;
 	inline bool showChunks = false;
+	inline bool showVoxels = false;
 	inline bool enableChunkCache = false;
 	inline bool freeCamera = false;
 	inline int CAMERA_CHUNK_RADIUS = 3;

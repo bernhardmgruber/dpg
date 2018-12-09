@@ -15,6 +15,7 @@ public:
 
 	void update(Camera& camera);
 	void render();
+	void renderAuxiliary();
 
 	void clearChunks();
 

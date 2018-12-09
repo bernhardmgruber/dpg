@@ -1,6 +1,7 @@
 in vec3 vVertex;
 in vec3 vNormal;
 in vec3 vNormalUntransformed;
+in vec3 vColor;
 
 const vec3 lightPos = vec3(-10.0, 10.0, 10.0);
 const vec4 ambient = vec4(0.4, 0.5, 0.6, 1.0);
@@ -33,5 +34,5 @@ void main() {
 	Ispec = clamp(Ispec, 0.0, 1.0);
 
 	// write Total Color:
-	gl_FragColor = Iamb + Idiff + Ispec;
+	gl_FragColor = vColor * (Iamb + Idiff + Ispec);
 }

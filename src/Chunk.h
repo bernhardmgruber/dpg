@@ -49,7 +49,7 @@ public:
 
 	Chunk() = default;
 	Chunk(IdType id);
-	Chunk(glm::ivec3 chunkGridCoord);
+	Chunk(glm::ivec3 chunkIndex);
 	Chunk(const Chunk&) = delete;
 	Chunk& operator=(const Chunk&) = delete;
 	Chunk(Chunk&&) = default;
@@ -57,25 +57,13 @@ public:
 	~Chunk();
 
 	// Converts a voxel coordinate to a world coordinate.
-	glm::vec3 toWorld(glm::vec3 voxel) const {
-		float blockLength = chunkSize / chunkResolution;
-		glm::vec3 v = blockLength * (voxel - 1.0f);
-		return getWorldPosition() + v;
-	}
-
+	glm::vec3 toWorld(glm::vec3 voxel) const;
 	glm::uvec3 toVoxelCoord(const glm::vec3& v) const;
 
 	IdType getId() const;
 
-	/**
-	* Gets the position of the chunk's center in the chunk grid.
-	*/
-	glm::ivec3 getChunkGridPositon() const;
-
-	/**
-	* Gets the position of the chunk's center in the world.
-	*/
-	glm::vec3 getWorldPosition() const;
+	glm::ivec3 chunkIndex() const;
+	glm::vec3 lower() const;
 
 	/**
 	* Categorizes the given position in world coordinates.
@@ -112,7 +100,7 @@ public:
 
 private:
 	IdType id{};
-	glm::ivec3 position;
+	glm::ivec3 index;
 
 	std::optional<gl::Buffer> vertexBuffer;
 	std::optional<gl::Buffer> indexBuffer;

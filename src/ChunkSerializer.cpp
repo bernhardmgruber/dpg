@@ -46,7 +46,7 @@ void ChunkSerializer::storeChunk(const Chunk& chunk) {
 	file.write((char*)chunk.triangles.data(), chunk.triangles.size() * sizeof(glm::uvec3));
 	file.close();
 
-	cout << "Wrote chunk from disk: " << chunk.getChunkGridPositon() << endl;
+	cout << "Wrote chunk from disk: " << chunk.chunkIndex() << endl;
 }
 
 auto ChunkSerializer::getChunk(const glm::ivec3& chunkPos) -> Chunk {

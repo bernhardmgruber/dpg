@@ -86,9 +86,9 @@ namespace {
 	}
 }
 
-IdType ChunkGridCoordinateToId(glm::ivec3 chunkGridCoord) {
-	uint32_t mask = 0x001FFFFF; // 21 bit
-	return (((IdType)(chunkGridCoord.x & mask)) << 42) | (((IdType)(chunkGridCoord.y & mask)) << 21) | (((IdType)(chunkGridCoord.z & mask)) << 0);
+IdType ChunkGridCoordinateToId(glm::ivec3 index) {
+	constexpr uint32_t mask = 0x001FFFFF; // 21 bit
+	return (((IdType)(index.x & mask)) << 42) | (((IdType)(index.y & mask)) << 21) | (((IdType)(index.z & mask)) << 0);
 }
 
 glm::ivec3 IdToChunkGridCoordinate(IdType id) {
@@ -97,15 +97,20 @@ glm::ivec3 IdToChunkGridCoordinate(IdType id) {
 }
 
 Chunk::Chunk(IdType id)
-	: id(id), position(IdToChunkGridCoordinate(id)) {}
+	: id(id), index(IdToChunkGridCoordinate(id)) {}
 
-Chunk::Chunk(glm::ivec3 chunkGridCoord)
-	: id(ChunkGridCoordinateToId(chunkGridCoord)), position(chunkGridCoord) {}
+Chunk::Chunk(glm::ivec3 index)
+	: id(ChunkGridCoordinateToId(index)), index(index) {}
 
 Chunk::~Chunk() = default;
 
+glm::vec3 Chunk::toWorld(glm::vec3 voxel) const {
+	glm::vec3 v = blockLength * (voxel - 1.0f);
+	return lower() + v;
+}
+
 glm::uvec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
-	glm::vec3 rel = (v - getWorldPosition()) / chunkSize * (float)chunkResolution;
+	glm::vec3 rel = (v - lower()) / chunkSize * (float)chunkResolution;
 
 	glm::uvec3 blockCoord((unsigned int)rel.x, (unsigned int)rel.y, (unsigned int)rel.z);
 
@@ -120,16 +125,12 @@ IdType Chunk::getId() const {
 	return id;
 }
 
-glm::ivec3 Chunk::getChunkGridPositon() const {
-	return position;
+glm::ivec3 Chunk::chunkIndex() const {
+	return index;
 }
 
-glm::vec3 Chunk::getWorldPosition() const {
-	glm::vec3 v;
-	v.x = position.x * chunkSize - chunkSize / 2.0f;
-	v.y = position.y * chunkSize - chunkSize / 2.0f;
-	v.z = position.z * chunkSize - chunkSize / 2.0f;
-	return v;
+glm::vec3 Chunk::lower() const {
+	return glm::vec3{index} * chunkSize;
 }
 
 Chunk::VoxelType Chunk::categorizeWorldPosition(const glm::vec3& pos) const {
@@ -194,7 +195,7 @@ void Chunk::renderAuxiliary() const {
 	}
 
 	if (global::showVoxels) {
-		const auto chunkLower = glm::vec3{ position } * chunkSize;
+		const auto chunkLower = lower();
 
 		for (unsigned int x = 0; x < chunkResolution; x++) {
 			for (unsigned int y = 0; y < chunkResolution; y++) {
@@ -273,7 +274,7 @@ unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const 
 }
 
 auto Chunk::aabb() const -> BoundingBox {
-	const auto l = glm::vec3{position} * chunkSize;
+	const auto l = lower();
 	const auto u = l + chunkSize;
 	return { l, u };
 }

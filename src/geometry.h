@@ -60,20 +60,7 @@ inline auto intersectForDistance(Ray ray, Triangle triangle) -> std::optional<fl
 	return f * dot(edge2, q);
 }
 
-inline auto intersect(Ray ray, Triangle triangle) -> std::optional<glm::vec3> {
-	const auto t = intersectForDistance(ray, triangle);
-	if (!t || *t < 0)
-		return {};
-
-	static auto i = 0;
-	i++;
-	dump("intersect/" + std::to_string(i) + "_triangles.ply", {triangle});
-	dump("intersect/" + std::to_string(i) + "_ray.ply", {ray.origin, ray.origin + ray.direction * 100.0f});
-
-	return ray.origin + ray.direction * *t;
-}
-
-inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::optional<glm::vec3> {
+inline auto intersectForDistance(Ray ray, const std::vector<Triangle>& triangles) -> std::optional<float> {
 	float minD = std::numeric_limits<float>::max();
 	for (const auto& t : triangles)
 		if (const auto d = intersectForDistance(ray, t))
@@ -81,11 +68,30 @@ inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::o
 				minD = *d;
 	if (minD == std::numeric_limits<float>::max())
 		return {};
+}
 
-	static auto i = 0;
-	i++;
-	dump("intersectV/" + std::to_string(i) + "_triangles.ply", triangles);
-	dump("intersectV/" + std::to_string(i) + "_ray.ply", {Triangle{ray.origin, ray.origin, ray.origin + ray.direction * 100.0f}});
+inline auto intersect(Ray ray, Triangle triangle) -> std::optional<glm::vec3> {
+	const auto t = intersectForDistance(ray, triangle);
+	if (!t || *t < 0)
+		return {};
 
-	return ray.origin + ray.direction * minD;
+	//static auto i = 0;
+	//i++;
+	//dump("intersect/" + std::to_string(i) + "_triangles.ply", {triangle});
+	//dump("intersect/" + std::to_string(i) + "_ray.ply", {ray.origin, ray.origin + ray.direction * 100.0f});
+
+	return ray.origin + ray.direction * *t;
+}
+
+inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::optional<glm::vec3> {
+	const auto t = intersectForDistance(ray, triangles);
+	if (!t || *t < 0)
+		return {};
+
+	//static auto i = 0;
+	//i++;
+	//dump("intersectV/" + std::to_string(i) + "_triangles.ply", triangles);
+	//dump("intersectV/" + std::to_string(i) + "_ray.ply", {Triangle{ray.origin, ray.origin, ray.origin + ray.direction * 100.0f}});
+
+	return ray.origin + ray.direction * *t;
 }

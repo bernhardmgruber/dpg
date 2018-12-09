@@ -85,7 +85,9 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 	const auto startPos = getVoxelPos(start);
 	const auto endPos = getVoxelPos(start);
 
-	const auto ray = Ray{start, normalize(end - start)};
+	const auto delta = end - start;
+	const auto maxT = length(delta);
+	const auto ray = Ray{start, normalize(delta)};
 
 	std::cout << "Tracing from " << start << " (" << startPos << ") to " << end << " (" << endPos << ")\n";
 
@@ -119,9 +121,10 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 			return start;
 		} else if (cat == Chunk::VoxelType::SURFACE) {
 			// TODO: super inefficient, only intersect against voxel triangles
-			if (const auto hit = intersect(ray, chunk->fullTriangles())) {
-				std::cout << "        surface intersection at " << *hit << "\n";
-				return *hit - ray.direction * 0.01f; // move back by some delta to avoid getting stuck in the surface
+			if (const auto t = intersectForDistance(ray, chunk->fullTriangles()); *t && *t > 0 && *t <= maxT) {
+				const auto hit = ray.origin + ray.direction * (*t - 0.01f); // move back by some delta to avoid getting stuck in the surface
+				std::cout << "        surface intersection at " << hit << "\n";
+				return hit;
 			}
 		} else
 			assert(cat == Chunk::VoxelType::AIR);

@@ -129,14 +129,14 @@ void render() {
 	world.render();
 
 	// render coordinate system
-	if (global::coords) {
+	if (global::showCoords) {
 		coordsProgram.use();
 		glUniformMatrix4fv(coordsProgram.uniformLocation("matrix"), 1, false, glm::value_ptr(viewProjectionMatrix));
 		glDrawArrays(GL_LINES, 0, 12);
 	}
 
 	// render normals
-	if (global::normals) {
+	if (global::showNormals) {
 		normalDebuggingProgram.use();
 		glUniformMatrix4fv(normalDebuggingProgram.uniformLocation("uViewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
 		world.render();
@@ -145,9 +145,11 @@ void render() {
 
 	// hud
 	if (global::showHud) {
-		ImGui::Checkbox("coords", &global::coords);
+		ImGui::Checkbox("coords", &global::showCoords);
 		ImGui::Checkbox("polygons", &global::polygonmode);
-		ImGui::Checkbox("normals", &global::normals);
+		ImGui::Checkbox("show triangles", &global::showTriangles);
+		ImGui::Checkbox("show normals", &global::showNormals);
+		ImGui::Checkbox("show chunks", &global::showChunks);
 		ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
 		ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
 
@@ -254,14 +256,6 @@ void destroySDLWindow() {
 
 	glfwDestroyWindow(mainwindow);
 	glfwTerminate();
-}
-
-void showCoordinateSystem(vector<string> args) {
-	global::coords = args[1] == "true";
-}
-
-void showNormals(vector<string> args) {
-	global::normals = args[1] == "true";
 }
 
 int main(int argc, char** argv) try {

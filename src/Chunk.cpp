@@ -1,3 +1,5 @@
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <unordered_map>
 
@@ -71,24 +73,26 @@ Chunk::VoxelType Chunk::categorizeVoxel(glm::ivec3 pos) const {
 }
 
 void Chunk::render() const {
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.value().id());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.value().id());
+	if (global::showTriangles) {
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.value().id());
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.value().id());
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)sizeof(glm::vec3));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (const GLvoid*)sizeof(glm::vec3));
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 
-	glDrawElements(GL_TRIANGLES, (GLsizei)triangles.size() * 3, GL_UNSIGNED_INT, (const GLvoid*)0);
+		glDrawElements(GL_TRIANGLES, (GLsizei)triangles.size() * 3, GL_UNSIGNED_INT, (const GLvoid*)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+	}
 
-	if (global::normals) {
+	if (global::showNormals) {
 		glColor3f(1.0, 0.0, 0.0);
 		glBegin(GL_LINES);
 		for (auto t : triangles) {
@@ -103,6 +107,47 @@ void Chunk::render() const {
 				glVertex3fv((float*)&pos);
 			}
 		}
+		glEnd();
+	}
+
+	if ( true || global::showChunks) {
+		const auto p = glm::vec3{position} * chunkSize;
+		std::array<glm::vec3, 8> corners = { {
+			p,
+			p + glm::vec3{0, 0, chunkSize},
+			p + glm::vec3{chunkSize, 0, chunkSize},
+			p + glm::vec3{chunkSize, 0, 0},
+			p + glm::vec3{0, chunkSize, 0},
+			p + glm::vec3{0, chunkSize, chunkSize},
+			p + glm::vec3{chunkSize, chunkSize, chunkSize},
+			p + glm::vec3{chunkSize, chunkSize, 0}
+		} };
+
+		glColor3f(1.0, 0.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[1]));
+
+		glVertex3fv(glm::value_ptr(corners[1])); glVertex3fv(glm::value_ptr(corners[2]));
+
+		glVertex3fv(glm::value_ptr(corners[2])); glVertex3fv(glm::value_ptr(corners[3]));
+
+		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[3]));
+
+		glVertex3fv(glm::value_ptr(corners[4])); glVertex3fv(glm::value_ptr(corners[5]));
+
+		glVertex3fv(glm::value_ptr(corners[5])); glVertex3fv(glm::value_ptr(corners[6]));
+
+		glVertex3fv(glm::value_ptr(corners[6])); glVertex3fv(glm::value_ptr(corners[7]));
+
+		glVertex3fv(glm::value_ptr(corners[4])); glVertex3fv(glm::value_ptr(corners[7]));
+
+		glVertex3fv(glm::value_ptr(corners[0])); glVertex3fv(glm::value_ptr(corners[4]));
+
+		glVertex3fv(glm::value_ptr(corners[1])); glVertex3fv(glm::value_ptr(corners[5]));
+
+		glVertex3fv(glm::value_ptr(corners[2])); glVertex3fv(glm::value_ptr(corners[6]));
+
+		glVertex3fv(glm::value_ptr(corners[3])); glVertex3fv(glm::value_ptr(corners[7]));
 		glEnd();
 	}
 }

@@ -122,7 +122,7 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 			// TODO: super inefficient, only intersect against voxel triangles
 			if (const auto hit = intersect(ray, chunk->fullTriangles())) {
 				std::cout << "        surface intersection at " << *hit << "\n";
-				return *hit;
+				return *hit - ray.direction * 0.01f; // move back by some delta to avoid getting stuck in the surface
 			}
 		} else
 			assert(cat == Chunk::VoxelType::AIR);

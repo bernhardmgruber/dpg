@@ -2,9 +2,11 @@
 
 namespace global {
 	inline bool showHud = false;
-	inline bool coords = false;
+	inline bool showCoords = false;
 	inline bool polygonmode = false;
-	inline bool normals = false;
+	inline bool showTriangles = true;
+	inline bool showNormals = false;
+	inline bool showChunks = false;
 	inline bool enableChunkCache = false;
 	inline bool freeCamera = false;
 	inline int CAMERA_CHUNK_RADIUS = 3;

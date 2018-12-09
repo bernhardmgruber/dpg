@@ -131,8 +131,10 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 				std::cout << "        surface intersection at " << hit << "\n";
 				return hit;
 			}
-		} else
+		} else {
 			assert(cat == Chunk::VoxelType::AIR);
+			std::cout << "        air\n";
+		}
 
 		if (blockIndex == endPos)
 			break;

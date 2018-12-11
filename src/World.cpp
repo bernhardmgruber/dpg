@@ -15,7 +15,7 @@ namespace {
 	public:
 		CellTraverser(const World& world, Ray ray)
 			: world(world) {
-			cellIndex = floor(ray.origin / blockLength);
+			cellIndex = world.getVoxelPos(ray.origin);
 
 			for (auto i = 0; i < 3; i++) {
 				step[i] = ray.direction[i] >= 0 ? 1 : -1;
@@ -88,7 +88,7 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 		return end;
 
 	const auto startPos = getVoxelPos(start);
-	const auto endPos = getVoxelPos(start);
+	const auto endPos = getVoxelPos(end);
 
 	const auto delta = end - start;
 	const auto maxT = length(delta);
@@ -101,10 +101,7 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 		const glm::ivec3 blockIndex = t.nextIndex();
 		std::cout << "    at block " << blockIndex << "\n";
 
-		auto chunkIndex = blockIndex;
-		chunkIndex.x /= (int)chunkResolution;
-		chunkIndex.y /= (int)chunkResolution;
-		chunkIndex.z /= (int)chunkResolution;
+		const auto chunkIndex = glm::ivec3{floor(glm::vec3{blockIndex} / (float)chunkResolution)}; // TODO: not very elegant
 
 		const Chunk* chunk = chunks.get(chunkIndex);
 		if (!chunk) {
@@ -113,12 +110,12 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 		}
 
 		auto voxelIndex = blockIndex;
-		voxelIndex.x %= (int)chunkResolution;
-		voxelIndex.y %= (int)chunkResolution;
-		voxelIndex.z %= (int)chunkResolution;
-		if (voxelIndex.x < 0) voxelIndex.x += (int)chunkResolution;
-		if (voxelIndex.y < 0) voxelIndex.y += (int)chunkResolution;
-		if (voxelIndex.z < 0) voxelIndex.z += (int)chunkResolution;
+		voxelIndex.x %= chunkResolution;
+		voxelIndex.y %= chunkResolution;
+		voxelIndex.z %= chunkResolution;
+		if (voxelIndex.x < 0) voxelIndex.x += chunkResolution;
+		if (voxelIndex.y < 0) voxelIndex.y += chunkResolution;
+		if (voxelIndex.z < 0) voxelIndex.z += chunkResolution;
 
 		const auto cat = chunk->categorizeVoxel(voxelIndex);
 		if (cat == Chunk::VoxelType::SOLID) {
@@ -157,7 +154,7 @@ glm::vec3 World::getNearestNonSolidPos(const glm::vec3& pos, BoundingBox& box) c
 
 glm::ivec3 World::getChunkPos(const glm::vec3& pos) const {
 	glm::vec3 chunkPos = pos / chunkSize;
-	return glm::ivec3(roundToInt(chunkPos.x), roundToInt(chunkPos.y), roundToInt(chunkPos.z));
+	return glm::ivec3(floor(chunkPos));
 }
 
 glm::ivec3 World::getVoxelPos(const glm::vec3& pos) const {

@@ -20,7 +20,7 @@ namespace {
 			for (auto i = 0; i < 3; i++) {
 				step[i] = ray.direction[i] >= 0 ? 1 : -1;
 				delta[i] = (ray.direction[i] >= 0 ? blockLength : -blockLength) / ray.direction[i];
-				ts[i] = (ray.direction[i] >= 0 ? ((cellIndex[i] + 1) * blockLength - ray.origin[i]) : (ray.origin[i] - cellIndex[i] * blockLength)) / ray.direction[i];
+				nextT[i] = (ray.direction[i] >= 0 ? ((cellIndex[i] + 1) * blockLength - ray.origin[i]) : (ray.origin[i] - cellIndex[i] * blockLength)) / ray.direction[i];
 			}
 		}
 
@@ -28,24 +28,28 @@ namespace {
 			const auto ci = cellIndex;
 
 			const auto smallestIndex = [&] {
-				if (ts.x < ts.y) {
-					if (ts.x < ts.z)
+				if (nextT.x < nextT.y) {
+					if (nextT.x < nextT.z)
 						return 0;
 					else
 						return 2;
 				} else {
-					if (ts.y < ts.z)
+					if (nextT.y < nextT.z)
 						return 1;
 					else
 						return 2;
 				}
 			}();
 
-			t = ts[smallestIndex];
-			ts[smallestIndex] += delta[smallestIndex];
+			t = nextT[smallestIndex];
+			nextT[smallestIndex] += delta[smallestIndex];
 			cellIndex[smallestIndex] += step[smallestIndex];
 
 			return ci;
+		}
+
+		auto distanceFromOrigin() const -> float {
+			return t;
 		}
 
 	private:
@@ -54,9 +58,11 @@ namespace {
 		glm::ivec3 cellIndex;
 		glm::ivec3 step;
 		glm::vec3 delta;
-		glm::vec3 ts;
-		float t;
+		glm::vec3 nextT;
+		float t = 0;
 	};
+
+	inline constexpr auto minDistanceToSurface = 0.4f;
 }
 
 World::World() {}
@@ -96,9 +102,9 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 
 	std::cout << "Tracing from " << start << " (" << startPos << ") to " << end << " (" << endPos << ")\n";
 
-	CellTraverser t{*this, ray};
+	CellTraverser traverser{*this, ray};
 	while (true) {
-		const glm::ivec3 blockIndex = t.nextIndex();
+		const glm::ivec3 blockIndex = traverser.nextIndex();
 		std::cout << "    at block " << blockIndex << "\n";
 
 		const auto chunkIndex = glm::ivec3{floor(glm::vec3{blockIndex} / (float)chunkResolution)}; // TODO: not very elegant
@@ -123,8 +129,8 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 			return start;
 		} else if (cat == Chunk::VoxelType::SURFACE) {
 			// TODO: super inefficient, only intersect against voxel triangles
-			if (const auto t = intersectForDistance(ray, chunk->fullTriangles()); *t && *t > 0 && *t <= maxT) {
-				const auto hit = ray.origin + ray.direction * (*t - 0.01f); // move back by some delta to avoid getting stuck in the surface
+			if (const auto t = intersectForDistance(ray, chunk->fullTriangles()); *t && *t > 0 && (*t - minDistanceToSurface) <= maxT) {
+				const auto hit = ray.origin + ray.direction * (*t - minDistanceToSurface); // move back by some delta to avoid getting stuck in the surface
 				std::cout << "        surface intersection at " << hit << "\n";
 				return hit;
 			}
@@ -133,7 +139,7 @@ auto World::trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3 {
 			std::cout << "        air\n";
 		}
 
-		if (blockIndex == endPos)
+		if (traverser.distanceFromOrigin() > maxT)
 			break;
 	}
 

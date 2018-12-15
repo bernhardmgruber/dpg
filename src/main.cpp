@@ -152,6 +152,8 @@ void render() {
 
 	// hud
 	if (global::showHud) {
+		ImGui::LabelText("pos", "%f %f %f", camera.position.x, camera.position.y, camera.position.z);
+
 		ImGui::Checkbox("coords", &global::showCoords);
 		ImGui::Checkbox("polygons", &global::polygonmode);
 		ImGui::Checkbox("show triangles", &global::showTriangles);
@@ -159,9 +161,9 @@ void render() {
 		ImGui::Checkbox("show chunks", &global::showChunks);
 		ImGui::Checkbox("show voxels", &global::showVoxels);
 		ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
-		ImGui::SliderInt("Octaves", &global::noise::octaves, 1, 10);
+		ImGui::SliderInt("octaves", &global::noise::octaves, 1, 10);
 
-		if (ImGui::Button("Regenerate"))
+		if (ImGui::Button("regenerate"))
 			world.clearChunks();
 
 		ImGui::Checkbox("free camera", &global::freeCamera);
@@ -275,7 +277,7 @@ int main(int argc, char** argv) try {
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
 
-	camera.position -= 5;
+	camera.position += 5;
 
 	while (true) {
 		glfwPollEvents();

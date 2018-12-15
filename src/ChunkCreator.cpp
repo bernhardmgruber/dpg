@@ -21,7 +21,7 @@ namespace {
 		return va + (vb - va) * part;
 	}
 
-	glm::vec3 getNormal(Chunk& c, glm::ivec3 v) {
+	glm::vec3 gradient(Chunk& c, glm::ivec3 v) {
 		glm::vec3 grad;
 		grad.x = c.densityAt(v + glm::ivec3{1, 0, 0}) - c.densityAt(v - glm::ivec3{1, 0, 0});
 		grad.y = c.densityAt(v + glm::ivec3{0, 1, 0}) - c.densityAt(v - glm::ivec3{0, 1, 0});
@@ -82,9 +82,9 @@ namespace {
 								RVertex v;
 								v.position = c.toWorld(vertex);
 
-								const glm::vec3 normal1 = getNormal(c, vec1);
-								const glm::vec3 normal2 = getNormal(c, vec2);
-								v.normal = normalize(interpolate(value1, value2, normal1, normal2));
+								const glm::vec3 g1 = gradient(c, vec1);
+								const glm::vec3 g2 = gradient(c, vec2);
+								v.normal = -normalize(interpolate(value1, value2, g1, g2));
 
 								tri[e] = (unsigned int)c.vertices.size();
 								c.vertices.push_back(v);

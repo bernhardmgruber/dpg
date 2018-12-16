@@ -1,13 +1,17 @@
 #pragma once
 
-#include <set>
-#include <tuple>
-#include <unordered_map>
+#include <glm/vec3.hpp>
+
 #include <vector>
 
 #include "ChunkManager.h"
 
 class Camera;
+
+struct TraceResult {
+	glm::vec3 end;
+	bool collision = false;
+};
 
 class World {
 public:
@@ -19,7 +23,7 @@ public:
 
 	void clearChunks();
 
-	auto trace(glm::vec3 start, glm::vec3 end) const -> glm::vec3;
+	auto trace(glm::vec3 start, glm::vec3 end, bool dump = false) const -> TraceResult;
 
 	auto categorizeWorldPosition(const glm::vec3& pos) const -> Chunk::VoxelType;
 

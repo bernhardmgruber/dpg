@@ -152,8 +152,6 @@ void render() {
 
 	// hud
 	if (global::showHud) {
-		ImGui::LabelText("pos", "%f %f %f", camera.position.x, camera.position.y, camera.position.z);
-
 		ImGui::Checkbox("coords", &global::showCoords);
 		ImGui::Checkbox("polygons", &global::polygonmode);
 		ImGui::Checkbox("show triangles", &global::showTriangles);
@@ -167,6 +165,14 @@ void render() {
 			world.clearChunks();
 
 		ImGui::Checkbox("free camera", &global::freeCamera);
+
+		{
+			ImGui::Begin("Player");
+			ImGui::LabelText("pos", "%f %f %f", camera.position.x, camera.position.y, camera.position.z);
+			ImGui::LabelText("vel", "%f %f %f", player.velocity.x, player.velocity.y, player.velocity.z);
+			ImGui::LabelText("on ground", "%d", player.onGround);
+			ImGui::End();
+		}
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

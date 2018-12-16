@@ -141,10 +141,8 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 
 	std::cout << "Created chunk:         " << chunkPos << '\n';
 
-	dump("chunks/" + std::to_string(c.getId()) + "_triangles.ply", c.fullTriangles());
-
-	const auto edges = boxEdges(c.aabb());
-	dump("chunks/" + std::to_string(c.getId()) + "_aabb.ply", std::vector(begin(edges), end(edges)));
+	//dumpTriangles("chunks/" + std::to_string(c.getId()) + "_triangles.ply", c.fullTriangles());
+	//dumpLines("chunks/" + std::to_string(c.getId()) + "_aabb.ply", boxEdges(c.aabb()));
 
 	return c;
 }

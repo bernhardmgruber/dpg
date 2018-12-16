@@ -64,9 +64,56 @@ struct BoundingBox {
 	glm::vec3 upper;
 };
 
-void dump(const std::filesystem::path& path, const std::vector<Triangle>& triangles);
-void dump(const std::filesystem::path& path, const std::vector<Line>& lines);
-void dump(const std::filesystem::path& path, const std::vector<glm::vec3>& points);
+template<typename Range>
+void dumpTriangles(const std::filesystem::path& path, const Range& triangles) {
+	auto f = openFileOut(path, std::ios::binary);
+	f
+		<< "ply\n"
+		<< "format binary_little_endian 1.0\n"
+		<< "element vertex " << triangles.size() * 3 << "\n"
+		<< "property float x\n"
+		<< "property float y\n"
+		<< "property float z\n"
+		<< "element face " << triangles.size() << "\n"
+		<< "property list uchar uint vertex_indices\n"
+		<< "end_header\n";
+	for (const Triangle& t : triangles)
+		write(f, t);
+
+	const uint8_t vertexCount = 3;
+	for (uint32_t i = 0; i < static_cast<uint32_t>(triangles.size()); i++) {
+		write(f, vertexCount);
+		write(f, (i * 3) + 0);
+		write(f, (i * 3) + 1);
+		write(f, (i * 3) + 2);
+	}
+	f.close();
+}
+
+template<typename Range>
+void dumpLines(const std::filesystem::path& path, const Range& lines) {
+	std::vector<Triangle> triangles;
+	triangles.reserve(lines.size());
+	for (const Line& l : lines)
+		triangles.emplace_back(l[0], l[0], l[1]);
+	dumpTriangles(path, triangles);
+}
+
+template<typename Range>
+void dumpPoints(const std::filesystem::path& path, const Range& points) {
+	auto f = openFileOut(path, std::ios::binary);
+	f
+		<< "ply\n"
+		<< "format binary_little_endian 1.0\n"
+		<< "element vertex " << points.size() << "\n"
+		<< "property float x\n"
+		<< "property float y\n"
+		<< "property float z\n"
+		<< "end_header\n";
+	for (const glm::vec3& p : points)
+		write(f, p);
+	f.close();
+}
 
 inline auto intersectForDistance(Ray ray, Triangle triangle) -> std::optional<float> {
 	const float EPSILON = 1e-7f;

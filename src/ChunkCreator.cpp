@@ -112,7 +112,7 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 		pos /= chunkResolution;
 
 		// return (Chunk::DensityType)perlin.GetValue(pos.x, pos.y, pos.z);
-		return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
+		return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves);
 		//return stb_perlin_turbulence_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
 	};
 

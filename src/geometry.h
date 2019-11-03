@@ -50,6 +50,10 @@ public:
 	auto end() { return values.end(); }
 	auto end() const { return values.end(); }
 
+	auto normal() const -> glm::vec3 {
+		return glm::normalize(glm::cross(values[1] - values[0], values[1] - values[2]));
+	}
+
 private:
 	std::array<glm::vec3, 3> values;
 };
@@ -115,6 +119,8 @@ void dumpPoints(const std::filesystem::path& path, const Range& points) {
 	f.close();
 }
 
+constexpr auto triangleInsideEpsilon = 1.f;
+
 inline auto intersectForDistance(Ray ray, Triangle triangle) -> std::optional<float> {
 	const float EPSILON = 1e-7f;
 	const glm::vec3 vertex0 = triangle[0];
@@ -127,11 +133,11 @@ inline auto intersectForDistance(Ray ray, Triangle triangle) -> std::optional<fl
 	const float f = 1.0f / a;
 	const glm::vec3 s = ray.origin - vertex0;
 	const float u = f * dot(s, h);
-	if (u < 0 || u > 1)
+	if (u < 0 - triangleInsideEpsilon || u > 1 + triangleInsideEpsilon)
 		return {};
 	const glm::vec3 q = cross(s, edge1);
 	const float v = f * dot(ray.direction, q);
-	if (v < 0 || u + v > 1)
+	if (v < 0 - triangleInsideEpsilon || v > 1 + triangleInsideEpsilon || u + v > 1 + triangleInsideEpsilon)
 		return {};
 	return f * dot(edge2, q);
 }
@@ -173,20 +179,41 @@ inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::o
 	return ray.origin + ray.direction * *t;
 }
 
+// from: https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
+inline auto intersectForDistance(BoundingBox box, Ray ray) -> std::optional<float> {
+	const auto dirfrac = 1.0f / ray.direction;
+	const float t1 = (box.lower.x - ray.origin.x) * dirfrac.x;
+	const float t2 = (box.upper.x - ray.origin.x) * dirfrac.x;
+	const float t3 = (box.lower.y - ray.origin.y) * dirfrac.y;
+	const float t4 = (box.upper.y - ray.origin.y) * dirfrac.y;
+	const float t5 = (box.lower.z - ray.origin.z) * dirfrac.z;
+	const float t6 = (box.upper.z - ray.origin.z) * dirfrac.z;
+
+	const float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+	const float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+	if (tmax < 0)
+		return {};
+
+	if (tmin > tmax)
+		return {};
+
+	return tmin;
+}
+
 inline auto boxVertices(BoundingBox box) -> std::array<glm::vec3, 8> {
 	const auto& l = box.lower;
 	const auto& u = box.upper;
 
 	const auto vertices = std::array<glm::vec3, 8>{
-		glm::vec3{ l[0], l[1], l[2] },
-		glm::vec3{ l[0], l[1], u[2] },
-		glm::vec3{ l[0], u[1], l[2] },
-		glm::vec3{ l[0], u[1], u[2] },
-		glm::vec3{ u[0], l[1], l[2] },
-		glm::vec3{ u[0], l[1], u[2] },
-		glm::vec3{ u[0], u[1], l[2] },
-		glm::vec3{ u[0], u[1], u[2] }
-	};
+		glm::vec3{l[0], l[1], l[2]},
+		glm::vec3{l[0], l[1], u[2]},
+		glm::vec3{l[0], u[1], l[2]},
+		glm::vec3{l[0], u[1], u[2]},
+		glm::vec3{u[0], l[1], l[2]},
+		glm::vec3{u[0], l[1], u[2]},
+		glm::vec3{u[0], u[1], l[2]},
+		glm::vec3{u[0], u[1], u[2]}};
 
 	return vertices;
 }
@@ -195,21 +222,20 @@ inline auto boxTriangles(BoundingBox box) -> std::array<Triangle, 12> {
 	const auto v = boxVertices(box);
 
 	const auto triangles = std::array<Triangle, 12>{
-		Triangle{ v[2], v[6], v[0] },
-		Triangle{ v[0], v[6], v[4] },
-		Triangle{ v[6], v[5], v[4] },
-		Triangle{ v[4], v[5], v[0] },
+		Triangle{v[2], v[6], v[0]},
+		Triangle{v[0], v[6], v[4]},
+		Triangle{v[6], v[5], v[4]},
+		Triangle{v[4], v[5], v[0]},
 
-		Triangle{ v[5], v[1], v[0] },
-		Triangle{ v[0], v[1], v[2] },
-		Triangle{ v[1], v[3], v[2] },
-		Triangle{ v[2], v[3], v[6] },
+		Triangle{v[5], v[1], v[0]},
+		Triangle{v[0], v[1], v[2]},
+		Triangle{v[1], v[3], v[2]},
+		Triangle{v[2], v[3], v[6]},
 
-		Triangle{ v[3], v[7], v[6] },
-		Triangle{ v[6], v[7], v[5] },
-		Triangle{ v[7], v[3], v[5] },
-		Triangle{ v[5], v[3], v[1] }
-	};
+		Triangle{v[3], v[7], v[6]},
+		Triangle{v[6], v[7], v[5]},
+		Triangle{v[7], v[3], v[5]},
+		Triangle{v[5], v[3], v[1]}};
 
 	return triangles;
 }
@@ -218,21 +244,20 @@ inline auto boxEdges(BoundingBox box) -> std::array<Line, 12> {
 	const auto v = boxVertices(box);
 
 	const auto triangles = std::array<Line, 12>{
-		Line{ v[0], v[1] },
-		Line{ v[0], v[2] },
-		Line{ v[1], v[3] },
-		Line{ v[2], v[3] },
+		Line{v[0], v[1]},
+		Line{v[0], v[2]},
+		Line{v[1], v[3]},
+		Line{v[2], v[3]},
 
-		Line{ v[4], v[5] },
-		Line{ v[4], v[6] },
-		Line{ v[5], v[7] },
-		Line{ v[6], v[7] },
+		Line{v[4], v[5]},
+		Line{v[4], v[6]},
+		Line{v[5], v[7]},
+		Line{v[6], v[7]},
 
-		Line{ v[0], v[4] },
-		Line{ v[1], v[5] },
-		Line{ v[2], v[6] },
-		Line{ v[3], v[7] }
-	};
+		Line{v[0], v[4]},
+		Line{v[1], v[5]},
+		Line{v[2], v[6]},
+		Line{v[3], v[7]}};
 
 	return triangles;
 }

@@ -5,7 +5,8 @@ namespace global {
 	inline bool showCoords = false;
 	inline bool polygonmode = false;
 	inline bool showTriangles = true;
-	inline bool showNormals = false;
+	inline bool showVertexNormals = false;
+	inline bool showTriangleNormals = false;
 	inline bool showChunks = false;
 	inline bool showVoxels = false;
 	inline bool enableChunkCache = false;

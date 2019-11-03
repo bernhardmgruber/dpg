@@ -92,6 +92,7 @@ public:
 	unsigned int caseIndexFromVoxel(std::array<DensityType, 8> values) const;
 
 	auto aabb() const -> BoundingBox;
+	auto voxelAabb(glm::ivec3 localIndex) const -> BoundingBox;
 	auto fullTriangles() const -> std::vector<Triangle>;
 
 	std::vector<DensityType> densities;

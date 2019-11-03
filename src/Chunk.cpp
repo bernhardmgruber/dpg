@@ -106,7 +106,24 @@ void Chunk::render() const {
 }
 
 void Chunk::renderAuxiliary() const {
-	if (global::showNormals) {
+	if (global::showTriangleNormals) {
+		glColor3f(1.0, 1.0, 0.0);
+		glBegin(GL_LINES);
+		for (auto t : triangles) {
+			const auto v0 = vertices[t[0]].position;
+			const auto v1 = vertices[t[1]].position;
+			const auto v2 = vertices[t[2]].position;
+			const auto normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+			auto pos = (v0 + v1 + v2) / 3.0f;
+
+			glVertex3fv((float*)&pos);
+			pos = pos + (normal * 0.5f);
+			glVertex3fv((float*)&pos);
+		}
+		glEnd();
+	}
+
+	if (global::showVertexNormals) {
 		glColor3f(1.0, 0.0, 0.0);
 		glBegin(GL_LINES);
 		for (auto t : triangles) {
@@ -117,7 +134,7 @@ void Chunk::renderAuxiliary() const {
 
 
 				glVertex3fv((float*)&pos);
-				pos = pos + (normal * 0.05f);
+				pos = pos + (normal * 0.5f);
 				glVertex3fv((float*)&pos);
 			}
 		}
@@ -144,8 +161,7 @@ void Chunk::renderAuxiliary() const {
 					else
 						continue;
 
-					const auto blockLower = chunkLower + glm::vec3{bi} * blockLength;
-					drawBoxEdges({ blockLower, blockLower + blockLength });
+					drawBoxEdges(voxelAabb(bi));
 				}
 			}
 		}
@@ -186,14 +202,14 @@ float Chunk::densityAt(glm::ivec3 localIndex) const {
 
 std::array<Chunk::DensityType, 8> Chunk::densityCubeAt(glm::ivec3 localIndex) const {
 	std::array<DensityType, 8> values;
-	values[0] = densityAt(localIndex + glm::ivec3{ 0, 0, 0 });
-	values[1] = densityAt(localIndex + glm::ivec3{ 0, 0, 1 });
-	values[2] = densityAt(localIndex + glm::ivec3{ 1, 0, 1 });
-	values[3] = densityAt(localIndex + glm::ivec3{ 1, 0, 0 });
-	values[4] = densityAt(localIndex + glm::ivec3{ 0, 1, 0 });
-	values[5] = densityAt(localIndex + glm::ivec3{ 0, 1, 1 });
-	values[6] = densityAt(localIndex + glm::ivec3{ 1, 1, 1 });
-	values[7] = densityAt(localIndex + glm::ivec3{ 1, 1, 0 });
+	values[0] = densityAt(localIndex + glm::ivec3{0, 0, 0});
+	values[1] = densityAt(localIndex + glm::ivec3{0, 0, 1});
+	values[2] = densityAt(localIndex + glm::ivec3{1, 0, 1});
+	values[3] = densityAt(localIndex + glm::ivec3{1, 0, 0});
+	values[4] = densityAt(localIndex + glm::ivec3{0, 1, 0});
+	values[5] = densityAt(localIndex + glm::ivec3{0, 1, 1});
+	values[6] = densityAt(localIndex + glm::ivec3{1, 1, 1});
+	values[7] = densityAt(localIndex + glm::ivec3{1, 1, 0});
 	return values;
 }
 
@@ -215,7 +231,13 @@ unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const 
 auto Chunk::aabb() const -> BoundingBox {
 	const auto l = lower();
 	const auto u = l + chunkSize;
-	return { l, u };
+	return {l, u};
+}
+
+auto Chunk::voxelAabb(glm::ivec3 localIndex) const -> BoundingBox {
+	const auto l = lower() + glm::vec3(localIndex);
+	const auto u = l + blockLength;
+	return {l, u};
 }
 
 auto Chunk::fullTriangles() const -> std::vector<Triangle> {

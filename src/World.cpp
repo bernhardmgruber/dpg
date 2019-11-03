@@ -1,3 +1,5 @@
+#include <Windows.h>
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -10,19 +12,23 @@
 
 #include "World.h"
 
+
 namespace {
+	auto voxelPos(glm::vec3 pos, float voxelLength) -> glm::ivec3 {
+		auto chunkPos = pos / voxelLength;
+		return glm::ivec3(floor(chunkPos));
+	}
+
 	// based on http://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/grid
 	class CellTraverser {
 	public:
-		CellTraverser(const World& world, Ray ray)
-			: world(world) {
-			cellIndex = world.getVoxelPos(ray.origin);
-
+		CellTraverser(float voxelLength, Ray ray)
+			: cellIndex(voxelPos(ray.origin, voxelLength)) {
 			for (auto i = 0; i < 3; i++) {
 				step[i] = ray.direction[i] >= 0 ? 1 : -1;
-				delta[i] = step[i] * blockLength / ray.direction[i];
-				const auto lower = cellIndex[i] * blockLength;
-				const auto upper = (cellIndex[i] + 1) * blockLength;
+				delta[i] = step[i] * voxelLength / ray.direction[i];
+				const auto lower = cellIndex[i] * voxelLength;
+				const auto upper = (cellIndex[i] + 1) * voxelLength;
 				nextT[i] = ((ray.direction[i] >= 0 ? upper : lower) - ray.origin[i]) / ray.direction[i];
 			}
 		}
@@ -56,8 +62,6 @@ namespace {
 		}
 
 	private:
-		const World& world;
-
 		glm::ivec3 cellIndex;
 		glm::ivec3 step;
 		glm::vec3 delta;
@@ -65,7 +69,7 @@ namespace {
 		float t = 0;
 	};
 
-	inline constexpr auto minDistanceToSurface = 0.4f;
+	inline constexpr auto minDistanceToSurface = 0.1f;
 }
 
 World::World() {}
@@ -103,27 +107,27 @@ auto World::trace(const glm::vec3 start, const glm::vec3 end, bool dump) const -
 	const auto maxT = length(delta);
 	const auto ray = Ray{start, normalize(delta)};
 
-	//static auto counter = 0;
-	//counter++;
-	//if (dump)
-	//	dumpLines("trace" + std::to_string(counter) + "/line.ply", std::vector{ Line{ start, end }});
+	//dump = GetKeyState('D') & 0x8000;
 
-	std::cout << "Tracing from " << start << " (" << startPos << ") to " << end << " (" << endPos << ")\n";
+	static auto counter = 0;
+	counter++;
+	if (dump)
+		dumpLines("trace" + std::to_string(counter) + "/line.ply", std::vector{ Line{ start, end }});
+
+	std::cout << "Tracing from " << start << " to " << end << "\n";
 
 
 	int i = 0;
-	CellTraverser traverser{*this, ray};
+	CellTraverser traverser{blockLength, ray};
 	while (true) {
 		i++;
 
 		const glm::ivec3 blockIndex = traverser.nextIndex();
 		std::cout << "    at block " << blockIndex << "\n";
 
-		const auto chunkIndex = glm::ivec3{floor(glm::vec3{blockIndex} / (float)chunkResolution)}; // TODO: not very elegant
-
-		const Chunk* chunk = chunks.get(chunkIndex);
+		const Chunk* chunk = chunks.get(blockIndex / chunkResolution);
 		if (!chunk) {
-			std::cout << "        no chunk, we stay at " << start << "\n";
+			//std::cout << "        no chunk, we stay at " << start << "\n";
 			return { start, false };
 		}
 
@@ -135,39 +139,31 @@ auto World::trace(const glm::vec3 start, const glm::vec3 end, bool dump) const -
 		if (voxelIndex.y < 0) voxelIndex.y += chunkResolution;
 		if (voxelIndex.z < 0) voxelIndex.z += chunkResolution;
 
-		//if (dump) {
-		//	const auto& l = chunk->lower();
-		//	dumpLines("trace" + std::to_string(counter) + "/aabb_" + std::to_string(i) + ".ply", boxEdges({ l + glm::vec3{voxelIndex}, l + glm::vec3{voxelIndex} + 1.0f }));
-		//}
+		if (dump) {
+			const auto& l = chunk->lower();
+			dumpLines("trace" + std::to_string(counter) + "/aabb_" + std::to_string(i) + ".ply", boxEdges({ l + glm::vec3{voxelIndex}, l + glm::vec3{voxelIndex} + 1.0f }));
+		}
 
 		const auto cat = chunk->categorizeVoxel(voxelIndex);
 		if (cat == Chunk::VoxelType::SOLID) {
 			// this is problematic, because we must have missed a surface intersection
-			std::cerr << "tracing inside solid block\n";
+			std::cerr << "    ERROR: tracing inside solid block\n";
 			return { start, false };
 		} else if (cat == Chunk::VoxelType::SURFACE) {
-			const auto& triangles = chunk->fullTriangles();
-
-			//if (dump)
-			//	dumpTriangles("trace" + std::to_string(counter) + "/triangles_" + std::to_string(i) + ".ply", triangles);
-
-			// TODO: super inefficient, only intersect against voxel triangles
-			if (const auto t = intersectForDistance(ray, triangles); t && *t > 0 && (*t - minDistanceToSurface) <= maxT) {
-				const auto hit = ray.origin + ray.direction * (*t - minDistanceToSurface); // move back by some delta to avoid getting stuck in the surface
-				std::cout << "        surface intersection at " << hit << "\n";
-				return { hit, true};
-			} else
-				std::cout << "        surface but no intersection\n";
+			const auto hit = ray.origin + ray.direction * std::min((traverser.distanceFromOrigin() - minDistanceToSurface), maxT); // move back by some delta to avoid getting stuck in the surface
+			std::cout << "        surface intersection at " << hit << "\n";
+			assert(categorizeWorldPosition(hit) == Chunk::VoxelType::AIR);
+			return { hit, true};
 		} else {
 			assert(cat == Chunk::VoxelType::AIR);
-			std::cout << "        air\n";
+			//std::cout << "        air\n";
 		}
 
 		if (blockIndex == endPos || traverser.distanceFromOrigin() > maxT)
 			break;
 	}
 
-	std::cout << "        no intersection, reaching " << end << "\n";
+	//std::cout << "        no intersection, reaching " << end << "\n";
 
 	return { end, false };
 }
@@ -183,13 +179,11 @@ glm::vec3 World::getNearestNonSolidPos(const glm::vec3& pos, BoundingBox& box) c
 }
 
 glm::ivec3 World::getChunkPos(const glm::vec3& pos) const {
-	glm::vec3 chunkPos = pos / chunkSize;
-	return glm::ivec3(floor(chunkPos));
+	return voxelPos(pos, chunkSize);
 }
 
 glm::ivec3 World::getVoxelPos(const glm::vec3& pos) const {
-	glm::vec3 blockPos = pos / blockLength;
-	return glm::ivec3(floor(blockPos));
+	return voxelPos(pos, blockLength);
 }
 
 void World::buildRenderList(const glm::ivec3& cameraChunkPos) {

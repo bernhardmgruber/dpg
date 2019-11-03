@@ -137,12 +137,11 @@ void render() {
 	}
 
 	// render normals
-	if (global::showNormals) {
+	if (global::showVertexNormals) {
 		normalDebuggingProgram.use();
 		glUniformMatrix4fv(normalDebuggingProgram.uniformLocation("uViewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
 		world.render();
 	}
-
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(projectionMatrix));
@@ -155,7 +154,8 @@ void render() {
 		ImGui::Checkbox("coords", &global::showCoords);
 		ImGui::Checkbox("polygons", &global::polygonmode);
 		ImGui::Checkbox("show triangles", &global::showTriangles);
-		ImGui::Checkbox("show normals", &global::showNormals);
+		ImGui::Checkbox("show triangle normals", &global::showTriangleNormals);
+		ImGui::Checkbox("show vertex normals", &global::showVertexNormals);
 		ImGui::Checkbox("show chunks", &global::showChunks);
 		ImGui::Checkbox("show voxels", &global::showVoxels);
 		ImGui::SliderInt("chunk radius", &global::CAMERA_CHUNK_RADIUS, 1, 10);
@@ -283,7 +283,7 @@ int main(int argc, char** argv) try {
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
 
-	camera.position += 5;
+	camera.position.z += 5;
 
 	while (true) {
 		glfwPollEvents();

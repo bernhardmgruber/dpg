@@ -12,7 +12,7 @@
 
 #include "Camera.h"
 #include "Player.h"
-#include "Timer.h"
+#include "timed.h"
 #include "World.h"
 #include "globals.h"
 #include "opengl/Program.h"
@@ -32,7 +32,6 @@ gl::Program shaderProgram;
 gl::Program normalDebuggingProgram;
 gl::Program coordsProgram;
 
-Timer timer;
 World world;
 Camera camera;
 Player player;
@@ -73,7 +72,7 @@ bool initGL() {
 
 void update(double interval) {
 	std::stringstream caption;
-	caption << windowCaption << " @ " << fixed << setprecision(1) << timer.tps << " FPS";
+	caption << windowCaption << " @ " << fixed << setprecision(1) << 1 / interval << " FPS";
 	glfwSetWindowTitle(mainwindow, caption.str().c_str());
 
 	// camera
@@ -298,14 +297,16 @@ int main(int argc, char** argv) try {
 	camera.position.x += 0.5f;
 	camera.position.y += 0.5f;
 
+	auto lastTime = std::chrono::high_resolution_clock::now();
 	while (true) {
 		glfwPollEvents();
 
 		if (glfwGetKey(mainwindow, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(mainwindow))
 			break;
 
-		timer.tick();
-		update(timer.interval);
+		const auto now = std::chrono::high_resolution_clock::now();
+		update(std::chrono::duration_cast<std::chrono::duration<double>>(now - lastTime).count());
+		lastTime = now;
 		render();
 		glfwSwapBuffers(mainwindow);
 	}

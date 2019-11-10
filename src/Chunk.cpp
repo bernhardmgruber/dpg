@@ -3,7 +3,6 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "Timer.h"
 #include "globals.h"
 
 #include "Chunk.h"

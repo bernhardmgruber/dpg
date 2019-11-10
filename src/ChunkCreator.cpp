@@ -120,8 +120,6 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	const unsigned int size = chunkResolution + 1 + 2; // + 1 for corners and + 2 for marging
 	c.densities.resize(size * size * size);
 
-	//Timer timer;
-
 	for (unsigned int x = 0; x < size; x++) {
 		for (unsigned int y = 0; y < size; y++) {
 			for (unsigned int z = 0; z < size; z++) {
@@ -131,13 +129,11 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 		}
 	}
 
-	//timer.tick();
 	//cout << "Noise took " << timer.interval << " seconds" << endl;
 
 	// create geometry using marching cubes
 	marchChunk(c);
 
-	//timer.tick();
 	//cout << "Marching took " << timer.interval << " seconds" << endl;
 
 	std::cout << "Created chunk:         " << chunkPos << '\n';

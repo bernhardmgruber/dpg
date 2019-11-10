@@ -36,24 +36,27 @@ void Camera::update(double t, float xDelta, float yDelta, uint8_t directions) {
 		position.z -= fTmpMoveSens;
 
 	// TODO(bernh): If strafing and moving reduce speed to keep total move per frame constant
+	const auto cosYaw = std::cos(degToRad(yaw)) * fTmpMoveSens;
+	const auto sinYaw = std::sin(degToRad(yaw)) * fTmpMoveSens;
+
 	if (directions & Forward) {
-		position.x += std::cos(degToRad(yaw)) * fTmpMoveSens;
-		position.y += std::sin(degToRad(yaw)) * fTmpMoveSens;
+		position.x += cosYaw;
+		position.y += sinYaw;
 	}
 
 	if (directions & Backward) {
-		position.x -= std::cos(degToRad(yaw)) * fTmpMoveSens;
-		position.y -= std::sin(degToRad(yaw)) * fTmpMoveSens;
+		position.x -= cosYaw;
+		position.y -= sinYaw;
 	}
 
 	if (directions & Left) {
-		position.x += std::cos(degToRad(yaw + 90.0f)) * fTmpMoveSens;
-		position.y += std::sin(degToRad(yaw + 90.0f)) * fTmpMoveSens;
+		position.x -= sinYaw;
+		position.y += cosYaw;
 	}
 
 	if (directions & Right) {
-		position.x += std::cos(degToRad(yaw - 90.0f)) * fTmpMoveSens;
-		position.y += std::sin(degToRad(yaw - 90.0f)) * fTmpMoveSens;
+		position.x += sinYaw;
+		position.y -= cosYaw;
 	}
 }
 

@@ -93,9 +93,10 @@ void update(double interval) {
 	if (glfwGetKey(mainwindow, GLFW_KEY_A) == GLFW_PRESS) moveFlags |= Left;
 	if (glfwGetKey(mainwindow, GLFW_KEY_D) == GLFW_PRESS) moveFlags |= Right;
 
-	if (global::freeCamera)
+	if (global::freeCamera) {
 		camera.update(interval, delta.x, delta.y, moveFlags);
-	else
+		player.velocity = {};
+	} else
 		player.update(interval, delta.x, delta.y, moveFlags, world, camera);
 
 	world.update(camera);
@@ -171,6 +172,16 @@ void render() {
 			ImGui::LabelText("pos", "%f %f %f", camera.position.x, camera.position.y, camera.position.z);
 			ImGui::LabelText("vel", "%f %f %f", player.velocity.x, player.velocity.y, player.velocity.z);
 			ImGui::LabelText("on ground", "%d", player.onGround);
+			ImGui::End();
+		}
+
+		{
+			const auto voxelPos = world.getVoxelPos(camera.position);
+			const auto cat = world.categorizeWorldPosition(camera.position);
+
+			ImGui::Begin("Voxel");
+			ImGui::LabelText("pos", "%d %d %d", voxelPos.x, voxelPos.y, voxelPos.z);
+			ImGui::LabelText("cat", "%d", cat);
 			ImGui::End();
 		}
 
@@ -283,7 +294,9 @@ int main(int argc, char** argv) try {
 
 	resizeGLScene(mainwindow, initialWindowWidth, initialWindowHeight);
 
-	camera.position.z += 5;
+	camera.position.z += 5.0f;
+	camera.position.x += 0.5f;
+	camera.position.y += 0.5f;
 
 	while (true) {
 		glfwPollEvents();

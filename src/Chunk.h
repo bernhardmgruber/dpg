@@ -28,9 +28,7 @@ struct ChunkMemoryFootprint final {
 	}
 };
 
-inline constexpr auto blockLength = 1.0f;
-inline constexpr auto chunkResolution = 16;                      // The number of voxels along one axis. chunkResolution + 1 is the edge length of the density cube (a cube of voxels).
-inline constexpr auto chunkSize = blockLength * chunkResolution; // The size of the chunk in world units.
+inline constexpr auto chunkResolution = 16;
 
 using IdType = uint64_t;
 
@@ -44,7 +42,8 @@ public:
 	enum class VoxelType {
 		SOLID,
 		SURFACE,
-		AIR
+		AIR,
+		UNKNOWN
 	};
 
 	Chunk() = default;

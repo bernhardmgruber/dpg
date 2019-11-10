@@ -23,3 +23,9 @@ template<typename T>
 T radToDeg(T rad) {
 	return (rad / boost::math::constants::pi<T>()) * (T)180.0;
 }
+
+template <typename T>
+inline T interpolate(float da, float db, T va, T vb) {
+	const float part = fabs(da) / (fabs(da) + fabs(db));
+	return va + (vb - va) * part;
+}

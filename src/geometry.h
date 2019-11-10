@@ -179,26 +179,29 @@ inline auto intersect(Ray ray, const std::vector<Triangle>& triangles) -> std::o
 	return ray.origin + ray.direction * *t;
 }
 
-// from: https://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms
-inline auto intersectForDistance(BoundingBox box, Ray ray) -> std::optional<float> {
+// from: https://medium.com/@bromanz/another-view-on-the-classic-ray-aabb-intersection-algorithm-for-bvh-traversal-41125138b525
+// with nan check from: https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
+inline auto intersectBox(BoundingBox box, Ray ray) -> std::optional<std::pair<float, float>> {
 	const auto dirfrac = 1.0f / ray.direction;
-	const float t1 = (box.lower.x - ray.origin.x) * dirfrac.x;
-	const float t2 = (box.upper.x - ray.origin.x) * dirfrac.x;
-	const float t3 = (box.lower.y - ray.origin.y) * dirfrac.y;
-	const float t4 = (box.upper.y - ray.origin.y) * dirfrac.y;
-	const float t5 = (box.lower.z - ray.origin.z) * dirfrac.z;
-	const float t6 = (box.upper.z - ray.origin.z) * dirfrac.z;
+	const auto t0 = (box.lower - ray.origin) * dirfrac;
+	const auto t1 = (box.upper - ray.origin) * dirfrac;
 
-	const float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
-	const float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+	auto tmin = std::min(t0[0], t1[0]);
+	auto tmax = std::max(t0[0], t1[0]);
+	for (auto i : {1, 2}) {
+		tmin = std::max(tmin, std::min(std::min(t0[i], t1[i]), tmax));
+		tmax = std::min(tmax, std::max(std::max(t0[i], t1[i]), tmin));
+	}
 
-	if (tmax < 0)
-		return {};
+	if (tmax > std::max(tmin, 0.0f))
+		return std::pair{tmin, tmax};
+	return {};
+}
 
-	if (tmin > tmax)
-		return {};
-
-	return tmin;
+inline auto clamp(glm::vec3 p, BoundingBox box) {
+	for (auto i = 0; i < 3; i++)
+		p[i] = std::clamp(p[i], box.lower[i], box.upper[i]);
+	return p;
 }
 
 inline auto boxVertices(BoundingBox box) -> std::array<glm::vec3, 8> {

@@ -10,16 +10,12 @@
 
 #include "ChunkCreator.h"
 #include "globals.h"
+#include "mathlib.h"
 
 #include "tables.inc"
 
 namespace {
 	constexpr auto initialTriangleMapSize = 3000;
-
-	glm::vec3 interpolate(float da, float db, glm::vec3 va, glm::vec3 vb) {
-		const float part = fabs(da) / (fabs(da) + fabs(db));
-		return va + (vb - va) * part;
-	}
 
 	glm::vec3 gradient(Chunk& c, glm::ivec3 v) {
 		glm::vec3 grad;
@@ -40,9 +36,9 @@ namespace {
 
 					const auto caseIndex = c.caseIndexFromVoxel(values);
 					if (caseIndex == 255)
-						continue; // solid block
+						continue; // solid voxel
 					if (caseIndex == 0)
-						continue; // air block
+						continue; // air voxel
 
 					const int numTriangles = case_to_numpolys[caseIndex];
 
@@ -72,7 +68,7 @@ namespace {
 								}
 							}();
 
-							const glm::vec3 vertex = interpolate(value1, value2, vec1, vec2);
+							const glm::vec3 vertex = interpolate(value1, value2, glm::vec3(vec1), glm::vec3(vec2));
 
 							// lookup this vertex
 							if (auto it = vertexMap.find(vertex); it != vertexMap.end())
@@ -82,6 +78,7 @@ namespace {
 								RVertex v;
 								v.position = c.toWorld(vertex);
 
+								// the gradient points towards higher densities (it points into the solidness), therefore invert the normal
 								const glm::vec3 g1 = gradient(c, vec1);
 								const glm::vec3 g2 = gradient(c, vec2);
 								v.normal = -normalize(interpolate(value1, value2, g1, g2));
@@ -92,6 +89,9 @@ namespace {
 								vertexMap[v.position] = tri[e];
 							}
 						}
+
+						// reorient triangles
+						std::swap(tri[1], tri[2]);
 
 						c.triangles.push_back(tri);
 					}
@@ -109,10 +109,11 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	//perlin.SetFrequency(0.3);
 
 	auto noise = [](glm::vec3 pos) {
-		pos /= chunkResolution;
+		//pos /= chunkResolution;
 
+		return -pos.z + 0.5;
 		// return (Chunk::DensityType)perlin.GetValue(pos.x, pos.y, pos.z);
-		return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves);
+		//return stb_perlin_fbm_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves);
 		//return stb_perlin_turbulence_noise3(pos.x, pos.y, pos.z, 2.0f, 0.5f, global::noise::octaves, 0, 0, 0);
 	};
 
@@ -124,8 +125,8 @@ auto ChunkCreator::getChunk(const glm::ivec3& chunkPos) -> Chunk {
 	for (unsigned int x = 0; x < size; x++) {
 		for (unsigned int y = 0; y < size; y++) {
 			for (unsigned int z = 0; z < size; z++) {
-				glm::vec3 world = c.toWorld({x, y, z});
-				c.densities[x * size * size + y * size + z] = noise(world);
+				glm::vec3 world = c.toWorld(glm::vec3{x, y, z} - glm::vec3{1});
+				c.densities[z * size * size + y * size + x] = noise(world);
 			}
 		}
 	}

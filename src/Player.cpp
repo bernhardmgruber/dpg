@@ -4,8 +4,8 @@
 #include "World.h"
 
 namespace {
-	constexpr auto gravity = 7.0f;
-	constexpr auto jumpStrength = 9.0f;
+	constexpr auto gravity = 10.0f;
+	constexpr auto jumpStrength = 15.0f;
 }
 
 void Player::update(double t, float xDelta, float yDelta, uint8_t directions, const World& world, Camera& camera) {
@@ -14,6 +14,8 @@ void Player::update(double t, float xDelta, float yDelta, uint8_t directions, co
 
 	if (onGround && up)
 		velocity.z += jumpStrength;
+	//if (!onGround)
+	//	directions = 0; // we cannot alter direction mid air
 
 	const auto oldPos = camera.position;
 	camera.update(t, xDelta, yDelta, directions);

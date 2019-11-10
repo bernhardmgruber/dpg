@@ -41,20 +41,16 @@ Chunk::Chunk(glm::ivec3 index)
 Chunk::~Chunk() = default;
 
 glm::vec3 Chunk::toWorld(glm::vec3 voxel) const {
-	return lower() + blockLength * voxel;
+	return lower() + voxel;
 }
 
 glm::ivec3 Chunk::toVoxelCoord(const glm::vec3& v) const {
-	glm::vec3 rel = (v - lower()) / chunkSize * (float)chunkResolution;
-
-	glm::ivec3 blockCoord(rel);
-
+	glm::vec3 rel = v - lower();
 	assert(rel.x >= 0 && rel.x < 16);
 	assert(rel.y >= 0 && rel.y < 16);
 	assert(rel.z >= 0 && rel.z < 16);
-
-	return blockCoord;
-}
+	return glm::ivec3{rel};
+	}
 
 IdType Chunk::getId() const {
 	return id;
@@ -65,7 +61,7 @@ glm::ivec3 Chunk::chunkIndex() const {
 }
 
 glm::vec3 Chunk::lower() const {
-	return glm::vec3{index} * chunkSize;
+	return glm::vec3{index * chunkResolution};
 }
 
 Chunk::VoxelType Chunk::categorizeWorldPosition(const glm::vec3& pos) const {
@@ -149,18 +145,14 @@ void Chunk::renderAuxiliary() const {
 	if (global::showVoxels) {
 		const auto chunkLower = lower();
 
+		glColor3f(1, 0, 0);
 		glm::ivec3 bi;
 		for (bi.x = 0; bi.x < chunkResolution; bi.x++) {
 			for (bi.y = 0; bi.y < chunkResolution; bi.y++) {
 				for (bi.z = 0; bi.z < chunkResolution; bi.z++) {
 					const auto cat = categorizeVoxel(bi);
-					if (cat == VoxelType::AIR)
-						glColor3f(0, 0, 1);
-					else if (cat == VoxelType::SURFACE)
-						glColor3f(1, 0, 0);
-					else
+					if (cat != VoxelType::SURFACE)
 						continue;
-
 					drawBoxEdges(voxelAabb(bi));
 				}
 			}
@@ -197,7 +189,7 @@ float Chunk::densityAt(glm::ivec3 localIndex) const {
 	localIndex += 1;
 
 	constexpr auto side = chunkResolution + 1 + 2;
-	return densities[localIndex.x * side * side + localIndex.y * side + localIndex.z];
+	return densities[localIndex.z * side * side + localIndex.y * side + localIndex.x];
 }
 
 std::array<Chunk::DensityType, 8> Chunk::densityCubeAt(glm::ivec3 localIndex) const {
@@ -230,14 +222,12 @@ unsigned int Chunk::caseIndexFromVoxel(std::array<DensityType, 8> values) const 
 
 auto Chunk::aabb() const -> BoundingBox {
 	const auto l = lower();
-	const auto u = l + chunkSize;
-	return {l, u};
+	return {l, l + (float)chunkResolution};
 }
 
 auto Chunk::voxelAabb(glm::ivec3 localIndex) const -> BoundingBox {
 	const auto l = lower() + glm::vec3(localIndex);
-	const auto u = l + blockLength;
-	return {l, u};
+	return {l, l + 1.0f};
 }
 
 auto Chunk::fullTriangles() const -> std::vector<Triangle> {

@@ -70,6 +70,8 @@ public:
 	VoxelType categorizeWorldPosition(const glm::vec3& pos) const;
 	VoxelType categorizeVoxel(glm::ivec3 pos) const;
 
+	void march();
+
 	/**
 	* Renders the chunk.
 	*/

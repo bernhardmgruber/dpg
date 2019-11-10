@@ -1,15 +1,18 @@
+#include "Chunk.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 #include <unordered_map>
 
 #include "globals.h"
-
-#include "Chunk.h"
+#include "tables.inc"
 
 using namespace std;
 
 namespace {
+	constexpr auto initialTriangleMapSize = 3000;
+
 	void drawBoxEdges(BoundingBox box) {
 		const auto edges = boxEdges(box);
 
@@ -18,6 +21,14 @@ namespace {
 			for (const auto& v : e)
 				glVertex3fv(glm::value_ptr(v));
 		glEnd();
+	}
+
+	glm::vec3 gradient(Chunk& c, glm::ivec3 v) {
+		glm::vec3 grad;
+		grad.x = c.densityAt(v + glm::ivec3{1, 0, 0}) - c.densityAt(v - glm::ivec3{1, 0, 0});
+		grad.y = c.densityAt(v + glm::ivec3{0, 1, 0}) - c.densityAt(v - glm::ivec3{0, 1, 0});
+		grad.z = c.densityAt(v + glm::ivec3{0, 0, 1}) - c.densityAt(v - glm::ivec3{0, 0, 1});
+		return normalize(grad);
 	}
 }
 
@@ -77,6 +88,84 @@ Chunk::VoxelType Chunk::categorizeVoxel(glm::ivec3 pos) const {
 	if (caseIndex == 255) return VoxelType::SOLID;
 	if (caseIndex == 0) return VoxelType::AIR;
 	return VoxelType::SURFACE;
+}
+
+void Chunk::march() {
+	vertices.clear();
+	triangles.clear();
+
+	std::unordered_map<glm::vec3, unsigned int> vertexMap(initialTriangleMapSize);
+
+	glm::ivec3 bi;
+	for (bi.x = 0; bi.x < chunkResolution; bi.x++) {
+		for (bi.y = 0; bi.y < chunkResolution; bi.y++) {
+			for (bi.z = 0; bi.z < chunkResolution; bi.z++) {
+				const std::array<Chunk::DensityType, 8> values = densityCubeAt(bi);
+
+				const auto caseIndex = caseIndexFromVoxel(values);
+				if (caseIndex == 255)
+					continue; // solid voxel
+				if (caseIndex == 0)
+					continue; // air voxel
+
+				const int numTriangles = case_to_numpolys[caseIndex];
+
+				// for each triangle of the cube
+				for (int t = 0; t < numTriangles; t++) {
+					glm::ivec3 tri;
+
+					// for each edge of the cube a triangle vertex is on
+					for (int e = 0; e < 3; e++) {
+						const int edgeIndex = edge_connect_list[caseIndex][t][e];
+
+						const auto [value1, value2, vec1, vec2] = [&]() -> std::tuple<Chunk::DensityType, Chunk::DensityType, glm::ivec3, glm::ivec3> {
+							switch (edgeIndex) {
+								case 0: return {values[0], values[1], bi + glm::ivec3(0, 0, 0), bi + glm::ivec3(0, 0, 1)};
+								case 1: return {values[1], values[2], bi + glm::ivec3(0, 0, 1), bi + glm::ivec3(1, 0, 1)};
+								case 2: return {values[2], values[3], bi + glm::ivec3(1, 0, 1), bi + glm::ivec3(1, 0, 0)};
+								case 3: return {values[3], values[0], bi + glm::ivec3(1, 0, 0), bi + glm::ivec3(0, 0, 0)};
+								case 4: return {values[4], values[5], bi + glm::ivec3(0, 1, 0), bi + glm::ivec3(0, 1, 1)};
+								case 5: return {values[5], values[6], bi + glm::ivec3(0, 1, 1), bi + glm::ivec3(1, 1, 1)};
+								case 6: return {values[6], values[7], bi + glm::ivec3(1, 1, 1), bi + glm::ivec3(1, 1, 0)};
+								case 7: return {values[7], values[4], bi + glm::ivec3(1, 1, 0), bi + glm::ivec3(0, 1, 0)};
+								case 8: return {values[0], values[4], bi + glm::ivec3(0, 0, 0), bi + glm::ivec3(0, 1, 0)};
+								case 9: return {values[1], values[5], bi + glm::ivec3(0, 0, 1), bi + glm::ivec3(0, 1, 1)};
+								case 10: return {values[2], values[6], bi + glm::ivec3(1, 0, 1), bi + glm::ivec3(1, 1, 1)};
+								case 11: return {values[3], values[7], bi + glm::ivec3(1, 0, 0), bi + glm::ivec3(1, 1, 0)};
+								default: std::terminate();
+							}
+						}();
+
+						const glm::vec3 vertex = interpolate(value1, value2, glm::vec3(vec1), glm::vec3(vec2));
+
+						// lookup this vertex
+						if (auto it = vertexMap.find(vertex); it != vertexMap.end())
+							tri[e] = it->second;
+						else {
+							// calculate a new one
+							RVertex v;
+							v.position = toWorld(vertex);
+
+							// the gradient points towards higher densities (it points into the solidness), therefore invert the normal
+							const glm::vec3 g1 = gradient(*this, vec1);
+							const glm::vec3 g2 = gradient(*this, vec2);
+							v.normal = -normalize(interpolate(value1, value2, g1, g2));
+
+							tri[e] = (unsigned int)vertices.size();
+							vertices.push_back(v);
+
+							vertexMap[v.position] = tri[e];
+						}
+					}
+
+					// reorient triangles
+					std::swap(tri[1], tri[2]);
+
+					triangles.push_back(tri);
+				}
+			}
+		}
+	}
 }
 
 void Chunk::render() const {
